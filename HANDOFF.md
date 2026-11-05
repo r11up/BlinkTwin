@@ -93,9 +93,15 @@ Both referees credit the revision as thorough, honest and reproducible. Their sh
 3. Other public data: UTA-RLDD (consumer RGB webcams, 60 people) for the MediaPipe pipeline; the Liege multi-timescale dataset (29 people, PVT) for eye measures against PVT.
 4. The prospective study, redesigned as in A5, registered with ethics approval.
 
-## 5. Code changes started in the cloud session but not on the branch
+## 5. Round-2 code changes: status at handoff
 
-These were being implemented when the session ended; do them locally (they match Section 4A):
+Pushed as work in progress (typecheck and all 105 tests pass), but the simulation has **not** been re-run with them, so `results/` still holds the previous run:
+- `web/src/twin/twin.ts`: `anchorMode` ('estimate' default, 'consider' = consider-covariance with Joseph-form update, 'none'); `offsetReversionHours` (mean-reverting offset, off by default); the PERCLOS guard now remembers the camera's last known blink peak and skips PERCLOS while none is known, for events that carry the `peakClosure` key (events without the key behave as before).
+- `web/scripts/simulate.ts`: new 'consider' method and comparisons; oracle relabelled "Known-parameter filter (true signal parameters, same noise model)"; mean-reverting offset rows (24 h, 72 h) in the sensitivity analysis.
+
+Still to do (re-run `node scripts/simulate.ts 300 ../results > ../results/sim_log.txt` and `analysis/sim_figures.py` after the code items):
+
+Original list, for reference (they match Section 4A):
 1. PERCLOS guard: always store `peakClosure` (null when unknown); in the twin remember the last non-null value and, for events that have the key, use PERCLOS only if the last known peak is >= 0.85 (unknown: skip). Events without the key (DROZY replay, simulation) keep the old behaviour. Add tests.
 2. `anchorMode?: 'estimate' | 'consider' | 'none'` in `TwinConfig` (Joseph-form covariance update for 'consider'); add a 'consider' method to `simulate.ts` and re-run.
 3. Rename the oracle label to "Known-parameter filter (true signal parameters, same noise model)".
@@ -104,7 +110,7 @@ These were being implemented when the session ended; do them locally (they match
 6. `divergence.ts`: verdict from the within-person anchor trend only; `suggest.ts`: use the personal innovation of the latest full PVT instead of the population-scale gap.
 7. Study mode (`?study=1`) that hides all estimates, forecasts, checks and suggestions.
 
-If any of these files show uncommitted changes after you pull, compare them with this list before keeping them.
+Done so far: the model side of item 1 (the app side, always storing `peakClosure` as null in `main.ts`, and its tests are still to do), items 2 and 3 in code (not yet run), and the option in item 5 (not yet evaluated). Not started: items 4, 6 and 7. Add unit tests for `anchorMode` and `offsetReversionHours`.
 
 ## 6. Key results (from the committed result files)
 

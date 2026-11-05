@@ -14,6 +14,13 @@
 // measurements. Every forecast, for every method, projects the protocol's own work rhythm (50-min blocks,
 // 10-min breaks) rather than continuous work, so all methods assume the same pattern of time on task.
 // Scenarios: 'matched' follows the twin's assumptions; the others break them on purpose.
+// Comparators for the anchors: 'noanchor' treats each person's signal baseline as independent noise per
+// reading (its failure is built in); 'consider' is a consider-covariance (Schmidt-Kalman) filter that knows
+// the baseline is persistent and carries it in the covariance but does not estimate it, which is the fair
+// "fusion without learning anchors" comparator. The 'oracle' (known-parameter filter) is the twin given each
+// person's true signal baselines and slopes but the twin's own noise model; it is a reference, not an upper
+// bound: when the generator's noise differs from that model (e.g. strongly autocorrelated webcam noise) it can
+// do worse than the twin.
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -77,19 +84,21 @@ const SCENARIOS: Record<string, Scenario> = {
   },
 };
 
-type MethodId = 'prior' | 'checkins' | 'noanchor' | 'twin' | 'oracle';
+type MethodId = 'prior' | 'checkins' | 'noanchor' | 'consider' | 'twin' | 'oracle';
 const METHODS: { id: MethodId; label: string }[] = [
   { id: 'prior', label: 'Rhythm model only' },
   { id: 'checkins', label: 'Check-ins only' },
   { id: 'noanchor', label: 'Check-ins + passive, no anchors' },
+  { id: 'consider', label: 'Check-ins + passive, consider-covariance (bias not estimated)' },
   { id: 'twin', label: 'BlinkTwin (anchored)' },
-  { id: 'oracle', label: 'Oracle: true personal signal parameters' },
+  { id: 'oracle', label: 'Known-parameter filter (true signal parameters, same noise model)' },
 ];
 const CHANNELS: ChannelId[] = ['pvt', 'blink', 'perclos'];
 
 function cfgFor(m: MethodId, person: Person, base: TwinConfig = BASE): TwinConfig {
   if (m === 'checkins') return { ...base, usePassive: false };
   if (m === 'noanchor') return { ...base, useAnchors: false };
+  if (m === 'consider') return { ...base, anchorMode: 'consider' };
   if (m === 'oracle') {
     const c = base.channels;
     // knows each person's own baseline and slope; still has to track the slow drift like the twin
@@ -269,7 +278,7 @@ for (const [sid, sc] of Object.entries(SCENARIOS)) {
       sims.forEach((s, i) => s.truth.forEach((tp, j) => (maxTruthDiff = Math.max(maxTruthDiff, Math.abs(tp.kss - (truthRef as TruthPoint[][])[i][j].kss)))));
     for (const m of METHODS) {
       if (m.id === 'prior' && k > 0) continue;
-      if (m.id !== 'prior' && m.id !== 'twin' && m.id !== 'oracle' && k === 0) continue;
+      if (m.id !== 'prior' && m.id !== 'twin' && m.id !== 'oracle' && m.id !== 'consider' && k === 0) continue;
       const withForecast = k === 3 || (k === 0 && m.id === 'prior');
       const res = people.map((p, i) => evaluate(keepEvents(sims[i].events, m.id), sims[i].truth, cfgFor(m.id, p), sc, withForecast));
       per[`${m.id}_k${k}`] = res;
@@ -371,8 +380,11 @@ for (const [sid, sc] of Object.entries(SCENARIOS)) {
     pair(`noanchor_k${k}`, `checkins_k${k}`);
     pair(`twin_k${k}`, `noanchor_k${k}`);
     pair(`oracle_k${k}`, `twin_k${k}`);
+    pair(`consider_k${k}`, `checkins_k${k}`);
+    pair(`twin_k${k}`, `consider_k${k}`);
   }
   pair('twin_k0', 'prior_k0');
+  pair('consider_k0', 'prior_k0');
   pair('twin_k3', 'prior_k0');
   pair('checkins_k3', 'prior_k0');
   if (sid === 'dissociation') {
@@ -395,6 +407,8 @@ const SENS: { param: string; value: number; cfg: TwinConfig }[] = [
   ...[0.5, 0.75, 1.0].map((v) => ({ param: 'kssNoiseSd', value: v, cfg: { ...BASE, kssNoiseSd: v } })),
   ...[0.5, 1, 2].map((v) => ({ param: 'anchorDrift_x', value: v, cfg: scale(BASE, 'biasDriftSdPerSqrtHour', v) })),
   ...[0, 1, 2].map((v) => ({ param: 'slopeSd_x', value: v, cfg: scale(BASE, 'slopeSd', v) })),
+  // mean-reverting offset (Ornstein-Uhlenbeck towards 0, stationary SD offsetPriorSd) instead of a random walk
+  ...[24, 72].map((v) => ({ param: 'offsetReversionHours', value: v, cfg: { ...BASE, offsetReversionHours: v } })),
 ];
 const sensRows: Record<string, string | number>[] = [];
 {
@@ -425,7 +439,7 @@ writeFileSync(
       n_people_per_scenario: N,
       protocol:
         'wake 07:00 reporting last night (7.5 h; 5 h in debt), 24 h awake (16 h in workday); 50-min task blocks and 10-min breaks; one webcam window per minute from 07:30 (breaks included); PVT every 2 h and 4 min after each check-in; check-ins evenly from 08:30 to 22:30 (workday 21:30), k = 1 at 10:00; MAE every 10 min from 07:30; night = 23:00 to 07:00',
-      methods: 'prior = Three-Process Model + time on task (sleep and context entries, no measurements); checkins = prior + KSS check-ins; noanchor = all events without anchor states; twin = released BlinkTwin; oracle = twin given each person\'s true signal baselines and slopes',
+      methods: 'prior = Three-Process Model + time on task (sleep and context entries, no measurements); checkins = prior + KSS check-ins; noanchor = all events without anchor states (baselines as independent noise); consider = consider-covariance (Schmidt-Kalman) filter, anchors carried in the covariance but not estimated; twin = released BlinkTwin; oracle = known-parameter filter: the twin given each person\'s true signal baselines and slopes with the twin\'s own noise model (a reference, not an upper bound)',
       forecast_design: 'one-hour P(KSS >= 7) every hour (12:00 to 05:00; workday 09:00 to 22:00) with k = 3; time of reaching KSS 7 forecast at 17:00; every forecast projects the protocol work rhythm (50-min blocks, 10-min breaks)',
       common_random_numbers: 'person seed independent of k; truth, webcam and 2-hourly PVTs identical across k',
       crn_check: crnCheck,

@@ -20,7 +20,7 @@ export type TwinEvent =
   | { t: number; type: 'kss'; value: number }
   | { t: number; type: 'tlx'; value: number; items?: number[] }
   | { t: number; type: 'pvt'; medianRt: number; lapses: number; n: number; falseStarts: number; durationS?: number }
-  | { t: number; type: 'cam'; perclos: number; blinkRate: number; meanBlinkMs: number; coverage: number; nods?: number; headMovement?: number; peakClosure?: number }
+  | { t: number; type: 'cam'; perclos: number; blinkRate: number; meanBlinkMs: number; coverage: number; nods?: number; headMovement?: number; peakClosure?: number | null }
   | { t: number; type: 'alert'; level: 'warning' | 'alarm'; reason: string };
 
 export type Source = 'kss' | 'pvt' | 'cam';
@@ -55,8 +55,10 @@ export interface TwinConfig {
   // PERCLOS counts frames with normalised closure >= 0.8. On some cameras the eyeBlink score of a full blink
   // never gets there (DROZY near-infrared video: median blink peak about 0.6, PERCLOS below 0.5% in all 36
   // tests), so PERCLOS stays flat whatever the person's state and would wrongly tell the twin "no change".
-  // A minute whose ordinary blinks have a median peak closure below this is not used for PERCLOS. Minutes
-  // without the peakClosure field (older events, DROZY replay, simulation) are used as before.
+  // The decision is made per camera, not per minute: the twin remembers the most recent known peak (a minute
+  // with fewer than 3 blinks has peakClosure null) and uses a minute's PERCLOS only if that last known peak
+  // reaches this value; while no peak is known yet, PERCLOS is not used. Minutes WITHOUT the peakClosure key
+  // (older events, DROZY replay, simulation) are used as before.
   perclosMinPeakClosure: number;
   camMinCoverage: number;
   // Missing nights. Off (the research default): the prior treats the whole time between two recorded wake
@@ -68,7 +70,19 @@ export interface TwinConfig {
   fillMissingNights?: boolean;
   usePassive: boolean; // false = prior + check-ins only (ablation)
   useChannels?: Partial<Record<ChannelId, boolean>>; // switch single passive channels off (ablation)
-  useAnchors: boolean; // false = passive signals use the population baseline (ablation)
+  useAnchors: boolean; // false = passive signals use the population baseline (ablation); same as anchorMode 'none'
+  // How the per-signal anchors are handled:
+  // - 'estimate' (default): anchors are filter states, learned from the data (BlinkTwin);
+  // - 'consider': a consider-covariance (Schmidt-Kalman) filter: the anchors' uncertainty is carried in the
+  //   covariance and enters every gain, but the anchors themselves are never estimated (their gain rows are
+  //   zero, and the covariance is updated with the Joseph form so that it stays consistent). This is the fair
+  //   comparator for "fusion without learning the anchors": it knows the bias is persistent;
+  // - 'none': no anchors; the between-person spread of baselines is treated as independent noise per reading.
+  anchorMode?: 'estimate' | 'consider' | 'none';
+  // Undefined (default): the offset is a random walk with offsetDriftSdPerSqrtHour. Set: the offset is an
+  // Ornstein-Uhlenbeck process that reverts to 0 with this time constant (hours) and stationary SD
+  // offsetPriorSd (drift variance q = 2 sigma^2 / tau per hour), so an offset learned today fades over days.
+  offsetReversionHours?: number;
   workload: {
     demand: Record<ContextId, number>;
     tlxNoiseSd: number;
@@ -224,11 +238,14 @@ export function replay(
   let breakStart: number | null = null;
   let frozenTot = 0;
   // state x = [offset d, anchor of reaction time, anchor of blink duration, anchor of PERCLOS]
+  const mode = cfg.anchorMode ?? (cfg.useAnchors ? 'estimate' : 'none');
+  const anchored = mode !== 'none';
   const n = 1 + CH.length;
   const x = new Array(n).fill(0);
   const P = Array.from({ length: n }, (_, i) =>
-    Array.from({ length: n }, (_, j) => (i !== j ? 0 : i === 0 ? cfg.offsetPriorSd ** 2 : cfg.useAnchors ? cfg.channels[CH[i - 1]].biasSd ** 2 : 0)),
+    Array.from({ length: n }, (_, j) => (i !== j ? 0 : i === 0 ? cfg.offsetPriorSd ** 2 : anchored ? cfg.channels[CH[i - 1]].biasSd ** 2 : 0)),
   );
+  let lastPeak: number | null = null; // most recent known median blink peak of this camera
   let w = cfg.workload.demand.unset;
   let wVar = 20 ** 2;
   const tlxByContext: Record<string, number[]> = {};
@@ -251,8 +268,20 @@ export function replay(
   const advance = (to: number) => {
     const dtH = Math.max(0, (to - clock) / HOUR);
     if (dtH === 0) return;
-    P[0][0] += cfg.offsetDriftSdPerSqrtHour ** 2 * dtH;
-    if (cfg.useAnchors) CH.forEach((c, i) => (P[i + 1][i + 1] += cfg.channels[c].biasDriftSdPerSqrtHour ** 2 * dtH));
+    if (cfg.offsetReversionHours !== undefined && cfg.offsetReversionHours > 0) {
+      // Ornstein-Uhlenbeck offset: x0 <- a x0, P <- F P F' + Q with F = diag(a, 1, ...), stationary SD offsetPriorSd
+      const a = Math.exp(-dtH / cfg.offsetReversionHours);
+      x[0] *= a;
+      for (let j = 1; j < n; j++) {
+        P[0][j] *= a;
+        P[j][0] *= a;
+      }
+      P[0][0] = a * a * P[0][0] + cfg.offsetPriorSd ** 2 * (1 - a * a);
+      (Object.keys(contributions) as Source[]).forEach((k) => (contributions[k] *= a));
+    } else {
+      P[0][0] += cfg.offsetDriftSdPerSqrtHour ** 2 * dtH;
+    }
+    if (anchored) CH.forEach((c, i) => (P[i + 1][i + 1] += cfg.channels[c].biasDriftSdPerSqrtHour ** 2 * dtH));
     const alpha = Math.exp((-dtH * 60) / cfg.workload.reversionMinutes);
     const mu = demand(context);
     w = mu + (w - mu) * alpha;
@@ -281,6 +310,18 @@ export function replay(
     const sVar = h.reduce((acc, v, i) => acc + v * ph[i], 0) + r;
     const k = ph.map((v) => v / sVar);
     const innov = y - c - h.reduce((acc, v, i) => acc + v * x[i], 0);
+    if (mode === 'consider') {
+      // consider states: the anchors keep their (zero) mean; only the offset is updated, and the covariance
+      // follows the Joseph form P = A P A' + k r k' with A = I - k h', which is valid for any gain
+      for (let i = 1; i < n; i++) k[i] = 0;
+      x[0] += k[0] * innov;
+      const A = Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => (i === j ? 1 : 0) - k[i] * h[j]));
+      const AP = A.map((row) => Array.from({ length: n }, (_, j) => row.reduce((acc, v, m) => acc + v * P[m][j], 0)));
+      for (let i = 0; i < n; i++)
+        for (let j = 0; j < n; j++) P[i][j] = AP[i].reduce((acc, v, m) => acc + v * A[j][m], 0) + k[i] * r * k[j];
+      contributions[source] += k[0] * innov;
+      return;
+    }
     for (let i = 0; i < n; i++) x[i] += k[i] * innov;
     for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) P[i][j] -= k[i] * ph[j];
     contributions[source] += k[0] * innov;
@@ -295,7 +336,7 @@ export function replay(
     h[1 + CH.indexOf(c)] = 1;
     const sHat = base + x[0];
     // without anchors, person-to-person baseline differences can only be treated as extra noise
-    const r = ch.noiseSd ** 2 * ch.inflate + (ch.slopeSd * (sHat - 3)) ** 2 + (cfg.useAnchors ? 0 : ch.biasSd ** 2);
+    const r = ch.noiseSd ** 2 * ch.inflate + (ch.slopeSd * (sHat - 3)) ** 2 + (anchored ? 0 : ch.biasSd ** 2);
     update(value, h, ch.at3 + ch.perKss * (base - 3), r, source);
   };
   const snap = (t: number): Snapshot => {
@@ -376,8 +417,12 @@ export function replay(
         break;
       }
       case 'cam': {
+        if (typeof e.peakClosure === 'number') lastPeak = e.peakClosure;
         if (!cfg.usePassive || e.coverage < cfg.camMinCoverage) break;
-        if (e.peakClosure === undefined || e.peakClosure >= cfg.perclosMinPeakClosure) observe('perclos', e.perclos * 100, e.t, 'cam');
+        // without the key: older events, DROZY replay, simulation (used as before); with it: the camera's
+        // last known blink peak decides, and an unknown peak means PERCLOS is not used
+        const perclosOk = e.peakClosure === undefined || (lastPeak !== null && lastPeak >= cfg.perclosMinPeakClosure);
+        if (perclosOk) observe('perclos', e.perclos * 100, e.t, 'cam');
         if (e.blinkRate >= cfg.minBlinksForDuration && e.meanBlinkMs > 0) observe('blink', e.meanBlinkMs, e.t, 'cam');
         break;
       }
@@ -472,13 +517,27 @@ export function forecast(
     const afterSleep = sleep !== r.sleep;
     const totH = afterSleep ? 0 : rhythm ? scheduledTot(dtH) : inTask ? tot0 + dtH : sc.breakNow ? 0 : tot0;
     const history = r.priorHistory ?? r.sleeps;
-    const mean = clampKss(priorKss(t, sleep, cfg.tpm, cfg.tzOffsetMinutes, afterSleep ? [...history, sleep] : history) + totH * cfg.totPerHour + r.now.offset);
-    const sd = Math.sqrt(r.now.offsetSd ** 2 + cfg.offsetDriftSdPerSqrtHour ** 2 * dtH);
+    const mean = clampKss(priorKss(t, sleep, cfg.tpm, cfg.tzOffsetMinutes, afterSleep ? [...history, sleep] : history) + totH * cfg.totPerHour + offsetAhead(r.now.offset, dtH, cfg));
+    const sd = Math.sqrt(offsetVarAhead(r.now.offsetSd ** 2, dtH, cfg));
     const pSleepy = 1 - normalCdf((7 - mean) / sd);
     points.push({ t, kss: mean, kssSd: sd, pSleepy, asleep: sleeping });
     if (!sleeping && sleepyAt === null && mean >= 7) sleepyAt = t;
   }
   return { points, sleepyAt };
+}
+
+/** The offset's mean dtH hours ahead: held constant for a random walk, decaying for a mean-reverting offset. */
+export function offsetAhead(offset: number, dtH: number, cfg: TwinConfig = DEFAULT_CONFIG): number {
+  return cfg.offsetReversionHours !== undefined && cfg.offsetReversionHours > 0 ? offset * Math.exp(-dtH / cfg.offsetReversionHours) : offset;
+}
+
+/** The offset's variance dtH hours ahead, starting from variance v. */
+export function offsetVarAhead(v: number, dtH: number, cfg: TwinConfig = DEFAULT_CONFIG): number {
+  if (cfg.offsetReversionHours !== undefined && cfg.offsetReversionHours > 0) {
+    const a2 = Math.exp((-2 * dtH) / cfg.offsetReversionHours);
+    return v * a2 + cfg.offsetPriorSd ** 2 * (1 - a2);
+  }
+  return v + cfg.offsetDriftSdPerSqrtHour ** 2 * dtH;
 }
 
 export function normalCdf(z: number): number {
