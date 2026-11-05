@@ -50,7 +50,7 @@ The round-1 revision is on branch `revision-round1` (see `HANDOFF.md` for the fu
 
 ## Next steps
 
-- [ ] Address the round-2 referee reports (`paper/reviews/round2-reviewer-*.md`).
+- [ ] Address the round-2 referee reports (`paper/reviews/round2-reviewer-A.md`: major revision; `round2-reviewer-B.md`: reject and resubmit for J-BHI). The prioritised list is in `HANDOFF.md`, Sections 4 and 5.
 - [ ] With DROZY available locally: re-run the replay with the Ingre mapping, a paired comparison on the same predictions, the share within 1 KSS point, the blink-meter fix (`drozy_eyes.ts --fixed-baseline`), the MediaPipe "adaptive" variant, and blink-duration inflation 2.28.
 - [ ] Browser PVT timing benchmark (photodiode, key-press robot, 3-5 devices).
 - [ ] Verify on a laptop: `PITCH_DOWN_SIGN`, the looking-down gate, alert behaviour while reading and typing.
