@@ -29,7 +29,7 @@ BlinkTwin is a research prototype. It has been tested on public datasets and in 
 6. **Explains itself.** The estimate is split into the rhythm model, time on task, and what each source contributed, and every number links to the science behind it ([docs/SCIENCE.md](docs/SCIENCE.md)).
 7. **Private by design, and checked.** The face model runs in the page. Only one-minute numeric summaries are stored, in your own browser, and you can export or delete them. An automated traffic check (`web/scripts/privacy_check.mjs`) found that the face-tracking library sent small usage-statistics requests (timing data, no images) to a Google logging service every minute; a content security policy now blocks them, and the check records no request at all after the page has loaded (`results/privacy_check.json`).
 8. **Learns how well it knows you.** A "How well does the twin know you?" panel scores every past prediction against the rating you then gave; the app suggests a check-in when the estimate is uncertain, the forecast nears KSS 7 or your reaction test disagrees with your ratings; it flags when your reactions are slower than your ratings suggest; and it asks for nights you did not enter instead of assuming you stayed awake.
-9. **One codebase, tested and reproducible.** The same TypeScript runs the website, 126 unit tests, the replay of the released twin on real data, and the simulation study.
+9. **One codebase, tested and reproducible.** The same TypeScript runs the website, 130 unit tests, the replay of the released twin on real data, and the simulation study.
 
 ## How it works
 
@@ -107,7 +107,7 @@ The same comparison with three check-ins when the virtual people break the twin'
 | Ordinary 16-h day instead of 24 h awake | 0.682 | 0.661 | −0.021 [−0.036, −0.007] | 56% |
 | Ratings level off above KSS 5 while signals keep rising | 0.665 | 0.636 | −0.029 [−0.042, −0.015] | 62% |
 
-Forecasting KSS ≥ 7 one hour ahead (matched scenario, three check-ins, 5400 forecasts, base rate 0.27): Brier score 0.063 for BlinkTwin, 0.066 for check-ins only and 0.086 for the rhythm model alone (difference from check-ins only −0.0028, 95% CI −0.0052 to −0.0001); AUROC 0.969, 0.966 and 0.945. Most of the discrimination comes from the time of day and time awake.
+Forecasting KSS ≥ 7 one hour ahead (matched scenario, three check-ins, 5400 forecasts, base rate 0.27): Brier score 0.063 for BlinkTwin, 0.066 for check-ins only and 0.086 for the rhythm model alone (difference from check-ins only −0.0028, 95% CI −0.0052 to −0.0001); AUROC 0.969, 0.966 and 0.945. Most of the discrimination comes from the time of day and time awake. The predicted time of reaching KSS 7, forecast at 17:00, missed by about 80 minutes with every method, so the app gives it with the times at which the chance of KSS 7 or more reaches 1 in 4 and 3 in 4. The true time fell inside that window for 56% of virtual people, before it for 30% and after it for 15% (ideally 50%, 25% and 25%); the median window was 130 minutes wide (`results/forecast_window.json`).
 
 ![Simulation: error by number of check-ins (A) and the paired difference between BlinkTwin and check-ins only in each scenario (B)](docs/img/simulation.svg)
 
@@ -171,8 +171,9 @@ analysis/.venv/bin/python -I analysis/drozy_twin_figure.py results
 
 # Simulation study, power for the planned study, and their figures (about half an hour)
 (cd web && node scripts/simulate.ts 300 ../results > ../results/sim_log.txt)
-(cd web && node scripts/power.ts)
+(cd web && node scripts/power.ts && node scripts/ablation.ts && node scripts/forecast_window.ts)
 analysis/.venv/bin/python -I analysis/sim_figures.py results
+analysis/.venv/bin/python -I analysis/sim_tables.py results
 
 # Figures and screenshots in this README (SVG from the paper's PDFs; demo-day screenshots at 2x)
 bash scripts/readme_figures.sh

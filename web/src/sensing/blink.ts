@@ -26,6 +26,9 @@ export interface CamWindow {
   meanBlinkMs: number; // mean duration of ordinary blinks
   longClosures: number; // closures longer than maxBlinkMs
   coverage: number; // fraction of frames with a face
+  // Frames processed per second over the window, with or without a face. Blink duration is measured in whole
+  // frames, so it depends on the frame rate; stored so that analyses can allow for it.
+  fps: number;
   // Median peak normalised closure of the window's ordinary blinks (null with fewer than 3 blinks). If
   // ordinary blinks do not reach the PERCLOS level, PERCLOS cannot register eye closure on this camera.
   peakClosure: number | null;
@@ -144,6 +147,7 @@ export class BlinkMeter {
       meanBlinkMs: blinks.length ? blinks.reduce((s, b) => s + b.durationMs, 0) / blinks.length : 0,
       longClosures: this.longClosures.filter((b) => b.end > from && b.end <= tEnd).length,
       coverage: frames.length ? face.length / frames.length : 0,
+      fps: frames.length / (lengthMs / 1000),
       peakClosure: blinks.length >= 3 ? median(blinks.map((b) => b.peak)) : null,
     };
   }

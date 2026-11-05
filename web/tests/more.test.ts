@@ -168,6 +168,9 @@ describe('sensing edge cases', () => {
     expect(w.coverage).toBeLessThan(0.95);
     expect(w.blinkRate).toBeGreaterThanOrEqual(15);
     expect(w.blinkRate).toBeLessThanOrEqual(20);
+    // the frame rate counts every processed frame, lost-face frames included
+    expect(w.fps).toBeGreaterThan(14);
+    expect(w.fps).toBeLessThan(16);
   });
 
   it('does not count a closure longer than a second as a blink', () => {

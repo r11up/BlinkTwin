@@ -96,6 +96,25 @@ describe('forecast', () => {
     expect(f.points.at(-1)!.kssSd).toBeGreaterThan(f.points[0].kssSd);
   });
 
+  it('gives a window around the predicted time of reaching KSS 7', () => {
+    // two check-ins narrow the estimate, so the 75% end of the window falls inside the horizon
+    const ev: TwinEvent[] = [
+      { t: day + 6 * H, type: 'sleep', wake: sleep.wake, hours: 8 },
+      { t: day + 10 * H, type: 'kss', value: 3 },
+      { t: day + 16 * H, type: 'kss', value: 4 },
+    ];
+    const f = forecast(replay(ev, UTC, { until: day + 20 * H }), UTC, { hours: 12 });
+    // the window runs from the first 25% to the first 75% chance of KSS >= 7 and contains the point forecast
+    const { from, to } = f.sleepyWindow;
+    expect(from).not.toBeNull();
+    expect(to).not.toBeNull();
+    expect(from as number).toBeLessThan(f.sleepyAt as number);
+    expect(to as number).toBeGreaterThan(f.sleepyAt as number);
+    expect(f.points.find((p) => p.t === from)!.pSleepy).toBeGreaterThanOrEqual(0.25);
+    expect(f.points.filter((p) => p.t < (from as number)).every((p) => p.pSleepy < 0.25)).toBe(true);
+    expect(f.points.find((p) => p.t === to)!.pSleepy).toBeGreaterThanOrEqual(0.75);
+  });
+
   it('a night of sleep removes the predicted sleepiness', () => {
     const r = replay([{ t: day + 6 * H, type: 'sleep', wake: sleep.wake, hours: 8 }], UTC, { until: day + 20 * H });
     const f = forecast(r, UTC, { hours: 16, scenario: { sleepAt: day + 23 * H, sleepHours: 8 } });

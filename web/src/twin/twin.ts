@@ -20,7 +20,7 @@ export type TwinEvent =
   | { t: number; type: 'kss'; value: number }
   | { t: number; type: 'tlx'; value: number; items?: number[] }
   | { t: number; type: 'pvt'; medianRt: number; lapses: number; n: number; falseStarts: number; durationS?: number }
-  | { t: number; type: 'cam'; perclos: number; blinkRate: number; meanBlinkMs: number; coverage: number; nods?: number; headMovement?: number; peakClosure?: number | null }
+  | { t: number; type: 'cam'; perclos: number; blinkRate: number; meanBlinkMs: number; coverage: number; nods?: number; headMovement?: number; peakClosure?: number | null; fps?: number }
   | { t: number; type: 'alert'; level: 'warning' | 'alarm'; reason: string };
 
 export type Source = 'kss' | 'pvt' | 'cam';
@@ -469,17 +469,23 @@ export interface Scenario {
   breakNowMinutes?: number; // with breaksEveryMinutes and breakNow: length of the break taken now
 }
 
+/** Chances of KSS >= 7 that bound the forecast window shown with the predicted time of reaching KSS 7. */
+export const SLEEPY_WINDOW: readonly [number, number] = [0.25, 0.75];
+
 /** Projects the twin forward. The offset is carried forward with growing uncertainty. */
 export function forecast(
   r: TwinResult,
   cfg: TwinConfig = DEFAULT_CONFIG,
   opts: { hours?: number; stepMinutes?: number; scenario?: Scenario } = {},
-): { points: ForecastPoint[]; sleepyAt: number | null } {
+): { points: ForecastPoint[]; sleepyAt: number | null; sleepyWindow: { from: number | null; to: number | null } } {
   const step = (opts.stepMinutes ?? 10) * MIN;
   const end = r.now.t + (opts.hours ?? 12) * HOUR;
   const sc = opts.scenario ?? {};
   const points: ForecastPoint[] = [];
   let sleepyAt: number | null = null;
+  // the window around sleepyAt: the first times at which the chance of KSS >= 7 reaches 25% and 75%
+  let windowFrom: number | null = null;
+  let windowTo: number | null = null;
   const inTask = r.context !== 'break' && r.context !== 'unset' && !sc.breakNow;
   const tot0 = sc.breakNow ? 0 : r.now.tot / Math.max(cfg.totPerHour, 1e-9);
   const rhythm = sc.breaksEveryMinutes !== undefined && sc.breaksEveryMinutes > 0;
@@ -525,8 +531,10 @@ export function forecast(
     const pSleepy = 1 - normalCdf((7 - mean) / sd);
     points.push({ t, kss: mean, kssSd: sd, pSleepy, asleep: sleeping });
     if (!sleeping && sleepyAt === null && mean >= 7) sleepyAt = t;
+    if (!sleeping && windowFrom === null && pSleepy >= SLEEPY_WINDOW[0]) windowFrom = t;
+    if (!sleeping && windowTo === null && pSleepy >= SLEEPY_WINDOW[1]) windowTo = t;
   }
-  return { points, sleepyAt };
+  return { points, sleepyAt, sleepyWindow: { from: windowFrom, to: windowTo } };
 }
 
 /** The offset's mean dtH hours ahead: held constant for a random walk, decaying for a mean-reverting offset. */

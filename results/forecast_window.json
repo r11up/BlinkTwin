@@ -1,0 +1,57 @@
+{
+ "design": "matched scenario of scripts/simulate.ts, 300 virtual people, k = 3 check-ins, forecast at 17:00 over the next 12 h with the 50/10 work rhythm; window = first times at which P(KSS >= 7) reaches 0.25 and 0.75; a window end not reached within the horizon counts as beyond it",
+ "nominal": {
+  "before_window": 0.25,
+  "inside_window": 0.5,
+  "after_window": 0.25
+ },
+ "rows": [
+  {
+   "method": "prior",
+   "label": "Rhythm model only",
+   "people": 300,
+   "reached_kss7_in_horizon": 288,
+   "before_window": 0.1701388888888889,
+   "inside_window": 0.8298611111111112,
+   "after_window": 0,
+   "median_window_width_min": null,
+   "windows_with_both_ends": 0,
+   "no_crossing_in_horizon": 12,
+   "window_opened_without_crossing": 12,
+   "crossing_mae_min": 79.22916666666667,
+   "crossing_n": 288
+  },
+  {
+   "method": "checkins",
+   "label": "Check-ins only",
+   "people": 300,
+   "reached_kss7_in_horizon": 288,
+   "before_window": 0.3020833333333333,
+   "inside_window": 0.5555555555555556,
+   "after_window": 0.1423611111111111,
+   "median_window_width_min": 150,
+   "windows_with_both_ends": 181,
+   "no_crossing_in_horizon": 12,
+   "window_opened_without_crossing": 10,
+   "crossing_mae_min": 83.97254901960784,
+   "crossing_n": 255
+  },
+  {
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "people": 300,
+   "reached_kss7_in_horizon": 288,
+   "before_window": 0.2986111111111111,
+   "inside_window": 0.5555555555555556,
+   "after_window": 0.14583333333333334,
+   "median_window_width_min": 130,
+   "windows_with_both_ends": 195,
+   "no_crossing_in_horizon": 12,
+   "window_opened_without_crossing": 9,
+   "crossing_mae_min": 80.57976653696498,
+   "crossing_n": 257
+  }
+ ],
+ "reproduces_sim_summary": true,
+ "runtime_s": 1.949
+}

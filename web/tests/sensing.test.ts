@@ -106,9 +106,10 @@ describe('blink meter: long-closure baseline freeze', () => {
         expect(now.push(f.t, f.score)).toBe(ref.push(f.t, f.score));
         expect(now.closedFor(f.t)).toBe(ref.closedFor(f.t));
         if (f.t >= nextWindow) {
-          const { peakClosure, ...w } = now.window(f.t);
+          const { peakClosure, fps, ...w } = now.window(f.t);
           expect(w).toEqual(ref.window(f.t));
           expect(peakClosure === null || (peakClosure >= 0 && peakClosure <= 1)).toBe(true);
+          expect(fps).toBeGreaterThan(0);
           nextWindow += 10_000;
         }
       }
@@ -122,8 +123,9 @@ describe('blink meter: long-closure baseline freeze', () => {
       expect(legacy.push(f.t, f.score)).toBe(ref.push(f.t, f.score));
       expect(legacy.closedFor(f.t)).toBe(ref.closedFor(f.t));
     }
-    const { peakClosure, ...w } = legacy.window(240_000, 240_000);
+    const { peakClosure, fps, ...w } = legacy.window(240_000, 240_000);
     void peakClosure;
+    void fps;
     expect(w).toEqual(ref.window(240_000, 240_000));
   });
 

@@ -121,6 +121,7 @@ Every second the meter summarises the last 60 seconds for the live display and t
 | **PERCLOS** | the share of frames (with a face) in which the normalised closure was **0.8 or more**, that is, the eyes were at least 80% closed |
 | coverage | the share of frames in which a face was found |
 | peak closure | the median peak closure of the minute's ordinary blinks (only stored if there were at least 3 blinks) |
+| frame rate | frames analysed per second in the minute, with or without a face; blink durations are measured in whole frames, so they are less precise at low frame rates |
 | nods | head nods in the minute (see below) |
 | head movement | how much the head moved over the last 10 seconds (spread of pitch and yaw angles, in degrees) |
 
@@ -460,7 +461,7 @@ Code: `forecast()` in `web/src/twin/twin.ts`; buttons in `web/src/main.ts`.
 To look ahead, the twin takes the body-clock model forward in time, keeps your current offset, and lets its uncertainty grow at the same drift rate as before (0.3 KSS per square root of an hour). For time on task, the main forecast assumes **your usual rhythm: 50-minute work blocks with 10-minute breaks**. If you are working now, it lets you finish the current 50-minute block, then takes a 10-minute break (which resets time on task), and repeats. If you have not marked any activity, time on task stays at zero. The page forecasts 8 hours ahead, and the chart legend says "forecast (with usual breaks)".
 
 - **Probability of KSS 7 or more** at a future time is computed from the forecast and its uncertainty, assuming a bell-shaped (normal) error. The page shows it for one hour from now.
-- **"You will reach KSS 7 around ..."** is the first future time at which the middle of the forecast reaches 7.
+- **"You will reach KSS 7 around ..."** is the first future time at which the middle of the forecast reaches 7. The same sentence gives the times at which the probability of KSS 7 or more first reaches 1 in 4 and 3 in 4, for example "around 00:00: a 1 in 4 chance by 23:10, 3 in 4 by 01:10". A single clock time would look more exact than it is: in the simulation study the predicted time missed by about 80 minutes on average. In that study (three check-ins, forecast at 17:00) the true time fell before the window for 30% of virtual people, inside it for 56% and after it for 15%, against the 25%, 50% and 25% the chances imply (`results/forecast_window.json`). A time that is already past, or later than the 8-hour horizon, is left out.
 
 **Worked example 2, continued.** After the rating of 6 at 10:00 (no activity marked, so no time on task), the forecast made at 16:00 is:
 

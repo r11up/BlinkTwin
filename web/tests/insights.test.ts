@@ -5,6 +5,8 @@ import { suggestCheckIn, SUGGEST_RULES } from '../src/insights/suggest.ts';
 import { trackRecord, TRACK_MIN_FOR_VERDICT } from '../src/insights/trackrecord.ts';
 import { alertness, priorKss, TPM_DEFAULTS, type SleepEpisode } from '../src/twin/tpm.ts';
 import { DEFAULT_CONFIG, replay, type TwinConfig, type TwinEvent } from '../src/twin/twin.ts';
+import { fmtClock } from '../src/ui/charts.ts';
+import { forecastText } from '../src/ui/forecast-text.ts';
 
 const H = 3_600_000;
 const M = 60_000;
@@ -268,5 +270,25 @@ describe('sleep history', () => {
     expect(s.staleSleep).toBe(false);
     expect(Math.abs((s.debt as NonNullable<typeof s.debt>).total)).toBeLessThan(1e-6);
     expect(s.message).toContain('close to habitual');
+  });
+});
+
+describe('forecast sentence', () => {
+  const now = Date.UTC(2026, 10, 5, 20, 30);
+  const at = (h: number) => now + h * H;
+  const clock = (t: number) => fmtClock(t);
+  it('gives the point forecast with the times of a 1 in 4 and a 3 in 4 chance', () => {
+    const s = forecastText(4.6, at(3.5), { from: at(2), to: at(6) }, now);
+    expect(s).toContain(`around <b>${clock(at(3.5))}</b>: a 1 in 4 chance by ${clock(at(2))}, 3 in 4 by ${clock(at(6))}.`);
+  });
+  it('leaves out a time already past, and one beyond the horizon', () => {
+    expect(forecastText(6, at(1), { from: now, to: at(3) }, now)).toContain(`</b>: 3 in 4 by ${clock(at(3))}.`);
+    expect(forecastText(5, at(4), { from: at(2), to: null }, now)).toContain(`</b>: a 1 in 4 chance by ${clock(at(2))}.`);
+    expect(forecastText(5, at(4), { from: null, to: null }, now)).toMatch(/around <b>[^<]+<\/b>\.$/);
+  });
+  it('says when KSS 7 is not expected, or already reached', () => {
+    expect(forecastText(3, null, { from: null, to: null }, now)).toBe('KSS 7 (sleepy) is not expected in the next 8 hours.');
+    expect(forecastText(5, null, { from: at(5), to: null }, now)).toContain(`the chance reaches 1 in 4 at ${clock(at(5))}`);
+    expect(forecastText(7.2, null, { from: null, to: null }, now)).toContain('KSS 7 or above');
   });
 });

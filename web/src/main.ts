@@ -10,6 +10,7 @@ import { Store, toCsv } from './store.ts';
 import { DEFAULT_CONFIG, forecast, replay, type ChannelId, type ContextId, type Scenario, type TwinEvent, type TwinResult } from './twin/twin.ts';
 import { fmtClock, kssChart, workloadChart, type Overlay } from './ui/charts.ts';
 import { KSS_LABELS, openCheckIn, runPvt } from './ui/dialogs.ts';
+import { forecastText } from './ui/forecast-text.ts';
 import { openScience } from './ui/science.ts';
 import { isVisible, resolveStudyMode, STUDY_KEY, studyPromptDue } from './ui/study.ts';
 
@@ -162,12 +163,7 @@ function render() {
   $('#now-load').textContent = String(Math.round(r.now.workload));
   $('#now-load-sd').textContent = `± ${Math.round(1.645 * r.now.workloadSd)}`;
   $('#now-load-word').textContent = `${loadWord(r.now.workload)} workload`;
-  $('#forecast-line').innerHTML =
-    r.now.kss >= 7
-      ? `You are at <b>KSS 7 or above</b> (sleepy) now.`
-      : f.sleepyAt
-        ? `At this rate you will reach <b>KSS 7</b> (sleepy) around <b>${fmtTime(f.sleepyAt)}</b>.`
-        : `KSS 7 (sleepy) is not expected in the next 8 hours.`;
+  $('#forecast-line').innerHTML = forecastText(r.now.kss, f.sleepyAt, f.sleepyWindow, now);
   const inOneHour = f.points.find((p) => p.t >= now + H) ?? f.points[f.points.length - 1];
   $('#forecast-p').textContent = inOneHour ? `Chance of KSS 7 or more one hour from now: ${Math.round(inOneHour.pSleepy * 100)}%.` : '';
   const defaults = $('#defaults-note');
@@ -383,7 +379,7 @@ function renderLive() {
     el.innerHTML = '';
     return;
   }
-  el.innerHTML = `<span><b>${live.blinkRate.toFixed(0)}</b> blinks/min</span><span><b>${live.meanBlinkMs ? Math.round(live.meanBlinkMs) : '-'}</b> ms blink</span><span title="${perclosMeasurable(live) ? 'Share of the last minute with the eyes at least 80% closed' : lastKnownPeak === null ? 'Not enough blinks seen yet to tell whether PERCLOS can be measured on this camera; the twin ignores it until then' : 'Your full blinks do not reach the 80% closure level on this camera, so PERCLOS cannot register eye closure and the twin ignores it'}"><b>${perclosMeasurable(live) ? (live.perclos * 100).toFixed(1) + '%' : 'n/a'}</b> PERCLOS</span><span><b>${live.longClosures}</b> long closures</span><span><b>${live.nods}</b> nods/min</span><span><b>${Math.round(live.coverage * 100)}%</b> face seen</span>`;
+  el.innerHTML = `<span><b>${live.blinkRate.toFixed(0)}</b> blinks/min</span><span><b>${live.meanBlinkMs ? Math.round(live.meanBlinkMs) : '-'}</b> ms blink</span><span title="${perclosMeasurable(live) ? 'Share of the last minute with the eyes at least 80% closed' : lastKnownPeak === null ? 'Not enough blinks seen yet to tell whether PERCLOS can be measured on this camera; the twin ignores it until then' : 'Your full blinks do not reach the 80% closure level on this camera, so PERCLOS cannot register eye closure and the twin ignores it'}"><b>${perclosMeasurable(live) ? (live.perclos * 100).toFixed(1) + '%' : 'n/a'}</b> PERCLOS</span><span><b>${live.longClosures}</b> long closures</span><span><b>${live.nods}</b> nods/min</span><span><b>${Math.round(live.coverage * 100)}%</b> face seen</span><span title="Frames analysed per second. Blink durations are less precise below about 20."><b>${Math.round(live.fps)}</b> frames/s</span>`;
 }
 
 // --- live sensing and alerts ---
@@ -493,7 +489,7 @@ const camera = new Camera($<HTMLVideoElement>('#video'), $<HTMLCanvasElement>('#
   },
   onWindow: (w) => {
     if (store.isDemo) return;
-    store.add({ t: Date.now(), type: 'cam', perclos: w.perclos, blinkRate: w.blinkRate, meanBlinkMs: w.meanBlinkMs, coverage: w.coverage, nods: w.nods, headMovement: w.headMovement, peakClosure: w.peakClosure });
+    store.add({ t: Date.now(), type: 'cam', perclos: w.perclos, blinkRate: w.blinkRate, meanBlinkMs: w.meanBlinkMs, coverage: w.coverage, nods: w.nods, headMovement: w.headMovement, peakClosure: w.peakClosure, fps: Math.round(w.fps * 10) / 10 });
     render();
   },
   onError: (m) => {
