@@ -1,7 +1,11 @@
-"""Figures for the simulation study (reads results/sim_*.csv written by web/scripts/simulate.ts).
+"""Figures for the simulation study (reads results/sim_*.csv and sim_summary.json written by web/scripts/simulate.ts).
 
-Usage: python -I sim_figures.py <results_dir>
+Writes results/fig_sim_mae.pdf (two columns), results/fig_sim_reliability.pdf (one column) and
+docs/img/simulation.png. Sized for an IEEE two-column paper (column 3.5 in, page 7.16 in), 8-pt text.
+
+Usage (from the repository root): analysis/.venv/bin/python -I analysis/sim_figures.py results
 """
+import json
 import sys
 from pathlib import Path
 
@@ -9,49 +13,102 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
 res = Path(sys.argv[1])
+docs_img = res.parent / "docs" / "img"
 mae = pd.read_csv(res / "sim_mae.csv")
-cam = pd.read_csv(res / "sim_camera_weight.csv")
-plt.rcParams.update({"font.size": 8, "axes.spines.top": False, "axes.spines.right": False, "pdf.fonttype": 42})
+rel = pd.read_csv(res / "sim_reliability.csv")
+summary = json.loads((res / "sim_summary.json").read_text())
+plt.rcParams.update({"font.size": 8, "axes.spines.top": False, "axes.spines.right": False, "pdf.fonttype": 42, "ps.fonttype": 42})
 
-style = {
-    "checkins": ("Check-ins only", "0.35", "o", "-"),
-    "noanchor": ("Check-ins + passive, no anchoring", "#c2410c", "s", "--"),
-    "anchor": ("Check-ins anchor passive signals (BlinkTwin)", "#165d8f", "D", "-"),
-    "slopes": ("BlinkTwin + personal slopes", "#7c3aed", "^", ":"),
+COL = {"prior": "0.55", "checkins": "0.25", "twin": "#165d8f", "oracle": "#7c3aed", "noanchor": "#c2410c"}
+SCENARIO_LABEL = {
+    "matched": "Matched to the twin",
+    "misreport": "Clock off, sleep misreported",
+    "nonlinear": "Nonlinear, heavy-tailed signals",
+    "ratingbias": "Biased, noisier ratings",
+    "autocorr": "Autocorrelated webcam noise",
+    "trait": "Person-specific rhythm model",
+    "debt": "Unrecorded sleep debt",
+    "workday": "Ordinary 16-h day",
+    "dissociation": "Ratings level off above KSS 5",
 }
-fig, ax = plt.subplots(1, 2, figsize=(7.2, 2.9), gridspec_kw={"width_ratios": [1.55, 1]})
-a = ax[0]
-prior = mae[(mae.method == "prior")].iloc[0]
-passive = mae[(mae.method == "passive")].iloc[0]
-a.axhline(prior.mae, color="0.6", lw=1, ls="--")
-a.text(0.8, prior.mae + 0.008, "rhythm model only", va="bottom", fontsize=7, color="0.4")
-a.axhline(passive.mae, color="#c2410c", lw=0.8, ls=":")
-a.text(0.8, passive.mae + 0.008, "passive signals only, population mapping", va="bottom", fontsize=7, color="#c2410c")
-for m, (label, color, marker, ls) in style.items():
-    d = mae[(mae.method == m) & (mae.k >= 1)].sort_values("k")
-    a.plot(d.k, d.mae, color=color, marker=marker, ms=3.5, lw=1.4, ls=ls, label=label)
-    a.fill_between(d.k, d.mae_lo, d.mae_hi, color=color, alpha=0.12, lw=0)
-a.set_xlabel("KSS check-ins in the first 16 h")
-a.set_ylabel("MAE of latent KSS over 24 h")
-a.set_xlim(0.6, 8.4)
-a.set_ylim(0.5, 0.98)
-a.set_xticks([1, 2, 3, 4, 6, 8])
-a.legend(frameon=False, fontsize=6.5, loc="lower left")
-a.set_title("A  Accuracy against the number of check-ins", loc="left", fontsize=8)
 
+fig, ax = plt.subplots(1, 2, figsize=(7.16, 2.6), gridspec_kw={"width_ratios": [1.15, 1]})
+
+# A: matched scenario, MAE against the number of check-ins
+a = ax[0]
+m = mae[mae.scenario == "matched"]
+prior = m[m.method == "prior"].iloc[0]
+a.axhspan(prior.mae_lo, prior.mae_hi, color=COL["prior"], alpha=0.12, lw=0)
+a.axhline(prior.mae, color=COL["prior"], lw=1, ls="--")
+a.text(8.2, prior.mae + 0.006, "rhythm model only", ha="right", va="bottom", fontsize=7, color="0.35")
+series = [
+    ("checkins", "Check-ins only", "o", "-"),
+    ("twin", "BlinkTwin (anchored)", "D", "-"),
+    ("oracle", "Oracle (true signal parameters)", "^", ":"),
+]
+for meth, label, marker, ls in series:
+    d = m[m.method == meth].sort_values("k")
+    if meth == "checkins":  # with no check-ins, 'check-ins only' is the rhythm model
+        d = pd.concat([prior.to_frame().T.assign(method="checkins"), d]).sort_values("k")
+    k = d.k.astype(float).to_numpy()
+    a.plot(k, d.mae.astype(float), color=COL[meth], marker=marker, ms=3.2, lw=1.3, ls=ls, label=label)
+    a.fill_between(k, d.mae_lo.astype(float), d.mae_hi.astype(float), color=COL[meth], alpha=0.13, lw=0)
+na = m[m.method == "noanchor"]
+a.text(
+    0.98, 0.98,
+    f"Check-ins + passive without anchors:\nMAE {na.mae.min():.2f} to {na.mae.max():.2f} (off the scale)",
+    transform=a.transAxes, ha="right", va="top", fontsize=6.5, color=COL["noanchor"],
+)
+a.set_xlabel("KSS check-ins in the first 16 h")
+a.set_ylabel("MAE of latent KSS (24 h)")
+a.set_xlim(-0.3, 8.3)
+a.set_xticks([0, 1, 2, 3, 4, 6, 8])
+lo = min(m[m.method.isin(["checkins", "twin", "oracle"])].mae_lo.min(), prior.mae_lo)
+a.set_ylim(np.floor(lo * 20) / 20, max(prior.mae_hi, m[m.method == "twin"].mae_hi.max()) + 0.3)
+a.legend(frameon=False, fontsize=6.5, loc="upper right", bbox_to_anchor=(1.0, 0.86))
+a.set_title("A  Matched scenario", loc="left", fontsize=8)
+
+# B: paired difference BlinkTwin minus check-ins only, k = 3, every scenario
 b = ax[1]
-c = cam.sort_values("camRInflate")
-x = c.camRInflate.clip(upper=1e4)
-b.plot(x, c.mae, color="#165d8f", marker="o", ms=3)
-b.set_xscale("log")
-b.set_xlabel("Variance inflation per webcam minute")
-b.set_ylabel("MAE, tuning cohort (k = 3)")
-b.set_title("B  Weight of each webcam minute", loc="left", fontsize=8)
-ticks = list(x)
-b.set_xticks(ticks, [("off" if v >= 1e4 else f"{int(v)}") for v in ticks], rotation=45)
-fig.tight_layout()
+comps = [c for c in summary["comparisons"] if c["a"] == "twin_k3" and c["b"] == "checkins_k3"]
+order = [s for s in SCENARIO_LABEL if any(c["scenario"] == s for c in comps)]
+for i, s in enumerate(order):
+    c = next(c for c in comps if c["scenario"] == s)
+    y = len(order) - 1 - i
+    b.errorbar(c["mean_diff"], y, xerr=[[c["mean_diff"] - c["ci"][0]], [c["ci"][1] - c["mean_diff"]]], fmt="D", ms=3.2, color=COL["twin"], ecolor=COL["twin"], elinewidth=1.1, capsize=2)
+b.axvline(0, color="0.5", lw=0.8)
+b.set_yticks(range(len(order)), [SCENARIO_LABEL[s] for s in reversed(order)], fontsize=7)
+b.set_xlabel("MAE difference, BlinkTwin minus check-ins only\n(k = 3; negative favours BlinkTwin; 95% CI)")
+b.spines["left"].set_visible(False)
+b.tick_params(axis="y", length=0)
+b.set_title("B  Paired difference by scenario", loc="left", fontsize=8)
+
+fig.tight_layout(w_pad=1.2)
 fig.savefig(res / "fig_sim_mae.pdf")
-print("wrote", res / "fig_sim_mae.pdf")
+docs_img.mkdir(parents=True, exist_ok=True)
+fig.savefig(docs_img / "simulation.png", dpi=200)
+print("wrote", res / "fig_sim_mae.pdf", "and", docs_img / "simulation.png")
+
+# Reliability of the one-hour forecast of KSS >= 7 (matched scenario, k = 3)
+fig, a = plt.subplots(figsize=(3.5, 3.0))
+a.plot([0, 1], [0, 1], color="0.7", lw=0.8, ls="--")
+labels = {"prior": "Rhythm model only", "checkins": "Check-ins only (k = 3)", "twin": "BlinkTwin (k = 3)"}
+markers = {"prior": "s", "checkins": "o", "twin": "D"}
+fc = pd.read_csv(res / "sim_forecast.csv")
+for meth in ["prior", "checkins", "twin"]:
+    d = rel[(rel.method == meth) & (rel.n >= 10)].sort_values("bin")
+    f = fc[(fc.scenario == "matched") & (fc.method == meth)].iloc[0]
+    a.plot(d.mean_forecast, d.observed, color=COL[meth], marker=markers[meth], ms=3.2, lw=1.1, label=f"{labels[meth]}: Brier {f.brier:.3f}")
+a.set_xlim(0, 1)
+a.set_ylim(0, 1)
+a.set_xlabel("Forecast probability of KSS $\\geq$ 7 in 1 h")
+a.set_ylabel("Observed frequency")
+a.legend(frameon=False, fontsize=6.5, loc="upper left")
+a.set_title("Reliability, matched scenario (bins with n $\\geq$ 10)", loc="left", fontsize=8)
+fig.tight_layout()
+fig.savefig(res / "fig_sim_reliability.pdf")
+print("wrote", res / "fig_sim_reliability.pdf")

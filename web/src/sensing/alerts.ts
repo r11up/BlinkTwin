@@ -6,6 +6,10 @@
 // Warning (amber): over the last minute PERCLOS >= perclosWarn, or >= longClosuresWarn closures longer
 //   than 1 s, or a mean blink duration >= blinkMsWarn (with at least 5 blinks), or the twin's KSS >= 7.
 // Notice: face not seen for faceLostMs.
+// Losing the face does not clear an alarm: a person who slumps out of view during a long closure or head
+// drop stays alarmed ("Face lost while eyes were closed") until the face is seen again with the eyes open
+// for recoverMs. Losing the face after the eyes have been closed for microsleepMs (not while looking down)
+// raises the same alarm.
 
 export type AlertLevel = 'ok' | 'notice' | 'warning' | 'alarm';
 
@@ -56,11 +60,15 @@ export interface AlertState {
   since: number;
 }
 
+export const FACE_LOST = 'Face lost while eyes were closed';
+
 export class AlertEngine {
   private state: AlertState = { level: 'ok', reason: '', since: 0 };
   private lastWarn = -Infinity;
   private lastFace: number | null = null;
   private openSince: number | null = null;
+  private lastClosedMs = 0; // closure duration at the last frame with a face
+  private lastLookingDown = false;
   private minute: MinuteInput | null = null;
   private readonly rules: AlertRules;
 
@@ -80,12 +88,21 @@ export class AlertEngine {
   frame(f: FrameInput): { state: AlertState; escalated: boolean } {
     const r = this.rules;
     const prev = this.state.level;
-    if (f.face) this.lastFace = f.t;
+    // the face disappeared while the eyes were closed (or during an alarm): treat as still closed
+    const faceLostClosed = !f.face && (prev === 'alarm' || (this.lastClosedMs >= r.microsleepMs && !this.lastLookingDown));
+    if (f.face) {
+      this.lastFace = f.t;
+      this.lastClosedMs = f.eyesClosedForMs;
+      this.lastLookingDown = f.lookingDown ?? false;
+    }
     const microsleep = f.face && !f.lookingDown && f.eyesClosedForMs >= r.microsleepMs;
     const headDrop = f.face && f.headDroppedForMs >= r.headDropMs && f.closure >= 0.5;
-    if (microsleep || headDrop) {
+    if (faceLostClosed) {
       this.openSince = null;
-      if (prev !== 'alarm') this.set('alarm', microsleep ? 'Eyes closed for more than a second' : 'Head dropping with eyes closing', f.t);
+      if (this.state.reason !== FACE_LOST) this.set('alarm', FACE_LOST, f.t);
+    } else if (microsleep || headDrop) {
+      this.openSince = null;
+      if (prev !== 'alarm') this.set('alarm', microsleep ? 'Long eye-closure alert: eyes closed for more than a second' : 'Head-drop alert: head dropping forward while the eyes close', f.t);
     } else if (prev === 'alarm') {
       if (this.openSince === null) this.openSince = f.t;
       if (f.t - this.openSince >= r.recoverMs) this.set('ok', '', f.t);

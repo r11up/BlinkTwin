@@ -1,0 +1,75 @@
+{
+ "date": "2026-11-05T05:14:15.211Z",
+ "setup": "production build served by vite preview; headless Chromium 153.0.8010.12 with a fake camera (test pattern, no face); face model served by the site itself",
+ "session": {
+  "camera_on_s": 150,
+  "actions": [
+   "camera on",
+   "check-in",
+   "1-minute reaction test (rated first)"
+  ],
+  "page_errors": []
+ },
+ "initial_load": {
+  "requests": 6,
+  "by_host": {
+   "127.0.0.1:4173": 6
+  },
+  "by_type": {
+   "document": 1,
+   "script": 2,
+   "stylesheet": 1,
+   "fetch": 2
+  },
+  "by_method": {
+   "GET": 6
+  },
+  "bytes_received": 17020797,
+  "bytes_sent_in_bodies": 0
+ },
+ "after_load": {
+  "requests_sent": 0,
+  "bytes_sent_in_bodies": 0,
+  "list": [],
+  "blocked_by_content_security_policy": []
+ },
+ "websockets": [],
+ "content_security_policy_violations": [
+  {
+   "t_s": 61.234,
+   "phase": "after-load",
+   "message": "Connecting to 'https://odml.pa.googleapis.com/v1/log' violates the following Content Security Policy directive: \"connect-src 'self' https://storage.googleapis.com\". The action has been blocked."
+  },
+  {
+   "t_s": 61.235,
+   "phase": "after-load",
+   "message": "Fetch API cannot load https://odml.pa.googleapis.com/v1/log. Refused to connect because it violates the document's Content Security Policy."
+  }
+ ],
+ "request_bodies_flagged": [],
+ "browser_storage": {
+  "blinktwin.events.v1": {
+   "bytes": 415,
+   "events": 5,
+   "eventsByType": {
+    "kss": 2,
+    "cam": 2,
+    "pvt": 1
+   },
+   "camEventFields": [
+    "blinkRate",
+    "coverage",
+    "headMovement",
+    "meanBlinkMs",
+    "nods",
+    "perclos",
+    "t",
+    "type"
+   ],
+   "longestNestedArray": 0
+  }
+ },
+ "storage_problems": [],
+ "pass": true,
+ "note": "The fake camera shows no face, so no landmarks are produced; the model still runs on every frame, so the network behaviour is that of normal use. The MediaPipe library tries to post usage statistics to odml.pa.googleapis.com once a minute; the page's Content-Security-Policy (index.html) blocks it in the browser, so it is listed as blocked, not sent."
+}

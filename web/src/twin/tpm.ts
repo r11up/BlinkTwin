@@ -124,7 +124,8 @@ export function alertness(t: number, sleep: SleepEpisode, p: TpmParams = TPM_DEF
   const h = clockHour(t, tzOffsetMinutes);
   const C = p.circadianAmplitude * Math.cos((2 * Math.PI * (h - p.circadianAcrophase)) / 24);
   const U = p.ultradianMesor - p.ultradianAmplitude * Math.cos((2 * Math.PI * (h - p.ultradianDipHour)) / 12);
-  const W = p.inertiaAmplitude * Math.exp(-p.inertiaDecay * awakeH);
+  // a night entered with 0 hours is a night without sleep: no waking up, so no sleep inertia
+  const W = sleep.hours > 0 ? p.inertiaAmplitude * Math.exp(-p.inertiaDecay * awakeH) : 0;
   const A = S + C + U + W;
   return { S, C, U, W, A, kss: clampKss(p.kssIntercept - p.kssSlope * A) };
 }

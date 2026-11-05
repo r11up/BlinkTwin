@@ -3,7 +3,7 @@
 // (results/drozy_forward.json). Scenario knobs break the twin's assumptions on purpose, so the study can
 // show how the twin behaves when the world does not match its model.
 
-import { clampKss, priorKss, TPM_DEFAULTS, type SleepEpisode } from '../twin/tpm.ts';
+import { clampKss, priorKss, TPM_DEFAULTS, type SleepEpisode, type TpmParams } from '../twin/tpm.ts';
 import type { ContextId, TwinEvent } from '../twin/twin.ts';
 
 export type Rng = () => number;
@@ -54,6 +54,12 @@ export interface PopulationSpec {
   sleepMisreportSdHours: number; // reported sleep differs from actual sleep
   nonlinear: boolean; // signals respond more steeply at high sleepiness
   heavyTails: boolean; // t(3) noise instead of Gaussian
+  traitWakeDecayLogSd: number; // person-specific homeostatic decay: wakeDecay * exp(N(0, sd))
+  traitAmplitudeLogSd: number; // person-specific circadian amplitude: amplitude * exp(N(0, sd))
+  debtNights: number; // nights (including last night) actually slept at debtHours; the twin is told only last night
+  debtHours: number;
+  ratingKnee: number | null; // ratings level off above this: only ratingCompression of any further rise is reported
+  ratingCompression: number;
   rt: SignalSpec;
   blinkMs: SignalSpec;
   perclosPct: SignalSpec;
@@ -74,6 +80,12 @@ export const POPULATION: PopulationSpec = {
   sleepMisreportSdHours: 0,
   nonlinear: false,
   heavyTails: false,
+  traitWakeDecayLogSd: 0,
+  traitAmplitudeLogSd: 0,
+  debtNights: 0,
+  debtHours: 7.5,
+  ratingKnee: null,
+  ratingCompression: 1,
   rt: { at3: 339.2, perKss: [18.85, 8], biasSd: 48.7, noiseSd: 36.4, driftSd: 0, driftTauHours: 4, ar1: 0 },
   blinkMs: { at3: 189.7, perKss: [11.1, 7], biasSd: 22.9, noiseSd: 24.6, driftSd: 30, driftTauHours: 4, ar1: 0.02 },
   perclosPct: { at3: 3.24, perKss: [0.62, 0.3], biasSd: 2.38, noiseSd: 2.4, driftSd: 1.8, driftTauHours: 4, ar1: 0.32 },
@@ -91,6 +103,7 @@ export interface Person {
   blinkMs: { at3: number; perKss: number };
   perclosPct: { at3: number; perKss: number };
   workloadOffset: number;
+  tpm: TpmParams; // the person's own Three-Process Model (population values unless the scenario varies them)
 }
 
 const drawSignal = (rng: Rng, s: SignalSpec) => ({ at3: s.at3 + gauss(rng, 0, s.biasSd), perKss: Math.max(0, gauss(rng, s.perKss[0], s.perKss[1])) });
@@ -107,6 +120,12 @@ export function makePerson(id: number, rng: Rng, pop: PopulationSpec = POPULATIO
     blinkMs: drawSignal(rng, pop.blinkMs),
     perclosPct: drawSignal(rng, pop.perclosPct),
     workloadOffset: gauss(rng, 0, pop.workload.offsetSd),
+    // drawn last, so that adding these traits leaves every other person parameter unchanged
+    tpm: {
+      ...TPM_DEFAULTS,
+      wakeDecay: TPM_DEFAULTS.wakeDecay * Math.exp(gauss(rng, 0, pop.traitWakeDecayLogSd)),
+      circadianAmplitude: TPM_DEFAULTS.circadianAmplitude * Math.exp(gauss(rng, 0, pop.traitAmplitudeLogSd)),
+    },
   };
 }
 
@@ -131,6 +150,7 @@ export interface TruthPoint {
 
 const H = 3_600_000;
 const M = 60_000;
+const DAY = 24 * H;
 const DEMAND: Record<ContextId, number> = { unset: 40, break: 15, reading: 40, focus: 65, meeting: 50, other: 40 };
 const TASKS: ContextId[] = ['focus', 'reading', 'meeting', 'focus'];
 
@@ -144,6 +164,9 @@ function respond(sig: { at3: number; perKss: number }, s: number, nonlinear: boo
 export function simulate(person: Person, protocol: Protocol, rng: Rng, pop: PopulationSpec = POPULATION) {
   const p = protocol;
   const actualSleep: SleepEpisode = { wake: p.start, hours: Math.max(2, p.sleepHours + person.sleepMisreportHours) };
+  // earlier nights the person actually slept (the twin is told only about last night)
+  const earlier: SleepEpisode[] = [];
+  for (let d = pop.debtNights - 1; d >= 1; d--) earlier.push({ wake: p.start - d * DAY, hours: pop.debtHours });
   const end = p.start + p.awakeHours * H;
   const events: TwinEvent[] = [{ t: p.start, type: 'sleep', wake: p.start, hours: p.sleepHours }];
   const truth: TruthPoint[] = [];
@@ -184,8 +207,10 @@ export function simulate(person: Person, protocol: Protocol, rng: Rng, pop: Popu
     const totH = ctx === 'break' || ctx === 'unset' || taskStart === null ? 0 : (time - taskStart) / H;
     fluct = fluct * aR + gauss(rng, 0, pop.fluctuationSd * Math.sqrt(1 - aR * aR));
     wFluct = wFluct * aW + gauss(rng, 0, pop.workload.fluctuationSd * Math.sqrt(1 - aW * aW));
-    const shifted = time - person.phaseHours * H;
-    const kss = clampKss(priorKss(shifted, { wake: actualSleep.wake - person.phaseHours * H, hours: actualSleep.hours }, TPM_DEFAULTS, p.tzOffsetMinutes) + person.offset + person.tot * totH + fluct);
+    const shift = person.phaseHours * H;
+    const lastNight = { wake: actualSleep.wake - shift, hours: actualSleep.hours };
+    const history = earlier.length ? [...earlier.map((e) => ({ wake: e.wake - shift, hours: e.hours })), lastNight] : [];
+    const kss = clampKss(priorKss(time - shift, lastNight, person.tpm, p.tzOffsetMinutes, history) + person.offset + person.tot * totH + fluct);
     const workload = Math.min(100, Math.max(0, DEMAND[ctx] + person.workloadOffset + wFluct));
     const tp = { t: time, kss, workload };
     truth.push(tp);
@@ -211,7 +236,8 @@ export function simulate(person: Person, protocol: Protocol, rng: Rng, pop: Popu
   if (p.pvtEveryHours > 0) for (let time = p.start + p.pvtEveryHours * H; time < end; time += p.pvtEveryHours * H) pvtAt(time);
   for (const c of p.checkIns) {
     const tr = nearest(c);
-    const rating = Math.min(9, Math.max(1, Math.round(tr.kss + person.ratingBias + gauss(rng, 0, pop.ratingNoiseSd))));
+    const felt = pop.ratingKnee !== null && tr.kss > pop.ratingKnee ? pop.ratingKnee + pop.ratingCompression * (tr.kss - pop.ratingKnee) : tr.kss;
+    const rating = Math.min(9, Math.max(1, Math.round(felt + person.ratingBias + gauss(rng, 0, pop.ratingNoiseSd))));
     events.push({ t: c, type: 'kss', value: rating });
     events.push({ t: c + 30_000, type: 'tlx', value: Math.min(100, Math.max(0, tr.workload + gauss(rng, 0, pop.workload.ratingNoiseSd))) });
     if (p.pvtAfterCheckIn) pvtAt(c + 4 * M);

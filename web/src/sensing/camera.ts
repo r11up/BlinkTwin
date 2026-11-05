@@ -5,9 +5,14 @@
 
 import { FaceLandmarker, FilesetResolver, type NormalizedLandmark } from '@mediapipe/tasks-vision';
 import { BlinkMeter, type CamWindow } from './blink.ts';
-import { gazeFromBlendshapes, HeadTracker, poseFromMatrix, type Pose } from './head.ts';
+import { gazeFromBlendshapes, HeadTracker, LookDownGate, poseFromMatrix, type Pose } from './head.ts';
 
 const LOCAL_MODEL = '/models/face_landmarker.task';
+
+// Timing counters for scripts/benchmark.mjs, collected only when the page is opened with ?perf=1.
+const PERF = typeof location !== 'undefined' && new URLSearchParams(location.search).has('perf');
+export const perfCounters = { delegate: '', frames: 0, detectMs: [] as number[] };
+if (PERF) (globalThis as unknown as { __blinktwinPerf: typeof perfCounters }).__blinktwinPerf = perfCounters;
 const REMOTE_MODEL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
 
 // Face-mesh indices for the eye contours and irises (MediaPipe canonical face model)
@@ -68,8 +73,11 @@ async function loadLandmarker(): Promise<FaceLandmarker> {
     outputFacialTransformationMatrixes: true,
   });
   try {
-    return await FaceLandmarker.createFromOptions(fileset, options('GPU'));
+    const lm = await FaceLandmarker.createFromOptions(fileset, options('GPU'));
+    perfCounters.delegate = 'GPU';
+    return lm;
   } catch {
+    perfCounters.delegate = 'CPU';
     return await FaceLandmarker.createFromOptions(fileset, options('CPU'));
   }
 }
@@ -88,6 +96,7 @@ export class Camera {
   private running = false;
   private meter = new BlinkMeter();
   private head = new HeadTracker();
+  private lookDown = new LookDownGate();
   private lastFrame = 0;
   private lastLive = 0;
   private lastWindow = 0;
@@ -131,6 +140,7 @@ export class Camera {
     }
     this.meter = new BlinkMeter();
     this.head = new HeadTracker();
+    this.lookDown = new LookDownGate();
     this.running = true;
     this.startedAt = performance.now();
     this.lastWindow = this.startedAt;
@@ -154,7 +164,12 @@ export class Camera {
     if (!this.running || !this.landmarker) return;
     if (now - this.lastFrame >= 1000 / 24 && this.video.readyState >= 2) {
       this.lastFrame = now;
+      const callStart = PERF ? performance.now() : 0;
       const res = this.landmarker.detectForVideo(this.video, now);
+      if (PERF) {
+        perfCounters.frames++;
+        perfCounters.detectMs.push(performance.now() - callStart);
+      }
       const cats = res.faceBlendshapes?.[0]?.categories;
       const score = (name: string) => cats?.find((c) => c.categoryName === name)?.score ?? 0;
       const face = !!cats && cats.length > 0;
@@ -169,7 +184,8 @@ export class Camera {
         pose,
         headDroppedForMs: pose ? this.head.droppedFor(now) : 0,
         gaze: face ? gazeFromBlendshapes(score) : null,
-        lookingDown: face && (score('eyeLookDownLeft') + score('eyeLookDownRight')) / 2 > 0.45,
+        // decided from the frames before a closure began, not from the closure itself
+        lookingDown: this.lookDown.push(now, face ? (score('eyeLookDownLeft') + score('eyeLookDownRight')) / 2 : null, this.meter.closedFor(now)) && face,
       });
       this.draw(res.faceLandmarks?.[0], closure);
       if (now - this.lastLive >= 1000) {

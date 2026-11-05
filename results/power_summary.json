@@ -1,0 +1,62 @@
+{
+ "design": "Pool of virtual people (POPULATION, as the workday scenario), 10 independent workdays each (new seed per day; wake 07:00 after 7.5 h; check-ins 09:30, 12:00, 14:30, 17:00, each followed by a PVT-B 4 min later; webcam from 07:30). Outcome per person: MAE of predicting each observed (noisy, rounded) KSS rating from that day's earlier events (replay to t - 1 ms, clipped estimate).",
+ "note": "Each day is replayed separately, so anchors and offsets do not carry across days; conservative for BlinkTwin (E).",
+ "pool_size": 1000,
+ "ratings_per_person": 40,
+ "mae_mean": {
+  "A_rhythm_model": 1.0113435728769038,
+  "B_checkins": 0.8863737036298727,
+  "E_blinktwin": 0.905225844014565
+ },
+ "diff_E_minus_B": {
+  "mean": 0.01885214038469324,
+  "sd": 0.10107157426988159,
+  "dz": 0.186522674855684
+ },
+ "diff_E_minus_A": {
+  "mean": -0.10611772886233797,
+  "sd": 0.31868204025429786,
+  "dz": -0.3329893607360474
+ },
+ "studies_per_n": 5000,
+ "margin": 0.1,
+ "tests": "(i) non-inferiority of E vs B: one-sided 97.5% t upper bound of mean(E - B) < 0.10; (ii) superiority of E vs B and (iii) of E vs A: two-sided 95% t-interval entirely below 0",
+ "power": [
+  {
+   "n": 20,
+   "t_0975": 2.0930240544083176,
+   "noninferiority_E_vs_B_margin_0_10": 0.9176,
+   "superiority_E_vs_B": 0.0032,
+   "superiority_E_vs_A": 0.2004
+  },
+  {
+   "n": 30,
+   "t_0975": 2.0452296421328233,
+   "noninferiority_E_vs_B_margin_0_10": 0.986,
+   "superiority_E_vs_B": 0.0012,
+   "superiority_E_vs_A": 0.3814
+  },
+  {
+   "n": 40,
+   "t_0975": 2.0226909200368226,
+   "noninferiority_E_vs_B_margin_0_10": 0.9976,
+   "superiority_E_vs_B": 0.0004,
+   "superiority_E_vs_A": 0.5364
+  },
+  {
+   "n": 60,
+   "t_0975": 2.0009953780885077,
+   "noninferiority_E_vs_B_margin_0_10": 1,
+   "superiority_E_vs_B": 0.0004,
+   "superiority_E_vs_A": 0.7666
+  },
+  {
+   "n": 80,
+   "t_0975": 1.9904502102302182,
+   "noninferiority_E_vs_B_margin_0_10": 1,
+   "superiority_E_vs_B": 0,
+   "superiority_E_vs_A": 0.891
+  }
+ ],
+ "runtime_s": 97.31
+}

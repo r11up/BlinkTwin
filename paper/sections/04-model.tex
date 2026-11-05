@@ -1,128 +1,97 @@
-\section{Twin model}
+\section{Model}
 \label{sec:model}
 
-The twin tracks two latent quantities: sleepiness $s(t)$ on the KSS scale (1--9) and workload $w(t)$ on the NASA-TLX scale (0--100). Table~\ref{tab:params} lists every parameter and its default.
+The model tracks subjective sleepiness $s(t)$ on the KSS scale (1--9). It also tracks perceived workload on the raw NASA-TLX scale; that part is a simple, unevaluated feature and is described in Supplementary Section~S1. All parameters are listed in Table~\ref{tab:params}.
 
 \subsection{Prior: the Three-Process Model}
-For a person who woke at time $t_w$ after $h$ hours of sleep, let $\tau = t - t_w$ in hours. Following the Three-Process Model of alertness \citep{akerstedt1997three,akerstedt2004predictions}, alertness is the sum of a homeostatic, a circadian and a sleep-inertia component,
+For a person who woke at time $t_w$, let $\tau = t - t_w$ in hours and $h(t)$ the local clock hour. Alertness is the sum of a homeostatic, a circadian, an ultradian and a sleep-inertia component~\cite{akerstedt2004predictions,ingre2014validating}:
 \begin{align}
-  S(t) &= L + (S_0 - L)\,e^{-\delta_w \tau}, \label{eq:S}\\
-  C(t) &= M \cos\!\left(\frac{2\pi\,(\mathrm{clock}(t) - \phi)}{24}\right), \label{eq:C}\\
-  W(t) &= W_0\, e^{-\delta_i \tau}, \label{eq:W}\\
-  A(t) &= S(t) + C(t) + W(t), \label{eq:A}
+  S(t) &= L + (S_w - L)\,e^{-\delta_w \tau}, \label{eq:S}\\
+  C(t) &= M \cos\big(2\pi (h(t) - \phi)/24\big), \\
+  U(t) &= U_m - U_a \cos\big(2\pi (h(t) - \phi_U)/12\big), \\
+  W(t) &= W_0\, e^{-\delta_i \tau}, \\
+  A(t) &= S(t) + C(t) + U(t) + W(t).
 \end{align}
-where $\mathrm{clock}(t)$ is the local clock time in hours. The homeostatic level at waking assumes that the previous waking period filled the rest of a 24-hour day:
+During sleep, $S$ recovers linearly at rate $\delta_s (H - B)$ while it is below the breakpoint $B = 12.2$ and exponentially towards $H$ above it~\cite{akerstedt2008accounting,ingre2014validating},
 \begin{equation}
-  S_{\mathrm{bed}} = L + (H - L)\,e^{-\delta_w (24 - h)}, \qquad
-  S_0 = H - (H - S_{\mathrm{bed}})\,e^{-\delta_s h}.
+  \frac{dS}{dt} = \begin{cases} \delta_s (H - B), & S < B,\\ \delta_s (H - S), & S \geq B. \end{cases}
 \end{equation}
-Alertness is mapped to the KSS and clipped to the scale,
+The level at waking, $S_w$, is computed by running these equations over the recorded sleep episodes, preceded by ten habitual nights (7.5~h), so that a run of short nights builds up sleep debt. Alertness is mapped to the KSS and clipped,
 \begin{equation}
   p(t) = \min\!\big(9, \max(1,\; a_K - b_K\,A(t))\big).
   \label{eq:prior}
 \end{equation}
-With the defaults in Table~\ref{tab:params}, a person who wakes at 07:00 after 8~h of sleep has a prior of KSS~6.9 at the moment of waking (sleep inertia), 2.6 at 16:00, 5.3 at 23:00 and 7.5 at 06:00 the next morning if they stay awake.
+For a person who wakes at 07:00 after 8~h of sleep, the prior is KSS~7.0 at waking (sleep inertia), 3.7 at 09:00, 3.1 at 16:00, 5.7 at 23:00 and 7.7 at 03:00 if they stay awake. Five consecutive 4-h nights lower $S_w$ from 11.2 (one such night) to 8.9.
 
-% TODO: verify every TPM constant against Akerstedt, Folkard & Portin (2004) before submission.
-\TODO{The Three-Process Model constants in Table~\ref{tab:params} ($L$, $H$, $\delta_w$, $\delta_s$, $M$, $\phi$, $W_0$, $\delta_i$, $a_K$, $b_K$) must be checked one by one against \citet{akerstedt2004predictions} and \citet{akerstedt1997three}. The published model also uses a breakpoint in sleep recovery that is not implemented here.}
+To the prior the model adds a time-on-task term $\gamma T(t)$, where $T$ is the time in hours since the start of the current task episode; it is frozen during a break and reset once the break has lasted 10~min. The value $\gamma = 0.4$ KSS~h$^{-1}$ is an assumption; time on task raises sleepiness in driving studies~\cite{akerstedt2010reaction}, but the Three-Process Model was built for average sedentary workloads~\cite{akerstedt2004predictions}, so the term may partly double count. Its sensitivity is reported in Section~\ref{sec:simulation}.
 
-\subsection{Sleepiness state and questionnaire anchoring}
-The twin's estimate of sleepiness is
+\subsection{State and dynamics}
+The estimate is $s(t) = \mathrm{clip}\big(p(t) + \gamma T(t) + d(t)\big)$, where $d$ is the person's offset from the prior. The filter state is
 \begin{equation}
-  s(t) = \min\!\big(9, \max(1,\; p(t) + \gamma\, T(t) + d(t))\big),
-  \label{eq:s}
+  x = [\,d,\ \alpha_{\mathrm{RT}},\ \alpha_{\mathrm{BD}},\ \alpha_{\mathrm{PC}}\,]^\top,
 \end{equation}
-where $T(t)$ is time on task in hours and $d(t)$ is the person's current offset from the prior. Time on task counts from the start of the current task episode; it is frozen during a break and reset to zero once a break has lasted 10~minutes.
+where the anchors $\alpha$ are how far this person's median reaction time (ms), blink duration (ms) and PERCLOS (\%) sit from the population at the same sleepiness. All components are random walks with $x_0 = 0$ and $P_0 = \mathrm{diag}(\sigma_d^2, \sigma_{\alpha,j}^2)$; over $\Delta$ hours $P \leftarrow P + \mathrm{diag}(q_d, q_{\alpha,j})\Delta$. The offset drifts quickly ($\sqrt{q_d} = 0.3$ KSS~h$^{-1/2}$) and the anchors slowly.
 
-\paragraph{State.} The filter state is
+\subsection{Observations}
+A KSS check-in $y$ observes the offset directly,
 \begin{equation}
-  x = \begin{bmatrix} d \\ \beta_{\mathrm{P}} \\ \beta_{\mathrm{C}} \end{bmatrix}, \qquad
-  x_0 = 0, \qquad P_0 = \mathrm{diag}(\sigma_d^2,\, \sigma_\beta^2,\, \sigma_\beta^2),
+  y - p(t) - \gamma T(t) = d + \varepsilon_K, \qquad \varepsilon_K \sim \mathcal{N}(0, \sigma_K^2).
 \end{equation}
-where $\beta_{\mathrm{P}}$ and $\beta_{\mathrm{C}}$ are the person-specific biases of the reaction-test channel and the webcam channel: how far this person's reaction times or eyes, read through the population mapping, sit above or below what this person reports. Each component follows a random walk. Over $\Delta$ hours the mean is unchanged and the covariance grows,
+Each passive feature $f_j$ (median reaction time of a test, or one minute's mean blink duration or PERCLOS) has a forward measurement model,
 \begin{equation}
-  P \leftarrow P + \mathrm{diag}(q_d,\, q_\beta,\, q_\beta)\,\Delta,
+  f_j = a_j + b_j\,\big(s - 3\big) + \alpha_j + e_j,
+  \label{eq:forward}
 \end{equation}
-with a fast drift for the offset ($\sqrt{q_d}$ = 0.3 KSS per $\sqrt{\mathrm{h}}$) and a slow drift for the biases ($\sqrt{q_\beta}$ = 0.05 KSS per $\sqrt{\mathrm{h}}$), so that a bias learned in the morning still applies in the evening.
-
-\paragraph{Observations.} Every measurement is turned into a scalar observation $z = h^\top x + \varepsilon$, $\varepsilon \sim \mathcal{N}(0, R)$, of the state, after subtracting the prior and the time-on-task term:
-\begin{itemize}[leftmargin=*,itemsep=2pt]
-  \item A \emph{KSS check-in} $y$ gives $z = y - p(t) - \gamma T(t)$ with $h = [1, 0, 0]$ and $R = \sigma_K^2$. Check-ins observe the offset alone.
-  \item A \emph{reaction test} gives $z = \mu_{\mathrm{P}} - p(t) - \gamma T(t)$ with $h = [1, 1, 0]$, where $\mu_{\mathrm{P}}$ and $v_{\mathrm{P}}$ are the predictive mean and variance of a population mapping from the median reaction time to the KSS, and $R = v_{\mathrm{P}}$. The test observes the offset plus its own bias.
-  \item A \emph{webcam window} with face coverage of at least 0.6 gives $z = \mu_{\mathrm{C}} - p(t) - \gamma T(t)$ with $h = [1, 0, 1]$ and $R = \kappa\, v_{\mathrm{C}}$, from a population mapping of PERCLOS and blink duration to the KSS. The inflation factor $\kappa$ allows for the strong autocorrelation of successive one-minute windows; it was chosen on a separate tuning cohort in the simulation study ($\kappa$ = 160; Section~\ref{sec:simulation}).
-\end{itemize}
-The population mappings are linear-Gaussian, $\mathrm{KSS} = m^\top u + \epsilon$ with weights $m \sim \mathcal{N}(\bar m, \Sigma)$ and noise $\sigma^2$, giving $\mu = \bar m^\top u$ and $v = \sigma^2 + u^\top \Sigma u$. The reaction-test mapping uses $u = [1, (\RT_{\mathrm{med}} - 300)/100]$ with $\RT_{\mathrm{med}}$ in ms; the webcam mapping uses $u = [1, 100\cdot\mathrm{PERCLOS}, (\bar b - 150)/100]$ with $\bar b$ the mean blink duration in ms. Both were fitted on DROZY (Section~\ref{sec:grounding}).
-
-\paragraph{Update.} Each observation is absorbed with the standard Kalman update \citep{kalman1960new},
+where $a_j$ is the population mean at KSS~3 and $b_j$ the within-person slope. Substituting $s = p + \gamma T + d$ gives a linear observation of the state with $h = [b_j, 0, \ldots, 1, \ldots, 0]$ (1 in the position of $\alpha_j$) and offset $a_j + b_j(p + \gamma T - 3)$. The noise variance is
 \begin{equation}
-  k = \frac{P h}{h^\top P h + R}, \qquad x \leftarrow x + k\,(z - h^\top x), \qquad P \leftarrow P - k\,h^\top P.
+  R_j = \kappa_j\,\sigma_{e,j}^2 + \big(\sigma_{b,j}\,(\hat s - 3)\big)^2,
+\end{equation}
+where $\kappa_j = (1+\rho_j)/(1-\rho_j)$ allows for the lag-1 autocorrelation $\rho_j$ of successive minutes and the second term for between-person spread in the slope, evaluated at the current estimate $\hat s$. A reaction test is used only if it lasted the full 3~min. A webcam minute is used only if face coverage is at least 0.6; blink duration only if the minute has at least three blinks; and PERCLOS only if the PERCLOS guard (Section~\ref{sec:system}) allows it.
+
+\paragraph*{Fitting on DROZY} The forward models were fitted on DROZY~\cite{massoz2016ulg} (Section~\ref{sec:drozy}) with subject fixed effects, so that the slope $b_j$ is a within-person slope and differences in people's baselines do not leak into it. The anchor's prior SD $\sigma_{\alpha,j}$ is the between-person SD of the baselines after removing their estimation noise. For the webcam features, the per-minute residual variance was split into a within-session part, used as $\sigma_{e,j}^2$, and a between-session part, modelled as drift of the anchor, at a rate that lets the anchor wander by the between-session residual SD over about 8~h. The slope spread $\sigma_{b,j}$ is the raw SD of per-person slopes from the subjects with three sessions, a conservative upper bound. No parameter was tuned on simulated people.
+
+\paragraph*{Update} Each observation is absorbed with the standard Kalman update~\cite{kalman1960new},
+\begin{equation}
+  k = \frac{P h}{h^\top P h + R}, \quad x \leftarrow x + k\,(z - h^\top x), \quad P \leftarrow P - k\,h^\top P.
   \label{eq:kf}
 \end{equation}
 
-\paragraph{Why anchoring.} The bias states change what each source can do. A check-in pins the offset $d$. Once $d$ is pinned, a reaction test or webcam window that disagrees with it is explained mainly by its own channel's bias, which is then learned. Later readings from that channel move $d$ only to the extent that they \emph{change} relative to the learned bias. Check-ins therefore set the level, passive signals track change between check-ins, and a channel that reads a particular person wrongly cannot drag the estimate away from that person's own ratings. Without check-ins, the bias and the offset share each passive update according to their prior variances, so passive signals still move the estimate, but more cautiously than a model that treats the population mapping as exact. The variant without anchoring, used as a comparison in Section~\ref{sec:simulation}, fixes both biases at zero ($\sigma_\beta \to 0$, $q_\beta = 0$).
+\subsection{What the anchors do}
+A check-in pins $d$. A passive reading that then disagrees with the pinned level is explained mainly by its own anchor, because the anchor's prior variance is large compared with the remaining variance of $d$. Later readings from that signal move $d$ only to the extent that they change relative to the learned anchor. Check-ins therefore set the level and passive signals track change. Before any check-in, the anchor and the offset share each passive update according to their prior variances, so passive signals still move the estimate, but cautiously. A variant without anchors, used for comparison, fixes all $\alpha_j = 0$ and adds $\sigma_{\alpha,j}^2$ to $R_j$ as extra noise.
 
-\paragraph{Attribution.} The prediction step leaves the state mean unchanged, so the offset is exactly the sum of the changes it has received in updates. Crediting each update's change in the offset, $k_1(z - h^\top x)$, to its source gives an exact additive explanation of the current estimate (before clipping),
-\begin{equation}
-  s(t) = p(t) + \gamma T(t) + d_{\mathrm{KSS}}(t) + d_{\mathrm{PVT}}(t) + d_{\mathrm{cam}}(t),
-\end{equation}
-which the interface shows as ``why the twin thinks so''.
+This design makes the person's ratings the reference. If a person's reaction times slow while their ratings stay flat, the model attributes the slowing to the anchor, which is the right behaviour for an estimate of how sleepy the person feels but hides objective decline~\cite{vandongen2003cumulative,leproult2003individual}. The application therefore also shows an \emph{objective check}: the latest median reaction time read through the population forward model alone, $\hat s_{\mathrm{obj}} = 3 + (f_{\mathrm{RT}} - a_{\mathrm{RT}})/b_{\mathrm{RT}}$, labelled as not adjusted to the person, with a note that a reading well above the person's own rating may mean they are under-rating their impairment.
 
-\paragraph{Optional personal slopes.} The code can also learn each person's own mapping weights $m$ by Bayesian linear regression on pairs of a check-in and the reaction test taken within the previous 30~minutes (or the webcam window that ended within the previous 5~minutes),
-\begin{equation}
-  g = \frac{\Sigma u}{u^\top \Sigma u + \sigma^2}, \qquad \bar m \leftarrow \bar m + g\,(y - \bar m^\top u), \qquad \Sigma \leftarrow \Sigma - g\,u^\top \Sigma.
-  \label{eq:blr}
-\end{equation}
-We evaluated this extension. It made estimates worse in simulation and did not help in DROZY (Sections~\ref{sec:grounding} and~\ref{sec:simulation}), so it is off by default and only the offset and the per-channel biases are personal.
-
-\subsection{Workload state}
-Workload reverts towards the demand $\mu_c$ of the current context $c$ as an Ornstein--Uhlenbeck process with time constant $\tau_w$ and stationary standard deviation $\sigma_\infty$. Over a step of $\Delta$ hours, with $\alpha = e^{-60\Delta/\tau_w}$ ($\tau_w$ in minutes),
-\begin{equation}
-  w \leftarrow \mu_c + (w - \mu_c)\,\alpha, \qquad P_w \leftarrow P_w\,\alpha^2 + \sigma_\infty^2\,(1 - \alpha^2).
-\end{equation}
-The demand of each context starts from a default $D_c$ and is shrunk towards the person's own TLX ratings in that context, $\mu_c = (2D_c + \sum_i y_{c,i})/(2 + n_c)$. A TLX rating updates $w$ with $R = \sigma_T^2$. Blink rate, which tends to fall under visual and cognitive load, enters through a mapping on $u = [1, \mathrm{blinks/min} - 15]$ with $R = \kappa\, v$. This channel is weak by design, and the workload estimate is dominated by context and TLX check-ins. Workload was not evaluated in this paper.
-
-\subsection{Forecast and what-if}
-To look ahead, the twin holds the offset at its current mean and lets its variance grow:
-\begin{equation}
-  \hat s(t+\Delta) = p(t+\Delta) + \gamma\,T(t+\Delta) + d, \qquad
-  \mathrm{sd}(t+\Delta) = \sqrt{P_{dd} + q_d\Delta}, \qquad
-  \Pr(s \geq 7) = 1 - \Phi\!\left(\frac{7 - \hat s}{\mathrm{sd}}\right).
-\end{equation}
-The predicted time of reaching KSS~7 (``sleepy, but no effort to keep awake'') is the first future time at which $\hat s \geq 7$. What-if scenarios change the inputs of this projection: a break now sets $T$ to zero; a bedtime and sleep duration replace the sleep episode used by the prior after waking; continuing without a break lets $T$ keep growing.
+\subsection{Forecast, what-if and attribution}
+To forecast, the model holds the offset at its current mean and lets its variance grow, $\mathrm{sd}(t+\Delta) = (P_{dd} + q_d \Delta)^{1/2}$; the probability that latent sleepiness is at least 7 (``sleepy, but no effort to keep awake'') is $1 - \Phi\big((7 - \hat s)/\mathrm{sd}\big)$, and the predicted time of reaching KSS~7 is the first future time with $\hat s \geq 7$. The default projection assumes the person's usual rhythm of 50-min work blocks and 10-min breaks. What-if scenarios change the inputs: a 15-min break now, then the usual rhythm; a bedtime, which replaces the sleep episode used by the prior after waking; or working on without breaks, which lets $T$ grow. The interface also splits the offset into the sum of the updates each source has made to it (check-ins, reaction tests, webcam). This split is an accounting identity of the linear updates and depends on their order, so it is shown as a description of what the filter did, not as a causal attribution.
 
 \begin{table}[t]
   \centering
-  \caption{Model parameters and their defaults in the released code.}
+  \caption{Model parameters in the released code}
   \label{tab:params}
-  \small
-  \begin{tabular}{@{}lL{4.6cm}L{8.3cm}@{}}
+  \footnotesize
+  \setlength{\tabcolsep}{3pt}
+  \begin{tabular}{@{}L{1.55cm}L{2.45cm}L{4.4cm}@{}}
     \toprule
-    Symbol & Default & Meaning \\
+    Symbol & Value & Meaning and source \\
     \midrule
-    \multicolumn{3}{@{}l}{\emph{Three-Process Model prior}} \\
-    $L$, $H$ & 2.4, 14.3 & Lower and upper asymptotes of $S$ \\
-    $\delta_w$, $\delta_s$ & 0.0353, 0.381 h$^{-1}$ & Decay of $S$ while awake; recovery while asleep \\
-    $M$, $\phi$ & 2.5, 16.8 h & Circadian amplitude and acrophase (clock hour) \\
-    $W_0$, $\delta_i$ & $-5.72$, 1.51 h$^{-1}$ & Sleep inertia at waking and its decay \\
-    $a_K$, $b_K$ & 10.6, 0.6 & Mapping of alertness to KSS \\
+    \multicolumn{3}{@{}l}{\emph{Three-Process Model}~\cite{akerstedt2004predictions,akerstedt2008accounting,ingre2014validating}} \\
+    $L$, $H$ & 2.4, 14.3 & Asymptotes of $S$ \\
+    $\delta_w$, $\delta_s$ & 0.0353, 0.381 h$^{-1}$ & Fall of $S$ awake; recovery asleep \\
+    $B$ & 12.2 & Breakpoint; linear recovery below \\
+    $M$, $\phi$ & 2.5; 16.8 h & Circadian amplitude, acrophase \\
+    $U_a$, $U_m$, $\phi_U$ & 0.5, $-0.5$; 13.8 h & Ultradian amplitude, mesor, dip \\
+    $W_0$, $\delta_i$ & $-5.72$; 1.51 h$^{-1}$ & Sleep inertia and its decay \\
+    $a_K$, $b_K$ & 10.6, 0.6 & Alertness to KSS \\
     \midrule
-    \multicolumn{3}{@{}l}{\emph{Sleepiness state}} \\
-    $\gamma$ & 0.4 KSS h$^{-1}$ & Time-on-task effect; reset after a 10-min break \\
-    $\sigma_d$, $\sqrt{q_d}$ & 1.2; 0.3 per $\sqrt{\mathrm{h}}$ & Prior SD and drift of the personal offset \\
-    $\sigma_\beta$, $\sqrt{q_\beta}$ & 1.2; 0.05 per $\sqrt{\mathrm{h}}$ & Prior SD and drift of each channel bias \\
-    $\sigma_K$ & 0.75 & Noise of a KSS rating \\
+    \multicolumn{3}{@{}l}{\emph{Offset and check-ins (assumed)}} \\
+    $\gamma$ & 0.4 KSS h$^{-1}$ & Time on task; reset after a 10-min break \\
+    $\sigma_d$, $\sqrt{q_d}$ & 1.2; 0.3 h$^{-1/2}$ & Prior SD and drift of the offset \\
+    $\sigma_K$ & 0.75 & Noise of one KSS rating \\
     \midrule
-    \multicolumn{3}{@{}l}{\emph{Population mappings to KSS (fitted on DROZY)}} \\
-    Reaction test & $\bar m = [3.494, 2.222]$, sd $[1.136, 0.672]$, $\sigma = 1.572$ & $u = [1, (\RT_{\mathrm{med}} - 300)/100]$ \\
-    Webcam & $\bar m = [3.609, 0.187, 1.441]$, sd $[0.399, 0.274, 1.149]$, $\sigma = 1.896$ & $u = [1, \mathrm{PERCLOS}\,\%, (\bar b - 150)/100]$; windows with face coverage $<$ 0.6 ignored \\
-    $\kappa$ & 160 & Noise inflation for webcam windows (tuning cohort) \\
-    Personal slopes & off & Optional Bayesian update of $\bar m$ from paired check-ins (30 min for the reaction test, 5 min for the webcam) \\
-    \midrule
-    \multicolumn{3}{@{}l}{\emph{Workload state}} \\
-    $D_c$ & 15, 40, 65, 50, 40 & Default demand: break, reading, focused work, meeting, other \\
-    $\tau_w$, $\sigma_\infty$ & 20 min, 18 & Reversion time and stationary spread \\
-    $\sigma_T$ & 8 & Noise of a TLX rating \\
-    Blink rate & $\bar m = [50, -1.0]$, sd $[15, 1.0]$, $\sigma = 18$ & $u = [1, \mathrm{blinks/min} - 15]$ \\
+    \multicolumn{3}{@{}l}{\emph{Forward models (DROZY, within person)}} \\
+    Reaction test & $a$ 339.2 ms, $b$ 18.85 ms, $\sigma_e$ 36.4 & PVT median RT; anchor SD 48.7, drift 2 ms~h$^{-1/2}$, slope SD 7.9 \\
+    Blink duration & $a$ 189.7 ms, $b$ 11.1 ms, $\sigma_e$ 24.6, $\kappa$ 1.04 & One minute, $\geq$3 blinks; anchor SD 22.9, drift 15 ms~h$^{-1/2}$, slope SD 14.3 \\
+    PERCLOS & $a$ 3.24\%, $b$ 0.62\%, $\sigma_e$ 2.4, $\kappa$ 1.93 & One minute, PERCLOS guard; anchor SD 2.38, drift 0.83\%~h$^{-1/2}$, slope SD 0.47 \\
     \bottomrule
   \end{tabular}
 \end{table}

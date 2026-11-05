@@ -107,3 +107,37 @@ export class HeadTracker {
     };
   }
 }
+
+/**
+ * Decides whether an eye closure happened while the person was looking down (at a keyboard or phone), which
+ * lowers the upper lids without sleep. The eyeLookDown blendshapes can also rise when the eyes simply close,
+ * so during a closure the decision is taken from the frames in the `windowMs` before the closure began
+ * (looking down if most of them were), not from the frames of the closure itself.
+ */
+export class LookDownGate {
+  private recent: { t: number; down: boolean }[] = [];
+  private decision: boolean | null = null;
+  private readonly threshold: number;
+  private readonly windowMs: number;
+
+  constructor(threshold = 0.45, windowMs = 500) {
+    this.threshold = threshold;
+    this.windowMs = windowMs;
+  }
+
+  /** `score`: mean eyeLookDown blendshape (null without a face); `closedForMs`: the blink meter's closure so far. */
+  push(t: number, score: number | null, closedForMs: number): boolean {
+    if (closedForMs > 0) {
+      if (this.decision === null) {
+        const onset = t - closedForMs;
+        const before = this.recent.filter((r) => r.t >= onset - this.windowMs && r.t < onset);
+        this.decision = before.length > 0 && before.filter((r) => r.down).length * 2 > before.length;
+      }
+      return this.decision;
+    }
+    this.decision = null;
+    if (score !== null) this.recent.push({ t, down: score > this.threshold });
+    while (this.recent.length && this.recent[0].t < t - 2000) this.recent.shift();
+    return score !== null && score > this.threshold;
+  }
+}

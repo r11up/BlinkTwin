@@ -1,29 +1,32 @@
 # BlinkTwin
 
-**A real-time, laptop-scale digital twin of fatigue and cognitive load.** BlinkTwin watches your blinks, eyes and head through the webcam, tests your reaction time in three minutes, and uses short validated questionnaires as calibration points. A state-space model joins these with a published model of the body clock to estimate how sleepy and how loaded you are, forecast when you will become sleepy, and sound an alarm if you start to fall asleep. Everything runs in the browser, on your own laptop. Video never leaves the page.
+**A laptop-scale personal model (a "digital twin") of sleepiness and perceived workload.** BlinkTwin watches your blinks, eyes and head through the webcam, tests your reaction time in three minutes, and uses short validated questionnaires as calibration points. A state-space model joins these with the published Three-Process Model of alertness to estimate how sleepy you feel and how loaded you are, forecast when you will reach "sleepy" (KSS 7), and raise an alert if your eyes stay shut or your head drops. Everything runs in the browser, on your own laptop. Video never leaves the page.
+
+BlinkTwin is a research prototype. It has been tested on public datasets and in simulation, not yet in a prospective study with its own users, and it must not be used to decide whether someone is fit to drive or work.
 
 ![BlinkTwin dashboard with a simulated day](docs/img/dashboard.png)
 
-## What makes BlinkTwin different
+## What BlinkTwin does, and how it compares
 
-| | BlinkTwin | Fatigue models (SAFTE/FAST, 2B-Alert) | Camera drowsiness detectors | PVT apps | Questionnaires |
-|---|:-:|:-:|:-:|:-:|:-:|
-| Live sensing (eyes, head) | ✓ | | ✓ | | |
-| Performance test | ✓ | | | ✓ | |
-| Validated self-report | ✓ | | | | ✓ |
-| Calibrates to the individual | ✓ | some | | | |
-| Forecast and what-if | ✓ | ✓ | | | |
-| Uncertainty on every estimate | ✓ | some | | | |
-| Real-time microsleep alarm | ✓ | | ✓ | | |
-| On-device, zero install, open source | ✓ | | some | some | ✓ |
+| | BlinkTwin | Fatigue models (Three-Process Model, SAFTE/FAST) | Individualised models (2B-Alert) | Camera drowsiness detectors | PVT apps | Questionnaires |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|
+| Live passive sensing (eyes, head) | ✓ | | | ✓ | | |
+| Performance test | ✓ | | ✓ | | ✓ | |
+| Validated self-report as an input | ✓ | | | | | ✓ |
+| Adjusts to the individual | level only | some | ✓ | some | | |
+| Forecast and what-if | ✓ | ✓ | ✓ | | | |
+| Uncertainty on the estimate | in simulation | some | ✓ | | | |
+| Prospective validation in people | not yet | ✓ | ✓ | varies | ✓ | ✓ |
+| Runs in a browser, open source | ✓ | | | some | some | free to use |
 
-1. **Questionnaire-anchored digital twin.** The Karolinska Sleepiness Scale and NASA-TLX are treated as calibration observations inside a Kalman filter, not just as labels. Check-ins set your level; blinks and reaction times track change from it.
-2. **Anchored fusion that cannot be dragged off.** Each passive signal has its own bias term, so a webcam or reaction time that reads you wrong moves its anchor, not your estimate. In simulation, fusing signals without anchors gave no gain and overconfident uncertainty; with anchors BlinkTwin was never worse than check-ins alone and gave the best forecasts.
-3. **Body-clock model plus live data in one filter.** The Three-Process Model of alertness supplies the daily rhythm; your data correct it. The result is a sleepiness estimate with a 90% range, a forecast of when you reach KSS 7 ("sleepy"), and what-if scenarios such as a break or an earlier bedtime.
-4. **Real-time alarms with live eye and head tracking.** Eye closure longer than a second, or a head drop with closing eyes, triggers an alarm. Gaze, head pitch, yaw and roll, nods, blink rate, blink duration and PERCLOS update live.
-5. **Explains itself.** Every estimate is split exactly into the rhythm model and what each signal contributed, and every prediction links to the science behind it ([docs/SCIENCE.md](docs/SCIENCE.md)).
-6. **Private by design.** The face model runs in the page. Only one-minute numeric summaries are stored, in your own browser, and you can export or delete them.
-7. **One codebase, tested and reproducible.** The same TypeScript runs the website, 44 unit tests and the simulation study, and the blink detector is validated against electro-oculography on a public dataset.
+1. **Questionnaire-anchored state-space model.** The Karolinska Sleepiness Scale (KSS) and NASA-TLX enter a Kalman filter as calibration observations, not as training labels. Check-ins set your level; reaction times and the eyes track change from it.
+2. **A forward measurement model for every passive signal.** Each signal is modelled as a population baseline, plus a change per KSS point fitted within people on DROZY, plus your own anchor, plus noise. The anchors are filter states, so a signal that reads you wrong moves its anchor, not your estimate. Without anchors, adding the same signals made the estimate much worse in simulation.
+3. **The published Three-Process Model as the prior.** Homeostatic pressure with the 12.2 breakpoint in sleep recovery, the 24-h and 12-h rhythms, sleep inertia, and sleep debt carried across days (Åkerstedt et al. 2004, 2008; Ingre et al. 2014). The filter adds your offset, a 90% range, a forecast of when you reach KSS 7, and what-if scenarios such as a break or an earlier bedtime.
+4. **Subjective estimate plus an objective check.** Because check-ins set the level, the main estimate is how sleepy you *feel*. The Now card also shows what your last reaction test says on the population scale, not adjusted to you, because people who are short of sleep often underrate their impairment.
+5. **Real-time alerts with live eye and head tracking.** A long eye closure (1 s or more, not while looking down) or a forward head drop with closing eyes raises an alert. These thresholds are ad hoc defaults and have not been validated. Gaze, head pitch, yaw and roll, nods, blink rate, blink duration and PERCLOS update live.
+6. **Explains itself.** The estimate is split into the rhythm model, time on task, and what each source contributed, and every number links to the science behind it ([docs/SCIENCE.md](docs/SCIENCE.md)).
+7. **Private by design.** The face model runs in the page. Only one-minute numeric summaries are stored, in your own browser, and you can export or delete them.
+8. **One codebase, tested and reproducible.** The same TypeScript runs the website, ⟦NTESTS⟧ unit tests, the replay of the released twin on real data, and the simulation study.
 
 ## How it works
 
@@ -31,45 +34,63 @@
 
 | Signal | How it is measured | What it feeds |
 |---|---|---|
-| Eyes | MediaPipe Face Landmarker blendshapes in the browser; blinks with hysteresis on your own open-eye level; PERCLOS (time with eyes ≥ 80% closed); blink duration | Sleepiness (anchored), alarms |
-| Head | Pitch, yaw and roll from the facial transformation matrix, relative to your resting pose; nods | Alarms |
-| Reaction time | 3-minute PVT-B (1–4 s delays, lapses > 355 ms) | Sleepiness (anchored) |
+| Eyes | MediaPipe Face Landmarker eyeBlink blendshapes in the browser; blinks with hysteresis on your own open-eye level; PERCLOS (time with eyes ≥ 80% closed on that scale); blink duration; long closures | Sleepiness (forward model with anchor), alerts |
+| Head | Pitch, yaw and roll from the facial transformation matrix, relative to your resting pose; nods | Alerts |
+| Reaction time | 3-minute PVT-B (1–4 s delays, lapses > 355 ms) | Sleepiness (forward model with anchor), objective check |
 | Check-ins | Karolinska Sleepiness Scale (1–9), NASA-TLX (0–100) | Calibration of the twin |
-| Sleep | Wake time and hours slept | Three-Process Model prior |
+| Sleep | Wake time and hours slept, night by night | Three-Process Model prior, including sleep debt |
 
-The twin's state is your offset from the Three-Process Model plus one bias per passive signal. A Kalman filter updates it from every event, the forecast carries it forward with growing uncertainty, and workload relaxes towards the typical demand of your current activity. Full details, parameters and references: [docs/SCIENCE.md](docs/SCIENCE.md).
+The twin's sleepiness state is your offset from the Three-Process Model plus one anchor per passive signal (median reaction time, blink duration, PERCLOS), each in that signal's own units. A Kalman filter updates the state from every event, the forecast carries it forward with growing uncertainty, and workload relaxes towards the typical demand of your current activity. The twin ignores PERCLOS when the camera's blinks do not reach full closure, because then PERCLOS cannot register closed eyes. Full details, parameters and references: [docs/SCIENCE.md](docs/SCIENCE.md).
 
 ## Evidence so far
 
-**The webcam blink detector works.** Run unchanged on the face landmarks of the public DROZY dataset (14 adults, 36 sessions under increasing sleep deprivation), BlinkTwin's blink code agreed with electro-oculography, the gold standard for blinks (Spearman ρ = 0.88 for blink rate).
+All numbers below are in `results/`. The DROZY analyses use 14 adults and 36 tests, so their confidence intervals are wide.
 
-**The signals track sleepiness within a person.** In DROZY, slower median reaction time (r = 0.77), more lapses (r = 0.73), more eye closure (PERCLOS, r = 0.53) and longer blinks (r = 0.51) went with higher sleepiness ratings within each person. Blink rate did not (r = 0.35, not significant). These relationships set BlinkTwin's population defaults.
+**The webcam pipeline, run on DROZY's videos.** We ran the website's exact pipeline (the same MediaPipe model file and blink code) on all 36 DROZY tests. A face was found in 99.9% of frames. Blink rate agreed moderately with electro-oculography (EOG), the reference for blinks (Spearman ρ = 0.71; within a person r = 0.65), with about 13 blinks per minute missed. Within a person, longer blinks (r = 0.58) and more long eye closures (r = 0.51) went with higher sleepiness ratings. PERCLOS failed on this near-infrared video: MediaPipe's closure score rarely came near full closure, so PERCLOS stayed below 0.5% in every test. This is why the twin now ignores PERCLOS in that situation. DROZY is not an ordinary webcam; webcam validation is still needed.
+
+![The website's pipeline on DROZY videos](docs/img/mediapipe_drozy.png)
+
+**The blink logic agrees with EOG on landmark data.** On DROZY's 68-point face landmarks (eye aspect ratio), the same blink code agreed with EOG blink rates (Spearman ρ = 0.88, n = 36 tests).
+
+![Landmark blink rate against EOG](docs/img/blink_validation.png)
+
+**The signals track sleepiness within a person.** In DROZY (landmark features), slower median reaction time (r = 0.77), more lapses (r = 0.73), more eye closure (PERCLOS, r = 0.53) and longer blinks (r = 0.51) went with higher sleepiness ratings within each person. Blink rate did not (r = 0.35, not significant). Within a person, median reaction time rose 18.8 ms per KSS point; people's baselines differed by about 49 ms. These forward models are BlinkTwin's population defaults.
 
 ![DROZY results](docs/img/drozy.png)
 
-**Objective and subjective sleepiness are only loosely linked across people.** In OpenNeuro ds004902 (71 adults, normal sleep vs a night without sleep), reaction time slowed in 90% of people but sleepiness ratings rose in only 73%, and the size of one change barely predicted the other (ρ = 0.25). This is why BlinkTwin anchors passive signals to each person's own ratings.
+**The released twin on real data (DROZY, each person left out in turn).** Error (mean absolute error, KSS points) when predicting the rating of the later, sleep-deprived tests:
 
-**Anchoring makes fusion safe (simulation, 300 virtual people, 24 h awake).** Mean absolute error of latent KSS:
+| What the twin was given | MAE [95% CI] | Predictions |
+|---|:-:|:-:|
+| Rhythm model only | 1.73 [1.17, 2.36] | 24 |
+| Reaction test and eyes, no check-in | 1.47 [1.09, 1.91] | 24 |
+| Check-in at the first test only | 1.51 [0.97, 2.26] | 20 |
+| **BlinkTwin: check-in at the first test + reaction test + eyes** | **1.38 [0.93, 2.04]** | 20 |
+| Benchmark: the test's average rating in the other people | 1.39 [0.97, 1.87] | 24 |
 
-| | 1 check-in | 3 check-ins | 8 check-ins |
-|---|:-:|:-:|:-:|
-| Rhythm model only | 0.930 | 0.930 | 0.930 |
-| Check-ins only | 0.732 | 0.645 | 0.563 |
-| Check-ins + passive signals, no anchoring | 0.740 | 0.649 | 0.573 |
-| **BlinkTwin (anchored)** | **0.703** | **0.625** | **0.558** |
-| BlinkTwin + personal slopes | 0.735 | 0.657 | 0.599 |
+The ordering matches the design, but the intervals overlap widely and BlinkTwin did not beat the simple benchmark. DROZY does not record wake times; assuming 06:00 or 08:00 instead of 07:00 gave BlinkTwin MAEs of 1.39 and 1.37.
 
-Forecasting KSS ≥ 7 one hour ahead (four check-ins): Brier score 0.062 for BlinkTwin, 0.067 for check-ins only, 0.098 for the rhythm model alone.
+**A personal offset carries over only partly.** In OpenNeuro ds004902 (33 adults with ratings after normal sleep and after a night without sleep), a person's offset from the rhythm model after normal sleep was only weakly related to their offset after sleep deprivation (r = 0.29, 95% CI −0.05 to 0.58). Adding a person's own normal-sleep offset predicted their rating after sleep deprivation no better than adding the group's average offset (MAE 1.52 with the shrunk personal offset, 1.45 with the group offset, 1.53 with the rhythm model alone). This is why the twin lets the offset drift and why the benefit of personal calibration is still an open question.
+
+**Simulation (300 virtual people per scenario, 24 h awake, released defaults, nothing tuned on simulated people).** Mean absolute error of latent KSS, matched scenario:
+
+⟦SIM_TABLE_MATCHED⟧
+
+The same comparison with three check-ins when the virtual people break the twin's assumptions on purpose (difference BlinkTwin minus check-ins only, 95% CI):
+
+⟦SIM_TABLE_ROBUST⟧
+
+⟦SIM_FORECAST⟧
 
 ![Simulation results](docs/img/simulation.png)
 
-**What the evidence does not show yet.** In DROZY, calibrating from one or two check-ins did not beat the population formula. Gains from passive signals over check-ins are small in simulation. The alarm thresholds have not been validated. A study with real users is planned to test personal calibration, forecasting and alarm accuracy.
+**What the evidence does not show yet.** That personal calibration helps real people: in DROZY the twin did not beat a simple benchmark, and in ds004902 offsets carried over only weakly. Gains from the passive signals over check-ins are small in simulation (hundredths of a KSS point), and in a simulated version of the planned 10-day study, where the target is people's actual (noisy, whole-number) ratings on ordinary workdays, BlinkTwin was no better than check-ins alone (⟦POWER_EB⟧). The webcam pipeline has not been validated on ordinary webcams, the alert thresholds have not been validated at all, and the workload estimate has not been evaluated. A prospective study with real users is planned.
 
 ## Run it
 
 **Desktop app (macOS):** double-click `BlinkTwin.app`. It starts the local server and opens BlinkTwin in its own window. Build it from [`app/BlinkTwin.applescript`](app/BlinkTwin.applescript) with `osacompile`, and use **Quit** in the app to stop the server.
 
-**From the terminal:**
+**From the terminal** (Node.js 22.6 or later, which runs the TypeScript scripts directly):
 
 ```bash
 cd web
@@ -81,44 +102,66 @@ Open http://localhost:5173. Try **Demo day** to see a simulated person's day. Us
 
 ## Reproduce the analyses
 
+Requirements: Node.js ≥ 22.6, Python 3.13. Raw data stay in `data/` (not in git); `results/` holds aggregates only.
+
 ```bash
 bash scripts/fetch_data.sh                                   # OpenNeuro ds004902 and DROZY (accepting their terms)
 python3.13 -m venv analysis/.venv && analysis/.venv/bin/pip install -r analysis/requirements.txt
+(cd web && npm install && npm test)
+
+# OpenNeuro ds004902
 analysis/.venv/bin/python -I analysis/openneuro_pvt_kss.py data/raw/openneuro-ds004902/participants.tsv results
-cd web && node scripts/drozy_eyes.ts ../data/raw/drozy/extracted/DROZY ../results/drozy_eyes.csv ../results/drozy_eye_minutes.csv && cd ..
+(cd web && node scripts/openneuro_anchor.ts ../data/raw/openneuro-ds004902/participants.tsv ../results)
+
+# DROZY: landmark blink meter, EOG blinks, session analysis, forward models, replay of the released twin
+(cd web && node scripts/drozy_eyes.ts ../data/raw/drozy/extracted/DROZY ../results/drozy_eyes.csv ../results/drozy_eye_minutes.csv)
 analysis/.venv/bin/python -I analysis/drozy_eog.py data/raw/drozy/extracted/DROZY results/drozy_eog.csv
 analysis/.venv/bin/python -I analysis/drozy_analysis.py data/raw/drozy/extracted/DROZY results
-cd web && npm test && node scripts/simulate.ts 300 ../results && cd ..
+analysis/.venv/bin/python -I analysis/drozy_forward.py results
+(cd web && node scripts/drozy_twin.ts ../data/raw/drozy/extracted/DROZY ../results)
+
+# The website's MediaPipe pipeline on the DROZY videos
+python3.13 -m venv data/venv-mediapipe && data/venv-mediapipe/bin/pip install mediapipe opencv-python-headless
+(cd web && node scripts/fetch-model.mjs)
+data/venv-mediapipe/bin/python -I analysis/drozy_mediapipe_compare.py extract data/raw/drozy/extracted/DROZY web/public/models/face_landmarker.task data/derived/drozy_mediapipe_frames
+(cd web && node scripts/drozy_mediapipe_blinks.ts ../data/derived/drozy_mediapipe_frames ../results/drozy_mediapipe_tests.csv ../results/drozy_mediapipe_minutes.csv)
+analysis/.venv/bin/python -I analysis/drozy_mediapipe_compare.py compare results
+
+# Simulation study and its figures (about half an hour)
+(cd web && node scripts/simulate.ts 300 ../results > ../results/sim_log.txt)
 analysis/.venv/bin/python -I analysis/sim_figures.py results
-cd paper && latexmk -pdf main.tex
+
+# Paper
+(cd paper && latexmk -pdf main.tex)
 ```
 
 ## Repository
 
 | Path | Contents |
 |---|---|
-| `web/src/twin/` | The digital twin: Three-Process Model prior, Kalman filter with anchors, Bayesian calibration, forecast |
+| `web/src/twin/` | The twin: Three-Process Model prior, Kalman filter with forward measurement models and anchors, forecast |
 | `web/src/sensing/` | Blink meter, head pose and nods, real-time alerts, camera pipeline |
 | `web/src/probes/`, `web/src/ui/` | PVT-B, check-in forms, charts, science explanations |
 | `web/src/sim/`, `web/scripts/simulate.ts` | Virtual participants and the simulation study |
+| `web/scripts/` | DROZY and OpenNeuro replays of the released twin, MediaPipe validation, data tools |
 | `web/tests/` | Unit tests (vitest) |
-| `analysis/` | Dataset analyses (Python) |
+| `analysis/` | Dataset analyses and figures (Python) |
 | `results/` | Summary statistics and figures (aggregates only) |
-| `paper/` | Manuscript (LaTeX) |
+| `paper/` | Manuscript (LaTeX) and review rounds |
 | `docs/` | Science notes, project notes, images |
 | `app/` | macOS launcher and icon |
 
 ## Status and limitations
 
-Research prototype, not a medical device; it does not diagnose anything and must not be relied on for safety while driving or operating machinery. The Three-Process Model constants describe an average person. Population defaults come from 14 people in a sleep laboratory with a near-infrared camera and a 10-minute PVT, while BlinkTwin uses an ordinary webcam and a 3-minute PVT. Simulation results depend on how the virtual people were built.
+Research prototype, not a medical device; it does not diagnose anything and must not be relied on for safety while driving or operating machinery. The absence of an alert does not mean a person is alert. The main estimate is subjective sleepiness, anchored to the person's own ratings. The Three-Process Model constants describe an average person, and the model does not adapt to shift work, travel across time zones, naps or caffeine. The signal models come from 14 people in a sleep laboratory with a near-infrared camera and a 10-minute PVT, while BlinkTwin uses an ordinary webcam and a 3-minute browser PVT. Simulation results depend on how the virtual people were built.
 
 ## Data
 
-- Xiang C, Fan X, Bai D, Lv K, Lei X. A resting-state EEG dataset for sleep deprivation. *Scientific Data* (2024). OpenNeuro ds004902.
+- Xiang C, Fan X, Bai D, Lv K, Lei X. A resting-state EEG dataset for sleep deprivation. *Scientific Data* 11:427 (2024). OpenNeuro ds004902.
 - Massoz Q, Langohr T, François C, Verly JG. The ULg Multimodality Drowsiness Database (called DROZY) and examples of use. IEEE WACV 2016. Research use only; not redistributed here.
 
 ## Author
 
 **Utsav Poudel** · utsav.poudel@outlook.com.au
 
-BlinkTwin is a laptop-scale part of a research programme on real-time multimodal sensing and digital twins of cognitive load and fatigue.
+BlinkTwin is a laptop-scale part of a research programme on real-time multimodal sensing and personal models of cognitive load and fatigue.

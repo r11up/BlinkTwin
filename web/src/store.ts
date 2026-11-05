@@ -93,12 +93,12 @@ export class Store {
 }
 
 export function toCsv(events: TwinEvent[]): string {
-  const cols = ['t_iso', 'type', 'value', 'medianRt', 'lapses', 'perclos', 'blinkRate', 'meanBlinkMs', 'coverage', 'nods', 'headMovement', 'context', 'wake_iso', 'hours', 'level', 'reason'];
+  const cols = ['t_iso', 'type', 'value', 'medianRt', 'lapses', 'perclos', 'blinkRate', 'meanBlinkMs', 'coverage', 'nods', 'headMovement', 'peakClosure', 'context', 'wake_iso', 'hours', 'level', 'reason'];
   const rows = events.map((e) => {
     const r: Record<string, string | number> = { t_iso: new Date(e.t).toISOString(), type: e.type };
     if (e.type === 'kss' || e.type === 'tlx') r.value = e.value;
     if (e.type === 'pvt') Object.assign(r, { medianRt: e.medianRt, lapses: e.lapses });
-    if (e.type === 'cam') Object.assign(r, { perclos: e.perclos, blinkRate: e.blinkRate, meanBlinkMs: e.meanBlinkMs, coverage: e.coverage, nods: e.nods ?? '', headMovement: e.headMovement ?? '' });
+    if (e.type === 'cam') Object.assign(r, { perclos: e.perclos, blinkRate: e.blinkRate, meanBlinkMs: e.meanBlinkMs, coverage: e.coverage, nods: e.nods ?? '', headMovement: e.headMovement ?? '', peakClosure: e.peakClosure ?? '' });
     if (e.type === 'alert') Object.assign(r, { level: e.level, reason: JSON.stringify(e.reason) });
     if (e.type === 'context') r.context = e.context;
     if (e.type === 'sleep') Object.assign(r, { wake_iso: new Date(e.wake).toISOString(), hours: e.hours });

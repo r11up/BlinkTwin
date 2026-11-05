@@ -1,0 +1,80 @@
+{
+ "dataset": "OpenNeuro ds004902 (Xiang et al., 2024, Sci Data 11:427), participants.tsv",
+ "n_kss_both_sessions": 33,
+ "n_with_diary": 28,
+ "diary_sleep_hours_mean": 7.764285714285713,
+ "diary_wake_hour_mean": 8.32797619047619,
+ "observed_change_mean": 2.0357142857142856,
+ "variants": {
+  "default_sleep_default_mapping": {
+   "mae_normal_sleep": 1.7438192587029129,
+   "mae_sleep_deprivation": 1.628546971189623,
+   "mae_both": 1.6861831149462676,
+   "diff_vs_default_both": null,
+   "diff_ci95": null,
+   "predicted_change_mean": 2.9027279854797174,
+   "share_within_1_kss": 0.35714285714285715
+  },
+  "diary_sleep_default_mapping": {
+   "mae_normal_sleep": 1.831557991633369,
+   "mae_sleep_deprivation": 1.6556571509428184,
+   "mae_both": 1.7436075712880936,
+   "diff_vs_default_both": 0.057424456341826025,
+   "diff_ci95": [
+    -0.07117684618295493,
+    0.16729814256386172
+   ],
+   "predicted_change_mean": 3.030264649913543,
+   "share_within_1_kss": 0.35714285714285715
+  },
+  "default_sleep_ingre_mapping": {
+   "mae_normal_sleep": 1.3225872425033969,
+   "mae_sleep_deprivation": 1.6036949113963226,
+   "mae_both": 1.4631410769498598,
+   "diff_vs_default_both": -0.22304203799640776,
+   "diff_ci95": [
+    -0.3334339351789389,
+    -0.09496494549990275
+   ],
+   "predicted_change_mean": 2.2254247888677834,
+   "share_within_1_kss": 0.44642857142857145
+  },
+  "diary_sleep_ingre_mapping": {
+   "mae_normal_sleep": 1.3806493423787813,
+   "mae_sleep_deprivation": 1.6126005851876208,
+   "mae_both": 1.4966249637832012,
+   "diff_vs_default_both": -0.1895581511630664,
+   "diff_ci95": [
+    -0.3076608658541997,
+    -0.07747083573417506
+   ],
+   "predicted_change_mean": 2.3232028982670494,
+   "share_within_1_kss": 0.4107142857142857
+  }
+ },
+ "with_one_checkin_all_33": {
+  "kalman_gain": 0.7191011235955056,
+  "default_mapping": {
+   "prior_only_mae": 1.6124697092637903,
+   "checkin_other_session_mae": 1.5345903734258532,
+   "ns_to_sd_mae": 1.4848581503928941,
+   "sd_to_ns_mae": 1.5843225964588121,
+   "prior_share_within_1": 0.4090909090909091,
+   "checkin_share_within_1": 0.42424242424242425
+  },
+  "ingre_mapping": {
+   "prior_only_mae": 1.397882810454173,
+   "checkin_other_session_mae": 1.4483214293457556,
+   "ns_to_sd_mae": 1.4660277606745704,
+   "sd_to_ns_mae": 1.4306150980169403,
+   "prior_share_within_1": 0.48484848484848486,
+   "checkin_share_within_1": 0.3787878787878788
+  },
+  "ingre_minus_default_with_checkin": -0.08626894408009766,
+  "ingre_minus_default_with_checkin_ci95": [
+   -0.2609732157586633,
+   0.0807670032260071
+  ]
+ },
+ "note": "MAE of the Three-Process Model prior alone (no personal data) against the KSS rating at the eyes-open EEG time. The diary covers the normal-sleep night only; for the deprivation session its get-up time stands in for the previous wake time. Both comparisons were fixed in advance."
+}

@@ -19,8 +19,8 @@ export type TwinEvent =
   | { t: number; type: 'context'; context: ContextId }
   | { t: number; type: 'kss'; value: number }
   | { t: number; type: 'tlx'; value: number; items?: number[] }
-  | { t: number; type: 'pvt'; medianRt: number; lapses: number; n: number; falseStarts: number }
-  | { t: number; type: 'cam'; perclos: number; blinkRate: number; meanBlinkMs: number; coverage: number; nods?: number; headMovement?: number }
+  | { t: number; type: 'pvt'; medianRt: number; lapses: number; n: number; falseStarts: number; durationS?: number }
+  | { t: number; type: 'cam'; perclos: number; blinkRate: number; meanBlinkMs: number; coverage: number; nods?: number; headMovement?: number; peakClosure?: number }
   | { t: number; type: 'alert'; level: 'warning' | 'alarm'; reason: string };
 
 export type Source = 'kss' | 'pvt' | 'cam';
@@ -49,7 +49,23 @@ export interface TwinConfig {
   offsetDriftSdPerSqrtHour: number;
   channels: Record<ChannelId, Channel>;
   minBlinksForDuration: number; // a minute with fewer blinks says nothing about blink duration
+  // The reaction-time noise was estimated from full-length tests; a shorter test (the app's 1-minute
+  // version) is noisier, so it is shown to the person but not used. Events without durationS are full tests.
+  pvtMinSeconds: number;
+  // PERCLOS counts frames with normalised closure >= 0.8. On some cameras the eyeBlink score of a full blink
+  // never gets there (DROZY near-infrared video: median blink peak about 0.6, PERCLOS below 0.5% in all 36
+  // tests), so PERCLOS stays flat whatever the person's state and would wrongly tell the twin "no change".
+  // A minute whose ordinary blinks have a median peak closure below this is not used for PERCLOS. Minutes
+  // without the peakClosure field (older events, DROZY replay, simulation) are used as before.
+  perclosMinPeakClosure: number;
   camMinCoverage: number;
+  // Missing nights. Off (the research default): the prior treats the whole time between two recorded wake
+  // times as awake, and keeps using the last recorded night however old, which is right for protocols with
+  // genuine all-nighters (DROZY, the simulation). On (the app): a gap of more than 30 h between recorded wake
+  // times gets habitual nights, waking at the default hour; if the last recorded wake is more than 30 h old,
+  // today's default night is used, with habitual nights in between. A real night without sleep is entered
+  // as a sleep event with 0 hours.
+  fillMissingNights?: boolean;
   usePassive: boolean; // false = prior + check-ins only (ablation)
   useChannels?: Partial<Record<ChannelId, boolean>>; // switch single passive channels off (ablation)
   useAnchors: boolean; // false = passive signals use the population baseline (ablation)
@@ -65,6 +81,21 @@ export interface TwinConfig {
 // slopes with subject fixed effects): analysis/drozy_forward.py -> results/drozy_forward.json. Slope SDs are the
 // raw spread of per-person slopes (three sessions each), a conservative upper bound: with three points per
 // person the spread due to estimation noise cannot be separated reliably.
+//
+// How the channel constants follow from results/drozy_forward.json:
+// - at3, perKss, biasSd: the forward fits (reaction time from session means; blink duration and PERCLOS
+//   from one-minute windows, perKss 11.1 ms and 0.62 percentage points).
+// - noiseSd of the reaction test: the session-level residual SD (36.4 ms); one test is one observation.
+// - noiseSd of blink duration and PERCLOS: the part of the one-minute residual that is not shared within a
+//   session, sqrt(minute residual SD^2 - session residual SD^2): sqrt(50.15^2 - 43.71^2) = 24.6 ms and
+//   sqrt(3.358^2 - 2.346^2) = 2.40 percentage points.
+// - biasDriftSdPerSqrtHour of blink duration and PERCLOS: the session residual SD spread over the roughly
+//   8 h between DROZY sessions, 43.71 / sqrt(8) = 15 ms and 2.346 / sqrt(8) = 0.83 points per sqrt(h): the
+//   session-to-session wander of a person's baseline becomes slow drift of the anchor.
+// - inflate: (1 + rho) / (1 - rho) from the lag-1 autocorrelation of one-minute windows (PERCLOS rho 0.318
+//   gives 1.93; blink duration rho 0.018 gives 1.04); 1 for the reaction test (one test per session).
+// - biasDriftSdPerSqrtHour of the reaction test (2 ms per sqrt(h)) is an assumption: with one test per
+//   session DROZY cannot separate drift from test noise.
 export const DEFAULT_CONFIG: TwinConfig = {
   tpm: TPM_DEFAULTS,
   defaultWakeHour: 7,
@@ -80,6 +111,8 @@ export const DEFAULT_CONFIG: TwinConfig = {
     perclos: { at3: 3.24, perKss: 0.62, noiseSd: 2.4, inflate: 1.93, biasSd: 2.38, biasDriftSdPerSqrtHour: 0.83, slopeSd: 0.47 },
   },
   minBlinksForDuration: 3,
+  pvtMinSeconds: 180,
+  perclosMinPeakClosure: 0.85,
   camMinCoverage: 0.6,
   usePassive: true,
   useAnchors: true,
@@ -110,8 +143,10 @@ export interface TwinResult {
   contributions: Record<Source, number>;
   /** Each passive signal's anchor: how far this person's baseline sits from the population, in the signal's units. */
   anchors: Record<ChannelId, { mean: number; sd: number }>;
-  sleep: SleepEpisode;
+  sleep: SleepEpisode; // the night the prior uses at the end of the replay (an assumed one when filled)
   sleeps: SleepEpisode[]; // all recorded sleep episodes, oldest first (sleep debt carries across days)
+  priorHistory: SleepEpisode[]; // the sleep history the prior uses: the recorded nights plus any filled ones
+  sleepAssumption: { usesDefault: boolean; filledNights: number }; // with fillMissingNights: today's night is assumed / nights filled
   taskStart: number | null;
   context: ContextId;
   checkIns: number;
@@ -129,6 +164,42 @@ function defaultSleep(t: number, cfg: TwinConfig): SleepEpisode {
   let wake = dayStart + cfg.defaultWakeHour * HOUR + tz * MIN;
   if (wake > t) wake -= 24 * HOUR;
   return { wake, hours: cfg.defaultSleepHours };
+}
+
+const FILL_GAP_HOURS = 30;
+
+/** Default wake times strictly inside (a + 12 h, b - 12 h): the nights to fill between two wake times. */
+function habitualWakes(a: number, b: number, cfg: TwinConfig): number[] {
+  const out: number[] = [];
+  for (let w = defaultSleep(b - 12 * HOUR, cfg).wake; w > a + 12 * HOUR; w -= 24 * HOUR) if (w < b - 12 * HOUR) out.unshift(w);
+  return out;
+}
+
+/**
+ * The night and sleep history the prior uses at time t when missing nights are filled (fillMissingNights):
+ * gaps of more than 30 h between recorded wake times get habitual nights, and if the last recorded wake is
+ * more than 30 h before t (or nothing is recorded), today's default night is used.
+ */
+export function filledSleep(recordedSorted: SleepEpisode[], t: number, cfg: TwinConfig): { episode: SleepEpisode; history: SleepEpisode[]; usesDefault: boolean; filledNights: number } {
+  const recorded = recordedSorted.filter((s) => s.wake <= t);
+  const last = recorded.at(-1);
+  const usesDefault = !last || t - last.wake > FILL_GAP_HOURS * HOUR;
+  const episode = usesDefault ? defaultSleep(t, cfg) : (last as SleepEpisode);
+  const history: SleepEpisode[] = [];
+  let filledNights = 0;
+  const habitual = cfg.tpm.habitualSleepHours;
+  recorded.forEach((s, i) => {
+    history.push(s);
+    const next = i + 1 < recorded.length ? recorded[i + 1].wake : usesDefault ? episode.wake : null;
+    if (next !== null && next - s.wake > FILL_GAP_HOURS * HOUR) {
+      for (const w of habitualWakes(s.wake, next, cfg)) {
+        history.push({ wake: w, hours: habitual });
+        filledNights++;
+      }
+    }
+  });
+  if (usesDefault && recorded.length) history.push(episode);
+  return { episode, history, usesDefault, filledNights };
 }
 
 function taskHours(t: number, ctx: ContextId, taskStart: number | null): number {
@@ -189,7 +260,21 @@ export function replay(
     wVar = wVar * alpha * alpha + cfg.workload.stationarySd ** 2 * (1 - alpha * alpha);
     clock = to;
   };
-  const prior = (t: number) => priorKss(t, sleep, cfg.tpm, cfg.tzOffsetMinutes, sleeps);
+  // with fillMissingNights the night in use depends on t; cached because prior() is called for every update
+  let fillCache: { key: string; v: ReturnType<typeof filledSleep> } | null = null;
+  let sleepVersion = 0; // bumped on every sleep entry, so a corrected night invalidates the cache
+  const priorInputs = (t: number): { episode: SleepEpisode; history: SleepEpisode[] } => {
+    if (!cfg.fillMissingNights) return { episode: sleep, history: sleeps };
+    const nRecorded = sleeps.filter((s) => s.wake <= t).length;
+    const def = defaultSleep(t, cfg).wake;
+    const key = `${sleepVersion}:${nRecorded}:${def}:${nRecorded ? t - sleeps[nRecorded - 1].wake > FILL_GAP_HOURS * HOUR : 1}`;
+    if (fillCache?.key !== key) fillCache = { key, v: filledSleep(sleeps, t, cfg) };
+    return fillCache.v;
+  };
+  const prior = (t: number) => {
+    const { episode, history } = priorInputs(t);
+    return priorKss(t, episode, cfg.tpm, cfg.tzOffsetMinutes, history);
+  };
   /** Kalman update with observation y = h . x + c + noise(r). Credits the change in d to `source`. */
   const update = (y: number, h: number[], c: number, r: number, source: Source) => {
     const ph = P.map((row) => row.reduce((acc, v, j) => acc + v * h[j], 0));
@@ -248,6 +333,7 @@ export function replay(
         if (i >= 0) sleeps.splice(i, 1);
         sleeps.push({ wake: e.wake, hours: e.hours });
         sleeps.sort((a, b) => a.wake - b.wake);
+        sleepVersion++;
         sleep = sleeps.filter((x2) => x2.wake <= e.t + 1).at(-1) ?? sleeps[sleeps.length - 1];
         break;
       }
@@ -258,7 +344,9 @@ export function replay(
           breakStart = e.t;
         } else if (context === 'break') {
           const longBreak = breakStart !== null && e.t - breakStart >= cfg.breakResetMinutes * MIN;
-          taskStart = longBreak || taskStart === null ? e.t : taskStart;
+          // after a long break time on task starts again; after a short one it continues from where it was
+          // frozen, so the break's own minutes are not counted as task time
+          taskStart = longBreak || taskStart === null ? e.t : e.t - frozenTot * HOUR;
           breakStart = null;
         } else if (taskStart === null) {
           taskStart = e.t;
@@ -283,26 +371,30 @@ export function replay(
         break;
       }
       case 'pvt': {
-        if (cfg.usePassive && Number.isFinite(e.medianRt) && e.n > 0) observe('pvt', e.medianRt, e.t, 'pvt');
+        const fullLength = e.durationS === undefined || e.durationS >= cfg.pvtMinSeconds;
+        if (cfg.usePassive && fullLength && Number.isFinite(e.medianRt) && e.n > 0) observe('pvt', e.medianRt, e.t, 'pvt');
         break;
       }
       case 'cam': {
         if (!cfg.usePassive || e.coverage < cfg.camMinCoverage) break;
-        observe('perclos', e.perclos * 100, e.t, 'cam');
+        if (e.peakClosure === undefined || e.peakClosure >= cfg.perclosMinPeakClosure) observe('perclos', e.perclos * 100, e.t, 'cam');
         if (e.blinkRate >= cfg.minBlinksForDuration && e.meanBlinkMs > 0) observe('blink', e.meanBlinkMs, e.t, 'cam');
         break;
       }
     }
   }
   emitUntil(opts.until);
+  const fillEnd = cfg.fillMissingNights ? filledSleep(sleeps, opts.until, cfg) : null;
 
   return {
     snapshots,
     now: snap(opts.until),
     contributions,
     anchors: Object.fromEntries(CH.map((c, i) => [c, { mean: x[i + 1], sd: Math.sqrt(P[i + 1][i + 1]) }])) as Record<ChannelId, { mean: number; sd: number }>,
-    sleep,
+    sleep: fillEnd ? fillEnd.episode : sleep,
     sleeps,
+    priorHistory: fillEnd ? fillEnd.history : sleeps,
+    sleepAssumption: fillEnd ? { usesDefault: fillEnd.usesDefault, filledNights: fillEnd.filledNights } : { usesDefault: sleeps.length === 0, filledNights: 0 },
     taskStart,
     context,
     checkIns,
@@ -321,6 +413,12 @@ export interface Scenario {
   breakNow?: boolean;
   sleepAt?: number; // epoch ms
   sleepHours?: number;
+  // A work rhythm for the projection: blocks of breaksEveryMinutes of work separated by breaks of
+  // breakMinutes (default: the reset length). Without it, a person who is working now is assumed to keep
+  // working without a break for the whole horizon, and breakNow keeps time on task at zero throughout.
+  breaksEveryMinutes?: number;
+  breakMinutes?: number;
+  breakNowMinutes?: number; // with breaksEveryMinutes and breakNow: length of the break taken now
 }
 
 /** Projects the twin forward. The offset is carried forward with growing uncertainty. */
@@ -336,6 +434,34 @@ export function forecast(
   let sleepyAt: number | null = null;
   const inTask = r.context !== 'break' && r.context !== 'unset' && !sc.breakNow;
   const tot0 = sc.breakNow ? 0 : r.now.tot / Math.max(cfg.totPerHour, 1e-9);
+  const rhythm = sc.breaksEveryMinutes !== undefined && sc.breaksEveryMinutes > 0;
+  const W = (sc.breaksEveryMinutes ?? 0) / 60;
+  const B = (sc.breakMinutes ?? cfg.breakResetMinutes) / 60;
+  const R = cfg.breakResetMinutes / 60;
+  const totNow = r.now.tot / Math.max(cfg.totPerHour, 1e-9);
+  /** Hours on task dtH hours from now under a work rhythm, with the twin's own break rule. */
+  const scheduledTot = (dtH: number): number => {
+    if (r.context === 'unset') return 0;
+    let t = 0;
+    let T = totNow;
+    if (inTask) {
+      const first = Math.max(0, W - T); // finish the current block
+      if (dtH < first) return T + dtH;
+      t = first;
+      T += first;
+    }
+    // a break now (or the current break, whose start is not known here, taken to start now), then the rhythm
+    let brk = sc.breakNow ? (sc.breakNowMinutes ?? B * 60) / 60 : B;
+    for (;;) {
+      if (dtH < t + brk) return brk >= R && dtH - t >= R ? 0 : T;
+      t += brk;
+      if (brk >= R) T = 0;
+      if (dtH < t + W) return T + (dtH - t);
+      t += W;
+      T += W;
+      brk = B;
+    }
+  };
   for (let t = r.now.t; t <= end; t += step) {
     const sleeping = sc.sleepAt !== undefined && t >= sc.sleepAt && t < sc.sleepAt + (sc.sleepHours ?? 7.5) * HOUR;
     const sleep =
@@ -344,8 +470,9 @@ export function forecast(
         : r.sleep;
     const dtH = (t - r.now.t) / HOUR;
     const afterSleep = sleep !== r.sleep;
-    const totH = afterSleep ? 0 : inTask ? tot0 + dtH : sc.breakNow ? 0 : tot0;
-    const mean = clampKss(priorKss(t, sleep, cfg.tpm, cfg.tzOffsetMinutes, afterSleep ? [...r.sleeps, sleep] : r.sleeps) + totH * cfg.totPerHour + r.now.offset);
+    const totH = afterSleep ? 0 : rhythm ? scheduledTot(dtH) : inTask ? tot0 + dtH : sc.breakNow ? 0 : tot0;
+    const history = r.priorHistory ?? r.sleeps;
+    const mean = clampKss(priorKss(t, sleep, cfg.tpm, cfg.tzOffsetMinutes, afterSleep ? [...history, sleep] : history) + totH * cfg.totPerHour + r.now.offset);
     const sd = Math.sqrt(r.now.offsetSd ** 2 + cfg.offsetDriftSdPerSqrtHour ** 2 * dtH);
     const pSleepy = 1 - normalCdf((7 - mean) / sd);
     points.push({ t, kss: mean, kssSd: sd, pSleepy, asleep: sleeping });

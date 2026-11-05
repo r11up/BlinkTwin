@@ -7,14 +7,20 @@
 // with EAR_open = 90th and EAR_closed = 1st percentile of that test's valid EAR.
 // Frames with missing or degenerate landmarks are treated as "no face".
 //
-// Usage (from web/): node scripts/drozy_eyes.ts <DROZY dir> <out sessions csv> [out minutes csv]
+// The released DROZY results were computed before the blink meter learned to hold its open-eye baseline
+// during closures of 2 s or more (src/sensing/blink.ts, freezeAfterMs). By default this script reproduces
+// them exactly ({ freezeAfterMs: Infinity }); pass --fixed-baseline to use the website's current meter.
+//
+// Usage (from web/): node scripts/drozy_eyes.ts <DROZY dir> <out sessions csv> [out minutes csv] [--fixed-baseline]
 // Outputs aggregates only (per test and per minute), never per-frame data.
 
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { BlinkMeter, percentile } from '../src/sensing/blink.ts';
 
-const [dir, outSessions, outMinutes] = process.argv.slice(2);
+const args = process.argv.slice(2);
+const FIXED_BASELINE = args.includes('--fixed-baseline');
+const [dir, outSessions, outMinutes] = args.filter((a) => a !== '--fixed-baseline');
 if (!dir || !outSessions) {
   console.error('usage: node scripts/drozy_eyes.ts <DROZY dir> <out sessions csv> [out minutes csv]');
   process.exit(1);
@@ -66,7 +72,7 @@ for (const id of tests) {
   const open = percentile(valid, 0.9);
   const closed = percentile(valid, 0.01);
   const span = Math.max(1e-6, open - closed);
-  const meter = new BlinkMeter();
+  const meter = new BlinkMeter(FIXED_BASELINE ? {} : { freezeAfterMs: Infinity });
   const wins: ReturnType<BlinkMeter['window']>[] = [];
   let nextWin = 60_000;
   for (let i = 0; i < n; i++) {

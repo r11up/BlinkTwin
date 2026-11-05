@@ -3,6 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- The page may connect only to itself and to Google's model storage (for the face model, if it is not
+         served locally). This also stops the usage statistics that the MediaPipe library would otherwise
+         post to Google once a minute; nothing else ever leaves the page. -->
+    <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://storage.googleapis.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'" />
     <title>BlinkTwin</title>
     <meta name="description" content="A personal digital twin of sleepiness and cognitive load that runs in your browser." />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M2 16c4-7 9-10 14-10s10 3 14 10c-4 7-9 10-14 10S6 23 2 16z' fill='%23165d8f'/%3E%3Ccircle cx='16' cy='16' r='5' fill='white'/%3E%3C/svg%3E" />
@@ -16,17 +20,28 @@
       <div class="top-actions">
         <span class="privacy">Runs on your device. Video never leaves this page.</span>
         <button class="ghost" data-science="forecast">The science</button>
+        <button id="btn-theme" class="ghost" type="button" aria-pressed="false" title="Switch between light and dark">Dark</button>
         <button id="btn-demo" class="ghost">Demo day</button>
         <button id="btn-quit" class="ghost" title="Stop the local BlinkTwin server">Quit</button>
       </div>
     </header>
-    <div id="alarm" class="alarm" hidden role="alertdialog" aria-live="assertive">
-      <div class="alarm-box"><div class="alarm-title">Wake up</div><p id="alarm-reason"></p><p class="small">Stop what you are doing. If you are driving, pull over safely.</p><button id="alarm-ok" class="primary">I'm awake</button></div>
+    <div id="alarm" class="alarm" hidden role="alertdialog" aria-live="assertive" aria-labelledby="alarm-title" aria-describedby="alarm-reason">
+      <div class="alarm-box"><div class="alarm-title" id="alarm-title">Wake up</div><p id="alarm-reason"></p><p class="small">Stop what you are doing. If you are driving, pull over safely.</p><p class="small muted">These alerts are not validated. No alert does not mean you are fit to drive.</p><button id="alarm-ok" class="primary">I'm awake</button></div>
     </div>
-    <div id="warn" class="banner warn" hidden role="alert"><b>You look drowsy.</b> <span id="warn-reason"></span>. Consider a break. <button id="warn-ok" class="ghost">OK</button></div>
+    <div id="warn" class="banner warn" hidden role="alert"><b>Drowsiness warning.</b> <span id="warn-reason"></span>. Consider a break. <button id="warn-ok" class="ghost">OK</button></div>
     <div id="demo-banner" class="banner" hidden>Demo: a simulated person's day. Your own data is untouched.</div>
 
     <main class="grid">
+      <section id="start" class="card wide start" hidden aria-labelledby="start-title">
+        <h2 id="start-title">Getting started</h2>
+        <ol class="steps">
+          <li><b>Tell it how you slept.</b> Enter when you woke and how long you slept (below, under <i>What I'm doing</i>). Until then the twin assumes you woke at 07:00 after 7.5 hours.</li>
+          <li><b>Check in.</b> Rate your sleepiness a few times a day. Check-ins set your personal level; nothing else does that as well.</li>
+          <li><b>Optional:</b> start the camera while you work, and take the 3-minute reaction test now and then.</li>
+        </ol>
+        <div class="actions"><button id="start-sleep" class="primary" type="button">Enter my sleep</button><button id="start-checkin" type="button">Check in now</button><button id="start-demo" class="ghost" type="button">See a demo day first</button></div>
+      </section>
+
       <section class="card now">
         <div class="card-head"><h2>Now</h2><button class="info-link" data-science="now" type="button">ⓘ How is this estimated?</button></div>
         <div class="now-pair">
@@ -34,6 +49,7 @@
             <div class="label">Sleepiness (KSS 1–9)</div>
             <div class="big"><span id="now-kss">–</span><small id="now-kss-sd"></small></div>
             <div id="now-kss-word" class="word"></div>
+            <div id="now-kss-range" class="small muted"></div>
           </div>
           <div class="now-block">
             <div class="label">Cognitive load (NASA-TLX 0–100)</div>
@@ -41,7 +57,9 @@
             <div id="now-load-word" class="word"></div>
           </div>
         </div>
-        <p id="forecast-line" class="forecast-line"></p>
+        <p id="defaults-note" class="defaults-note small" hidden></p>
+        <div class="forecast-line"><p id="forecast-line"></p><p id="forecast-p" class="small"></p></div>
+        <div id="nudge" class="nudge" hidden role="status" aria-live="polite"><p id="nudge-text"></p><div class="actions"><button id="nudge-checkin" class="primary" type="button">Check in</button><button id="nudge-dismiss" class="ghost" type="button">Not now</button></div></div>
         <div class="info-row"><button class="info-link" data-science="forecast" type="button">ⓘ How is this predicted?</button><button class="info-link" data-science="workload" type="button">ⓘ How is workload estimated?</button></div>
         <div class="actions">
           <button id="btn-checkin" class="primary">Check in</button>
@@ -57,42 +75,56 @@
 
       <section class="card camera">
         <div class="card-head"><h2>Eyes and head, live</h2><button class="info-link" data-science="eyes" type="button">ⓘ How</button></div>
-        <div class="video-wrap"><video id="video" playsinline muted></video><canvas id="overlay"></canvas><div class="eye-meter" title="Eye closure"><span id="eye-bar"></span></div></div>
+        <div class="video-wrap"><div id="video-placeholder" class="video-placeholder">Camera off</div><video id="video" playsinline muted></video><canvas id="overlay"></canvas><div class="eye-meter" title="Eye closure"><span id="eye-bar"></span></div></div>
         <div id="head-live" class="cam-live"></div>
         <div id="cam-live" class="cam-live"></div>
-        <div class="trace-wrap"><canvas id="trace"></canvas><div class="trace-legend small"><span class="lg closure">eye closure</span><span class="lg pitch">head pitch</span><span class="muted">last 30 s</span></div></div>
+        <div class="trace-wrap"><canvas id="trace" role="img" aria-label="Eye closure and head pitch over the last 30 seconds"></canvas><div class="trace-legend small"><span class="lg closure">eye closure</span><span class="lg pitch">head pitch</span><span class="muted">last 30 s</span></div></div>
         <div class="actions"><button id="cam-toggle" class="primary">Start camera</button><button id="cam-stop" class="stop" disabled>■ Stop camera</button><label class="small muted" id="hide-wrap" hidden><input type="checkbox" id="hide-video" /> Hide video (keep tracking)</label></div>
-        <p id="cam-status" class="small muted">Camera off. When on, BlinkTwin sounds an alarm if your eyes stay closed for over a second or your head drops.</p>
-        <p id="alert-status" class="small"></p>
-        <button class="info-link" data-science="alarms" type="button">ⓘ When does it alarm?</button>
+        <p id="cam-status" class="small muted">Camera off. When on, BlinkTwin sounds a long eye-closure alert if your eyes stay closed for over a second (not while you look down) and a head-drop alert if your head drops forward while your eyes close. These alerts are not validated, and no alert does not mean you are fit to drive.</p>
+        <p id="alert-status" class="small" role="status" aria-live="polite"></p>
+        <button class="info-link" data-science="alarms" type="button">ⓘ When does it alert?</button>
       </section>
 
       <section class="card wide timeline">
         <div class="card-head">
-          <h2>Today</h2>
+          <h2>Today: sleepiness</h2>
           <div class="legend small">
-            <span class="lg prior">rhythm model</span><span class="lg twin">twin estimate (90% band)</span><span class="lg forecast">forecast</span><span class="lg checkin">check-in</span><span class="lg pvt">reaction test</span><span class="lg cam">webcam</span>
+            <span class="lg prior">rhythm model</span><span class="lg twin">twin estimate (90% band)</span><span class="lg forecast" title="Assumes 50-minute work blocks with 10-minute breaks">forecast (with usual breaks)</span><span class="lg checkin">your rating</span><span class="lg pvt">reaction test</span><span class="lg cam">webcam on</span><span class="lg whatif" id="lg-whatif" hidden>what-if</span>
           </div>
         </div>
         <div id="kss-chart" class="chart"></div>
-        <div id="load-chart" class="chart small-chart"></div>
-        <div class="what-if">
-          <span class="small muted">What if…</span>
-          <button data-scenario="break">I take a 15-minute break</button>
-          <button data-scenario="bed">I go to bed at 23:00</button>
-          <button data-scenario="push">I keep going</button>
+        <div class="card-head chart-head">
+          <h2>Workload</h2>
+          <div class="legend small"><span class="lg load">estimate (90% band)</span><span class="lg tlx">your NASA-TLX rating</span></div>
         </div>
-        <p id="scenario-note" class="small"></p>
+        <div id="load-chart" class="chart small-chart"></div>
+        <div class="what-if" role="group" aria-label="What-if scenarios">
+          <span class="small muted">What if…</span>
+          <button data-scenario="break" aria-pressed="false">I take a 15-minute break</button>
+          <button data-scenario="bed" aria-pressed="false">I go to bed at <span id="bed-time">23:00</span></button>
+          <button data-scenario="push" aria-pressed="false">I keep working without breaks</button>
+        </div>
+        <p id="scenario-note" class="small" aria-live="polite"></p>
         <button class="info-link" data-science="whatif" type="button">ⓘ How are what-ifs computed?</button>
+      </section>
+
+      <section class="card wide track" aria-labelledby="track-title">
+        <details id="track">
+          <summary><span id="track-title" class="h2">How well does the twin know you?</span> <span id="track-hint" class="small muted"></span></summary>
+          <div id="track-body"></div>
+        </details>
       </section>
 
       <section class="card">
         <h2>What I'm doing</h2>
-        <div id="contexts" class="segmented"></div>
-        <form id="sleep-form" class="sleep-form">
+        <div id="contexts" class="segmented" role="group" aria-label="Current activity"></div>
+        <form id="sleep-form" class="sleep-form" aria-describedby="sleep-status">
           <label>Woke up at <input type="time" id="wake" /></label>
           <label>Slept <input type="number" id="slept" min="0" max="14" step="0.5" /> h</label>
+          <label class="no-sleep"><input type="checkbox" id="no-sleep" /> I did not sleep last night</label>
         </form>
+        <p id="sleep-status" class="sleep-status small" aria-live="polite"></p>
+        <div id="sleep-chips" class="actions sleep-chips"></div>
       </section>
 
       <section class="card">
@@ -105,9 +137,9 @@
         <h2>Your data</h2>
         <p id="data-counts" class="small"></p>
         <div class="actions"><button id="btn-csv" class="ghost">Export CSV</button><button id="btn-json" class="ghost">Export JSON</button><button id="btn-clear" class="ghost danger">Delete my data</button></div>
-        <p class="small muted">Research prototype. Not a medical device; it does not diagnose anything.</p>
       </section>
     </main>
+    <footer class="foot small muted">Research prototype, not a medical device. It does not diagnose anything and must not be used to decide whether you are fit to drive or operate machinery.</footer>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

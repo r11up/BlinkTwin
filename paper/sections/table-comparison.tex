@@ -1,0 +1,35 @@
+% Condensed from docs/LITERATURE_COMPARISON.md. Only peer-reviewed studies with a DOI, and only numbers
+% read verbatim from the paper's own abstract or text. Numbers are on different scales and tasks; the
+% table shows what each study measured, not a ranking.
+\begin{table*}[t]
+  \centering
+  \caption{Published Systems for Related Problems and Their Reported Results, With BlinkTwin's Results on Public Data}
+  \label{tab:comparison}
+  \footnotesize
+  \setlength{\tabcolsep}{3.5pt}
+  \begin{tabular}{@{}L{2.9cm}L{2.4cm}L{2.2cm}L{3.1cm}L{1.9cm}L{3.9cm}@{}}
+    \toprule
+    Study & Data ($n$) & Outcome & Inputs & Validation & Reported result \\
+    \midrule
+    \multicolumn{6}{@{}l}{\emph{Sleepiness on the KSS scale}} \\
+    Ingre et al.~\cite{ingre2014validating} & Airline crews, field & KSS & Three-Process Model from sleep & In-sample mixed model & Residual SD 1.46 with model-generated sleep \\
+    Knock et al.~\cite{knock2021prediction} & 21 ICU nurses, field & KSS & Arousal model, shift schedule, sleep, light & Prospective & 56--60\% within $\pm 1$ point (day shifts), 48--52\% (night) \\
+    Sandberg et al.~\cite{sandberg2011detecting} & 12 drivers, simulator & Sleepy vs alert (KSS) & Driving indicators $+$ sleep/wake model & Held-out data & Best single indicator 0.72 (mean of sensitivity and specificity) \\
+    \midrule
+    \multicolumn{6}{@{}l}{\emph{Alertness on the PVT}} \\
+    Reifman et al.~\cite{reifman2019twobalert} & 21 adults, 62 h awake & PVT mean RT & In-app PVT $+$ personalised model & Prospective & After 12 PVTs, accuracy comparable to the peak with all PVTs \\
+    Subramaniyan et al.~\cite{subramaniyan2025personalized} & 26 adults, 62 h awake & PVT mean RT & Face video $+$ personalised model & Cross-validated & Error 36~ms (SE 5) vs 30~ms rested within-person variability \\
+    \midrule
+    \multicolumn{6}{@{}l}{\emph{Drowsiness from face video or eyelid sensors}} \\
+    Maior et al.~\cite{maior2020realtime} & DROZY & Drowsy vs awake & Eye aspect ratio (near-infrared) & Inter-subject & 94.44\% accuracy \\
+    Massoz et al.~\cite{massoz2018multi} & 29 adults (Li\`ege) & Binary, from PVT RT & Near-infrared face video & Leave one subject out & 70\%, 85\%, 89\%, 94\% (5, 15, 30, 60-s windows) \\
+    Ghoddoosian et al.~\cite{ghoddoosian2019realistic} & UTA-RLDD, 60 & 3 classes, self-labelled & Phone and webcam RGB video & Subject folds & 65.2\% (human judges 57.8\%) \\
+    Wilkinson et al.~\cite{wilkinson2013accuracy} & Restricted sleep & $\geq$3 or $\geq$5 lapses min$^{-1}$ & Infrared reflectance oculography & Group & Sensitivity 77\%, 100\%; specificity 85\%, 83\% \\
+    \midrule
+    \multicolumn{6}{@{}l}{\emph{BlinkTwin (this work)}} \\
+    Replay of released model & DROZY, 14 & KSS & Prior $+$ check-in $+$ PVT $+$ webcam & Leave one subject out & MAE 1.38 (prior alone 1.73); Section~\ref{sec:replay} \\
+    Prior alone & ds004902, 28 & KSS & Three-Process Model & Out of sample & MAE 1.69, 36\% within $\pm 1$; with refitted mapping~\cite{ingre2014validating} 1.46, 45\% \\
+    Webcam pipeline & DROZY video, 36 tests & Blink rate & MediaPipe blendshapes & vs EOG & Spearman $\rho = 0.71$ \\
+    \bottomrule
+  \end{tabular}
+\end{table*}

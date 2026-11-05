@@ -234,9 +234,29 @@ describe('science text matches the results', () => {
 
   it('every in-text citation appears in the reference list', () => {
     const refs = SCIENCE.find((s) => s.id === 'refs')?.html ?? '';
-    for (const name of ['Kartynnik', 'Kalman', 'Massoz', 'Basner', 'Dinges', 'Caffier', 'Schleicher', 'Ingre', 'Kaida', 'Hart', 'Åkerstedt']) {
+    for (const name of ['Kartynnik', 'Kalman', 'Massoz', 'Basner', 'Dinges', 'Caffier', 'Schleicher', 'Ingre', 'Kaida', 'Hart', 'Åkerstedt', 'Van Dongen', 'Grishchenko', 'Wierwille', 'Xiang', 'Hertig-Godeschalk', 'Anwyl-Irvine', 'Bridges']) {
       if (text.replace(refs, '').includes(name)) expect(refs).toContain(name);
     }
+  });
+});
+
+describe('science text matches the simulation results', () => {
+  type Row = { scenario: string; method: string; k: number; mae: number; brier: number };
+  type Cmp = { scenario: string; a: string; b: string; mean_diff: number; ci: [number, number] };
+  const sim = JSON.parse(readFileSync(new URL('../../results/sim_summary.json', import.meta.url), 'utf8')) as { mae: Row[]; forecast: Row[]; comparisons: Cmp[] };
+  const text = SCIENCE.map((s) => s.html).join(' ');
+  const f = (x: number, d: number) => x.toFixed(d).replace('-', '−');
+  const mae = (method: string, k: number) => sim.mae.find((r) => r.scenario === 'matched' && r.method === method && r.k === k) as Row;
+  const fc = (method: string) => sim.forecast.find((r) => r.scenario === 'matched' && r.method === method) as Row;
+
+  it('quotes the matched-scenario errors and the paired difference', () => {
+    for (const [m, k] of [['prior', 0], ['checkins', 3], ['twin', 3], ['noanchor', 3]] as const) expect(text).toContain(f(mae(m, k).mae, 2));
+    const c = sim.comparisons.find((x) => x.scenario === 'matched' && x.a === 'twin_k3' && x.b === 'checkins_k3') as Cmp;
+    expect(text).toContain(`${f(c.mean_diff, 2)}, 95% CI ${f(c.ci[0], 2)} to ${f(c.ci[1], 2)}`);
+  });
+
+  it('quotes the one-hour forecast scores', () => {
+    for (const m of ['prior', 'checkins', 'twin']) expect(text).toContain(f(fc(m).brier, 3));
   });
 });
 
