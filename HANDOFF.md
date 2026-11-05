@@ -4,8 +4,9 @@ Start here in the next session. `docs/PROJECT_NOTES.md` stays the standing brief
 
 ## 1. Where things stand
 
-- **GitHub `main` has everything.** The revision branch was merged into `main`; the release is tagged `v1.0-arxiv`, which is the version the paper cites. `revision-round1` can be deleted.
-- **Preprint:** `paper/main.pdf` (17 pages, IEEE two-column, appendices included). Title: "BlinkTwin: An Open, In-Browser Model of Subjective Sleepiness That Anchors Webcam and Reaction-Time Signals to Self-Ratings".
+- **GitHub `main` has everything.** The revision branch was merged into `main`. `revision-round1` can be deleted.
+- **The release tag `v1.0-arxiv` is not on GitHub yet.** The paper cites it, so create it once from your machine before posting (Section 2).
+- **Preprint:** `paper/main.pdf` (18 pages, IEEE two-column, appendices included). Title: "BlinkTwin: An Open, In-Browser Model of Subjective Sleepiness That Anchors Webcam and Reaction-Time Signals to Self-Ratings".
 - **arXiv package:** `paper/blinktwin-arxiv.tar.gz`, built by `paper/make_arxiv.sh`, which also checks that the package compiles on its own with pdflatex (as arXiv does).
 - **Code:** MIT licence (`LICENSE`), citation file (`CITATION.cff`). Typecheck, all unit tests and the production build pass; an end-to-end browser check of the app and the privacy traffic check pass (see `results/privacy_check.json`).
 - **Reviews:** two rounds of internal referee reports and responses are in `paper/reviews/`. Items still open after round 2 are marked in `paper/reviews/round2-response.md`; most need the DROZY recordings or new data.
@@ -30,7 +31,14 @@ git pull --ff-only origin main
 git stash pop
 ```
 
-Then:
+Then create the release tag the paper cites, on the commit that is now `main`:
+
+```bash
+git tag -a v1.0-arxiv -m "Version described in the arXiv preprint" origin/main
+git push origin v1.0-arxiv
+```
+
+Then check that everything builds:
 
 ```bash
 cd web && npm install && npx tsc --noEmit && npx vitest run
@@ -41,7 +49,7 @@ Git-ignored local data (`data/`, `results/drozy_*.csv`, `analysis/.venv`, `paper
 
 ## 3. Posting to arXiv
 
-1. Make the GitHub repository public first, so the link in the paper works, and check that the tag `v1.0-arxiv` is visible.
+1. Make the GitHub repository public first, so the link in the paper works, and check that the tag `v1.0-arxiv` is visible (Section 2).
 2. Upload `paper/blinktwin-arxiv.tar.gz` as the source. arXiv will compile `main.tex`; the bibliography (`main.bbl`) and all figures are inside.
 3. Suggested categories: primary cs.HC (Human-Computer Interaction), cross-lists eess.SP (Signal Processing) and q-bio.QM (Quantitative Methods). A first submission to a category may need an endorsement.
 4. Choose the arXiv licence for the paper text (for example CC BY 4.0); the code licence (MIT) is separate.
