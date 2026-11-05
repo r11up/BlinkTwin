@@ -1,5 +1,6 @@
 // Check-in (KSS + NASA-TLX) and the reaction-time test, each in a modal <dialog>.
 
+import { PvtRun } from '../probes/pvt-run.ts';
 import { PVT_B, scorePvt, type PvtSummary } from '../probes/pvt-score.ts';
 
 // Karolinska Sleepiness Scale wording (Akerstedt & Gillberg, 1990)
@@ -147,28 +148,48 @@ export function runPvt(durationMs = PVT_B.durationMs): Promise<PvtSummary | null
     const counter = d.querySelector('.pvt-counter') as HTMLElement;
     const intro = d.querySelector('.pvt-intro') as HTMLElement;
     const timeEl = d.querySelector('.pvt-time') as HTMLElement;
-    const rts: number[] = [];
-    let premature = 0;
-    let stimulusAt: number | null = null;
     let raf = 0;
-    let timer = 0;
-    let start = 0;
-    let done = false;
-
+    let finished = false;
     let result: PvtSummary | null = null;
     const close = () => {
       if (d.open) d.close();
       resolve(result);
     };
+    const stopTicking = () => cancelAnimationFrame(raf);
+    // the timing logic (one pending timer, false starts, reaction times) lives in PvtRun
+    const run = new PvtRun(
+      durationMs,
+      { now: () => performance.now(), setTimeout: (fn, ms) => window.setTimeout(fn, ms), clearTimeout: (id) => window.clearTimeout(id), random: Math.random },
+      {
+        stimulus: () => {
+          counter.hidden = false;
+          const tick = () => {
+            if (run.stimulusAt === null) return;
+            counter.textContent = String(Math.round(performance.now() - run.stimulusAt));
+            raf = requestAnimationFrame(tick);
+          };
+          tick();
+        },
+        feedback: (rt) => {
+          stopTicking();
+          counter.textContent = String(Math.round(rt));
+        },
+        clear: () => {
+          stopTicking();
+          counter.hidden = true;
+        },
+        finished: () => finish(true),
+      },
+    );
     const finish = (ok: boolean) => {
-      if (done) return;
-      done = true;
-      cancelAnimationFrame(raf);
-      clearTimeout(timer);
+      if (finished) return;
+      finished = true;
+      run.stop();
+      stopTicking();
       window.removeEventListener('keydown', onKey, true);
       if (!ok) return close();
       // show the result before closing, so the person sees the test has ended and what it found
-      result = scorePvt(rts, premature);
+      result = scorePvt(run.rts, run.premature);
       counter.hidden = true;
       timeEl.textContent = '';
       const panel = d.querySelector('.pvt-result') as HTMLElement;
@@ -181,63 +202,34 @@ export function runPvt(durationMs = PVT_B.durationMs): Promise<PvtSummary | null
       doneBtn.focus();
       (d.querySelector('.pvt-cancel') as HTMLButtonElement).hidden = true;
     };
-    const schedule = () => {
-      if (performance.now() - start >= durationMs) return finish(true);
-      const isi = PVT_B.isiMinMs + Math.random() * (PVT_B.isiMaxMs - PVT_B.isiMinMs);
-      timer = window.setTimeout(() => {
-        stimulusAt = performance.now();
-        counter.hidden = false;
-        const tick = () => {
-          if (stimulusAt === null) return;
-          counter.textContent = String(Math.round(performance.now() - stimulusAt));
-          raf = requestAnimationFrame(tick);
-        };
-        tick();
-      }, isi);
-    };
     const respond = (ev: Event) => {
-      if (!start || done) return;
+      if (!run.running) return;
       ev.preventDefault();
-      if (stimulusAt === null) {
-        premature++;
-        clearTimeout(timer);
-        schedule();
-        return;
-      }
-      const rt = performance.now() - ev.timeStamp > 50 ? performance.now() - stimulusAt : ev.timeStamp - stimulusAt;
-      rts.push(rt);
-      stimulusAt = null;
-      cancelAnimationFrame(raf);
-      counter.textContent = String(Math.round(rt));
-      window.setTimeout(() => {
-        counter.hidden = true;
-        schedule();
-      }, 600);
+      run.respond(ev.timeStamp);
     };
     const onKey = (ev: KeyboardEvent) => {
       if (ev.code === 'Space') respond(ev);
       if (ev.code === 'Escape') finish(false);
     };
     const clock = () => {
-      if (done || !start) return;
-      const left = Math.max(0, durationMs - (performance.now() - start));
+      if (!run.running) return;
+      const left = run.timeLeftMs();
       timeEl.textContent = `${Math.floor(left / 60000)}:${String(Math.floor((left % 60000) / 1000)).padStart(2, '0')}`;
       window.setTimeout(clock, 250);
     };
     (d.querySelector('.pvt-go') as HTMLButtonElement).addEventListener('click', (ev) => {
       ev.stopPropagation();
       intro.hidden = true;
-      start = performance.now();
       stage.focus();
+      run.start();
       clock();
-      schedule();
     });
     stage.addEventListener('pointerdown', respond);
     window.addEventListener('keydown', onKey, true);
     (d.querySelector('.pvt-cancel') as HTMLButtonElement).addEventListener('click', () => finish(false));
     d.addEventListener('cancel', (ev) => {
       ev.preventDefault();
-      if (done) close();
+      if (finished) close();
       else finish(false);
     });
   });
