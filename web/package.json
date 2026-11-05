@@ -1,0 +1,22 @@
+{
+  "name": "blinktwin",
+  "private": true,
+  "version": "0.1.0",
+  "description": "BlinkTwin: a browser-based personal digital twin of sleepiness and cognitive load",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "simulate": "vite-node scripts/simulate.ts"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "vite": "8.3.5",
+    "vitest": "4.1.12"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "1.1.1"
+  }
+}

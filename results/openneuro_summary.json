@@ -1,0 +1,70 @@
+{
+  "dataset": "OpenNeuro ds004902 v1.0.4 (Xiang et al., 2024)",
+  "n_participants": 71,
+  "paired": {
+    "kss": {
+      "n": 33,
+      "ns_median": 5.0,
+      "sd_median": 7.0,
+      "diff_mean": 2.0303030303030303,
+      "diff_sd": 2.0384560408071177,
+      "dz": 0.9960003991546174,
+      "wilcoxon_p": 5.128602042886537e-05
+    },
+    "median_rt_ms": {
+      "n": 30,
+      "ns_median": 320.0,
+      "sd_median": 359.0,
+      "diff_mean": 41.21666666666667,
+      "diff_sd": 30.892383653840824,
+      "dz": 1.3342015665904186,
+      "wilcoxon_p": 1.4529353223195762e-05
+    },
+    "lapses": {
+      "n": 30,
+      "ns_median": 2.0,
+      "sd_median": 1.0,
+      "diff_mean": -0.03333333333333333,
+      "diff_sd": 4.382436209055048,
+      "dz": -0.007606119460326554,
+      "wilcoxon_p": 0.9188061153886293
+    },
+    "sss": {
+      "n": 35,
+      "ns_median": 2.0,
+      "sd_median": 5.0,
+      "diff_mean": 1.6571428571428573,
+      "diff_sd": 2.071414082823859,
+      "dz": 0.8000055956382001,
+      "wilcoxon_p": 0.0002745104449892011
+    }
+  },
+  "overlap": {
+    "pvt_and_kss_both_sessions": 2,
+    "pvt_and_sss_both_sessions": 25,
+    "kss_and_sss_both_sessions": 2
+  },
+  "coupling_rt_vs_sss": {
+    "n": 25,
+    "spearman_rho": 0.25192509403316604,
+    "spearman_p": 0.22442314069529076,
+    "pearson_r": 0.3719217660843494,
+    "pearson_p": 0.0671436297362644
+  },
+  "heterogeneity": {
+    "rt_slowed_share": 0.9,
+    "rt_change_mean_ms": 41.21666666666667,
+    "rt_change_sd_ms": 30.892383653840824,
+    "kss_rose_share": 0.7272727272727273,
+    "kss_change_mean": 2.0303030303030303,
+    "kss_change_sd": 2.0384560408071177,
+    "kss_ns_range": [
+      2.0,
+      8.0
+    ],
+    "kss_sd_range": [
+      3.0,
+      9.0
+    ]
+  }
+}
