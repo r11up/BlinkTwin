@@ -15,7 +15,6 @@
 \renewcommand{\thetable}{S\arabic{table}}
 \renewcommand{\thefigure}{S\arabic{figure}}
 \renewcommand{\theequation}{S\arabic{equation}}
-\providecommand{\SUPPFORECAST}{\textbf{[forecast reliability]}}
 
 \begin{document}
 \title{Supplementary Material for ``BlinkTwin: Questionnaire-Anchored Estimation and Forecasting of Subjective Sleepiness From Webcam and Reaction-Time Signals in a Web Browser''}
@@ -104,15 +103,15 @@ Fig.~\ref{fig:openneuro} shows the KSS and PVT median reaction time in the two s
     \toprule
     Scenario & Prior & Check-ins & No anchors & BlinkTwin & Oracle & Difference (95\% CI) & Better \\
     \midrule
-    Matched & 0.811 & 0.659 & 1.741 & 0.629 & 0.586 & $-0.030$ ($-0.042$, $-0.016$) & 64\% \\
-    Misreport & 0.918 & 0.763 & 1.735 & 0.711 & 0.660 & $-0.052$ ($-0.065$, $-0.039$) & 66\% \\
-    Nonlinear & 0.829 & 0.671 & 1.754 & 0.633 & 0.615 & $-0.037$ ($-0.051$, $-0.024$) & 63\% \\
-    Rating bias & 0.811 & 0.918 & 1.742 & 0.863 & 0.691 & $-0.055$ ($-0.071$, $-0.039$) & 68\% \\
-    Autocorrelated & 0.811 & 0.659 & 2.026 & 0.646 & 0.657 & $-0.013$ ($-0.027$, $+0.001$) & 53\% \\
-    Trait & 0.968 & 0.697 & 1.728 & 0.656 & 0.606 & $-0.042$ ($-0.055$, $-0.029$) & 66\% \\
-    Debt & 0.921 & 0.633 & 1.768 & 0.598 & 0.557 & $-0.035$ ($-0.047$, $-0.023$) & 65\% \\
-    Workday & 0.826 & 0.682 & 1.732 & 0.661 & 0.640 & $-0.021$ ($-0.036$, $-0.007$) & 56\% \\
-    Dissociation & 0.811 & 0.665 & 1.742 & 0.636 & 0.585 & $-0.029$ ($-0.042$, $-0.015$) & 62\% \\
+    Matched & 0.819 & 0.659 & 1.741 & 0.629 & 0.586 & $-0.030$ ($-0.042$, $-0.016$) & 64\% \\
+    Misreport & 0.924 & 0.763 & 1.735 & 0.711 & 0.660 & $-0.052$ ($-0.065$, $-0.039$) & 66\% \\
+    Nonlinear & 0.837 & 0.671 & 1.754 & 0.633 & 0.615 & $-0.037$ ($-0.051$, $-0.024$) & 63\% \\
+    Rating bias & 0.819 & 0.918 & 1.742 & 0.863 & 0.691 & $-0.055$ ($-0.071$, $-0.039$) & 68\% \\
+    Autocorrelated & 0.819 & 0.659 & 2.026 & 0.646 & 0.657 & $-0.013$ ($-0.027$, $+0.001$) & 53\% \\
+    Trait & 0.969 & 0.697 & 1.728 & 0.656 & 0.606 & $-0.042$ ($-0.055$, $-0.029$) & 66\% \\
+    Debt & 0.858 & 0.633 & 1.768 & 0.598 & 0.557 & $-0.035$ ($-0.047$, $-0.023$) & 65\% \\
+    Workday & 0.832 & 0.682 & 1.732 & 0.661 & 0.640 & $-0.021$ ($-0.036$, $-0.007$) & 56\% \\
+    Dissociation & 0.819 & 0.665 & 1.742 & 0.636 & 0.585 & $-0.029$ ($-0.042$, $-0.015$) & 62\% \\
     \bottomrule
   \end{tabular}
 \end{table*}
@@ -151,7 +150,12 @@ Fig.~\ref{fig:openneuro} shows the KSS and PVT median reaction time in the two s
   \end{tabular}
 \end{table}
 
-\SUPPFORECAST{}
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\columnwidth]{fig_sim_reliability.pdf}
+  \caption{Reliability of the one-hour forecast of latent KSS $\geq 7$ in the matched scenario at three check-ins (10 equal-width bins; 5400 forecasts from 300 virtual people). Points on the diagonal are perfectly calibrated.}
+  \label{fig:reliability}
+\end{figure}
 
 
 \bibliographystyle{IEEEtran}

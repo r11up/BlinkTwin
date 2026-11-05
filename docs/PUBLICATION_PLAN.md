@@ -38,7 +38,7 @@ A health-informatics or sleep journal will not accept a claim of better estimati
 
 1. **Now (paper 1, tool and public-data evaluation).** Target *Behavior Research Methods*; fallback *Computer Methods and Programs in Biomedicine*. Frame it as an open, on-device measurement tool for subjective sleepiness, evaluated on public data, with its limits in the abstract (the naive-baseline tie on DROZY; PERCLOS failing on near-infrared video). Before submitting, add the items in Section 4 marked "needed now". BRM uses the Springer template and APA-style references, so the IEEE manuscript would need reformatting; the content carries over.
 2. **Register the validation study** (Section VII of the paper) on OSF Registries after ethics approval. Use TRIPOD+AI as the reporting guideline for the prediction model; SPIRIT does not strictly apply to a non-interventional study but its checklist is useful.
-3. **After the field study (paper 2, main validation; 65 analysed, 75 recruited).** Target *IEEE J-BHI* (the current IEEE format), with *Journal of Sleep Research* or *JMIR mHealth and uHealth* as alternatives. This paper tests the pre-registered hypotheses on real users.
+3. **After the field study (paper 2, main validation; 70 analysed, 80 recruited).** Target *IEEE J-BHI* (the current IEEE format), with *Journal of Sleep Research* or *JMIR mHealth and uHealth* as alternatives. This paper tests the pre-registered hypotheses on real users.
 4. **Software.** Archive each release on Zenodo with a DOI and cite it in both papers.
 
 ## 4. What to add before submission
@@ -52,7 +52,7 @@ A health-informatics or sleep journal will not accept a claim of better estimati
 | Privacy check: record all network traffic while the camera runs and show that no video, image or landmark data leave the page | Supports the on-device claim | No | Recommended |
 | Compute benchmark (frames per second and CPU use on typical laptops) | Feasibility on ordinary hardware | No | Recommended |
 | Small RGB pilot (5 to 10 people) with EOG and a webcam, including reading, typing and looking-down segments | Validates blink duration, long closures and alert false-alarm rates on the real pipeline | Yes (ethics) | Before paper 2 |
-| Field study (75 recruited, 65 analysed) with a laboratory subset | Tests the main claim | Yes (ethics, registration) | Paper 2 |
+| Field study (80 recruited, 70 analysed) with a laboratory subset | Tests the main claim | Yes (ethics, registration) | Paper 2 |
 
 ## 5. Points a senior reviewer will press on, and the planned answer
 

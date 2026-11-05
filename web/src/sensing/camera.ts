@@ -11,6 +11,8 @@ const LOCAL_MODEL = '/models/face_landmarker.task';
 
 // Timing counters for scripts/benchmark.mjs, collected only when the page is opened with ?perf=1.
 const PERF = typeof location !== 'undefined' && new URLSearchParams(location.search).has('perf');
+const PERF_CPU = PERF && new URLSearchParams(location.search).get('perf') === 'cpu'; // ?perf=cpu: skip the GPU delegate
+const PERF_GPU = PERF && new URLSearchParams(location.search).get('perf') === 'gpu'; // ?perf=gpu: GPU delegate even on software WebGL
 export const perfCounters = { delegate: '', frames: 0, detectMs: [] as number[] };
 if (PERF) (globalThis as unknown as { __blinktwinPerf: typeof perfCounters }).__blinktwinPerf = perfCounters;
 const REMOTE_MODEL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
@@ -62,6 +64,26 @@ async function modelBytes(): Promise<Uint8Array> {
   throw new Error('could not download the face model (check your internet connection once, then it is cached)');
 }
 
+/**
+ * True if WebGL is drawn in software (no usable graphics processor, e.g. SwiftShader or llvmpipe). There
+ * MediaPipe's GPU delegate is several times slower than its CPU delegate (results/benchmark.json: about
+ * 105 ms against 27 ms per frame in a cloud container), so the CPU delegate is used instead.
+ */
+export function softwareWebGl(renderer: string | null): boolean {
+  return renderer !== null && /swiftshader|llvmpipe|software|softpipe|basic render/i.test(renderer);
+}
+
+function webGlRenderer(): string | null {
+  try {
+    const gl = document.createElement('canvas').getContext('webgl2') ?? document.createElement('canvas').getContext('webgl');
+    if (!gl) return null;
+    const ext = gl.getExtension('WEBGL_debug_renderer_info');
+    return ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : null;
+  } catch {
+    return null;
+  }
+}
+
 async function loadLandmarker(): Promise<FaceLandmarker> {
   const fileset = await FilesetResolver.forVisionTasks('/mediapipe/wasm');
   const modelAssetBuffer = await modelBytes();
@@ -73,6 +95,7 @@ async function loadLandmarker(): Promise<FaceLandmarker> {
     outputFacialTransformationMatrixes: true,
   });
   try {
+    if (PERF_CPU || (!PERF_GPU && softwareWebGl(webGlRenderer()))) throw new Error('CPU delegate');
     const lm = await FaceLandmarker.createFromOptions(fileset, options('GPU'));
     perfCounters.delegate = 'GPU';
     return lm;

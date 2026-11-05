@@ -26,7 +26,7 @@ BlinkTwin is a research prototype. It has been tested on public datasets and in 
 5. **Real-time alerts with live eye and head tracking.** A long eye closure (1 s or more, not while looking down) or a forward head drop with closing eyes raises an alert. These thresholds are ad hoc defaults and have not been validated. Gaze, head pitch, yaw and roll, nods, blink rate, blink duration and PERCLOS update live.
 6. **Explains itself.** The estimate is split into the rhythm model, time on task, and what each source contributed, and every number links to the science behind it ([docs/SCIENCE.md](docs/SCIENCE.md)).
 7. **Private by design.** The face model runs in the page. Only one-minute numeric summaries are stored, in your own browser, and you can export or delete them.
-8. **One codebase, tested and reproducible.** The same TypeScript runs the website, ⟦NTESTS⟧ unit tests, the replay of the released twin on real data, and the simulation study.
+8. **One codebase, tested and reproducible.** The same TypeScript runs the website, 105 unit tests, the replay of the released twin on real data, and the simulation study.
 
 ## How it works
 
@@ -74,17 +74,35 @@ The ordering matches the design, but the intervals overlap widely and BlinkTwin 
 
 **Simulation (300 virtual people per scenario, 24 h awake, released defaults, nothing tuned on simulated people).** Mean absolute error of latent KSS, matched scenario:
 
-⟦SIM_TABLE_MATCHED⟧
+| | k = 0 | k = 1 | k = 3 | k = 8 | 90% coverage, k = 3 | 90% width, k = 3 |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|
+| Rhythm model only | 0.819 |  |  |  | 0.98 (k = 0) | 5.21 |
+| Check-ins only |  | 0.744 | 0.659 | 0.571 | 0.91 | 2.84 |
+| Check-ins + passive signals, no anchors |  | 1.782 | 1.741 | 1.655 | 0.24 | 1.33 |
+| **BlinkTwin (anchored)** | **0.861** | **0.731** | **0.629** | **0.557** | 0.90 | 2.64 |
+| Oracle: knows each person's true signal parameters | 0.724 | 0.639 | 0.586 | 0.536 | 0.87 | 2.30 |
+
+k is the number of KSS check-ins in the first 16 h. With no check-ins (k = 0), BlinkTwin and the oracle use the reaction test and eyes only, and BlinkTwin was then slightly worse than the rhythm model alone (0.861 vs 0.819), because the population baselines it must start from are off for most people. With three check-ins, BlinkTwin was better than check-ins alone for 64% of virtual people (difference −0.030, 95% CI −0.042 to −0.016); per-person differences ranged from −0.207 to 0.161 (5th to 95th percentile), so the gain is small and not universal.
 
 The same comparison with three check-ins when the virtual people break the twin's assumptions on purpose (difference BlinkTwin minus check-ins only, 95% CI):
 
-⟦SIM_TABLE_ROBUST⟧
+| Scenario | Check-ins only | BlinkTwin | Difference [95% CI] | BlinkTwin better for |
+|---|:-:|:-:|:-:|:-:|
+| Matches the twin's assumptions | 0.659 | 0.629 | −0.030 [−0.042, −0.016] | 64% |
+| Body clock off (SD 2 h) and sleep misreported (SD 1.5 h) | 0.763 | 0.711 | −0.052 [−0.065, −0.039] | 66% |
+| Signals respond nonlinearly, heavy-tailed noise | 0.671 | 0.633 | −0.037 [−0.051, −0.024] | 63% |
+| People rate with a personal bias (SD 0.8) and more noise | 0.918 | 0.863 | −0.055 [−0.071, −0.039] | 68% |
+| Webcam noise far more autocorrelated than assumed | 0.659 | 0.646 | −0.013 [−0.027, 0.001] | 53% |
+| Person-specific Three-Process Model (homeostatic rate, circadian amplitude) | 0.697 | 0.656 | −0.042 [−0.055, −0.029] | 66% |
+| Unrecorded sleep debt (five 5-h nights; the twin knows only the last) | 0.633 | 0.598 | −0.035 [−0.047, −0.023] | 65% |
+| Ordinary 16-h day instead of 24 h awake | 0.682 | 0.661 | −0.021 [−0.036, −0.007] | 56% |
+| Ratings level off above KSS 5 while signals keep rising | 0.665 | 0.636 | −0.029 [−0.042, −0.015] | 62% |
 
-⟦SIM_FORECAST⟧
+Forecasting KSS ≥ 7 one hour ahead (matched scenario, three check-ins, 5400 forecasts, base rate 0.27): Brier score 0.063 for BlinkTwin, 0.066 for check-ins only and 0.086 for the rhythm model alone (difference from check-ins only −0.0028, 95% CI −0.0052 to −0.0001); AUROC 0.969, 0.966 and 0.945. Most of the discrimination comes from the time of day and time awake.
 
 ![Simulation results](docs/img/simulation.png)
 
-**What the evidence does not show yet.** That personal calibration helps real people: in DROZY the twin did not beat a simple benchmark, and in ds004902 offsets carried over only weakly. Gains from the passive signals over check-ins are small in simulation (hundredths of a KSS point), and in a simulated version of the planned 10-day study, where the target is people's actual (noisy, whole-number) ratings on ordinary workdays, BlinkTwin was no better than check-ins alone (⟦POWER_EB⟧). The webcam pipeline has not been validated on ordinary webcams, the alert thresholds have not been validated at all, and the workload estimate has not been evaluated. A prospective study with real users is planned.
+**What the evidence does not show yet.** That personal calibration helps real people: in DROZY the twin did not beat a simple benchmark, and in ds004902 offsets carried over only weakly. Gains from the passive signals over check-ins are small in simulation (hundredths of a KSS point), and in a simulated version of the planned 10-day study, where the target is people's actual (noisy, whole-number) ratings on ordinary workdays, BlinkTwin was no better than check-ins alone (mean difference +0.019 KSS points, SD 0.10 across virtual people). The webcam pipeline has not been validated on ordinary webcams, the alert thresholds have not been validated at all, and the workload estimate has not been evaluated. A prospective study with real users is planned.
 
 ## Run it
 

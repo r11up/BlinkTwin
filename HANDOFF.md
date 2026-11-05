@@ -56,7 +56,7 @@ Files most likely to conflict with local edits (they changed a lot): `web/src/ma
 | MediaPipe pipeline on DROZY video vs EOG | blink rate rho 0.71; blink duration vs KSS within person r 0.58; PERCLOS < 0.5% in all 36 tests | `results/drozy_mediapipe_summary.json` |
 | ds004902 offset persistence | r 0.29 (95% CI -0.05 to 0.58), n 33 | `results/openneuro_anchor_summary.json` |
 | ds004902 prior | default mapping MAE 1.69 (36% within 1 point); Ingre mapping 1.46 (45%) | `results/openneuro_prior_summary.json` |
-| Power, primary outcome | non-inferiority vs check-ins > 0.99 with 40; superiority vs prior 0.77 with 60, 0.89 with 80; plan 65 analysed, 75 recruited | `results/power_summary.json` |
+| Power, primary outcome | non-inferiority vs check-ins > 0.99 with 40; superiority vs prior 0.75 with 60, 0.88 with 80; plan 70 analysed, 80 recruited | `results/power_summary.json` |
 | Simulation | see `results/sim_summary.json` and paper Section VI | |
 
 ## 4. What to run locally with the full data

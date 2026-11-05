@@ -33,17 +33,25 @@ export function fetchModel() {
 
 /** Starts `vite preview` on 127.0.0.1:port and resolves once it answers. */
 export async function startPreview(port = 4173) {
-  const proc = spawn('npx', ['vite', 'preview', '--host', '127.0.0.1', '--port', String(port), '--strictPort'], { stdio: ['ignore', 'pipe', 'pipe'] });
+  // its own process group, so that stopping it also stops the vite process npx starts
+  const proc = spawn('npx', ['vite', 'preview', '--host', '127.0.0.1', '--port', String(port), '--strictPort'], { stdio: 'ignore', detached: true });
+  const stop = () => {
+    try {
+      process.kill(-proc.pid, 'SIGTERM');
+    } catch {
+      /* already gone */
+    }
+  };
   const url = `http://127.0.0.1:${port}/`;
   for (let i = 0; i < 100; i++) {
     try {
-      if ((await fetch(url)).ok) return { url, stop: () => proc.kill('SIGTERM') };
+      if ((await fetch(url)).ok) return { url, stop };
     } catch {
       /* not up yet */
     }
     await new Promise((r) => setTimeout(r, 200));
   }
-  proc.kill('SIGTERM');
+  stop();
   throw new Error('vite preview did not start');
 }
 

@@ -1,5 +1,5 @@
 {
- "date": "2026-11-05T05:14:15.211Z",
+ "date": "2026-11-05T05:35:21.664Z",
  "setup": "production build served by vite preview; headless Chromium 153.0.8010.12 with a fake camera (test pattern, no face); face model served by the site itself",
  "session": {
   "camera_on_s": 150,
@@ -24,7 +24,7 @@
   "by_method": {
    "GET": 6
   },
-  "bytes_received": 17020797,
+  "bytes_received": 17026304,
   "bytes_sent_in_bodies": 0
  },
  "after_load": {
@@ -36,20 +36,27 @@
  "websockets": [],
  "content_security_policy_violations": [
   {
-   "t_s": 61.234,
+   "t_s": 61.224,
    "phase": "after-load",
    "message": "Connecting to 'https://odml.pa.googleapis.com/v1/log' violates the following Content Security Policy directive: \"connect-src 'self' https://storage.googleapis.com\". The action has been blocked."
   },
   {
-   "t_s": 61.235,
+   "t_s": 61.224,
    "phase": "after-load",
    "message": "Fetch API cannot load https://odml.pa.googleapis.com/v1/log. Refused to connect because it violates the document's Content Security Policy."
   }
  ],
  "request_bodies_flagged": [],
  "browser_storage": {
+  "blinktwin.lastSuggestedAt": {
+   "bytes": 13,
+   "events": 0,
+   "eventsByType": {},
+   "camEventFields": [],
+   "longestNestedArray": 0
+  },
   "blinktwin.events.v1": {
-   "bytes": 415,
+   "bytes": 428,
    "events": 5,
    "eventsByType": {
     "kss": 2,

@@ -244,6 +244,9 @@ function render() {
   if (document.activeElement !== wakeInput) wakeInput.value = new Date(r.sleep.wake).toTimeString().slice(0, 5);
   const hoursInput = $<HTMLInputElement>('#slept');
   if (document.activeElement !== hoursInput) hoursInput.value = String(r.sleep.hours);
+  const noSleep = $<HTMLInputElement>('#no-sleep');
+  if (document.activeElement !== noSleep) noSleep.checked = r.sleep.hours === 0;
+  hoursInput.disabled = noSleep.checked;
   renderTrack();
 }
 
@@ -252,8 +255,9 @@ function renderSleepStatus(st: SleepStatus, now: number) {
   el.textContent = st.message;
   const attention = st.usesDefaultSleep || st.staleSleep || st.usesFilledNight || st.nights.some((n) => n.status === 'assumed-no-sleep' || n.status === 'filled-habitual');
   el.classList.toggle('attention', attention);
-  // one-tap entries for the most recent missing nights
-  const missing = st.nights.filter((n) => !n.entry).slice(0, 3);
+  // one-tap entries for the missing nights that change the estimate: nights the twin treats as without
+  // sleep or fills in, and last night when nothing is entered yet
+  const missing = st.nights.filter((n) => !n.entry && (n.status === 'assumed-no-sleep' || n.status === 'filled-habitual' || (n.index === 0 && st.usesDefaultSleep))).slice(0, 3);
   const hab = cfg.tpm.habitualSleepHours;
   $('#sleep-chips').innerHTML = missing
     .map((n) => {
@@ -283,8 +287,13 @@ function renderTrack() {
   $('#track-hint').textContent = details.open ? '' : n ? `Compare its predictions with your ${n} rating${n === 1 ? '' : 's'}` : 'After your first check-in';
   if (!details.open || !trackDirty) return;
   trackDirty = false;
-  const tr = trackRecord(store.all(), cfg);
-  $('#track-body').innerHTML = trackHtml(tr, $('#track-body').clientWidth || 700);
+  // one replay per check-in: about a second for a 10-day log on a slow machine, so draw after a paint and
+  // score the most recent 30 check-ins only
+  $('#track-body').innerHTML = '<p class="small muted">Comparing…</p>';
+  setTimeout(() => {
+    const tr = trackRecord(store.all(), cfg, { maxCheckIns: 30 });
+    $('#track-body').innerHTML = trackHtml(tr, $('#track-body').clientWidth || 700);
+  }, 30);
 }
 
 function trackHtml(tr: TrackRecord, width: number): string {
@@ -301,25 +310,27 @@ function trackHtml(tr: TrackRecord, width: number): string {
 
 function trackChart(tr: TrackRecord, width: number): string {
   const w = Math.max(280, width);
-  const h = 170;
+  const h = 180;
   const L = 30;
   const R = 10;
-  const T = 14;
+  const T = 24;
   const B = 26;
   const rows = tr.rows;
-  const x = (i: number) => L + (rows.length === 1 ? 0.5 : i / (rows.length - 1)) * (w - L - R);
+  const pad = 44; // room for the first and last time labels
+  const x = (i: number) => L + pad + (rows.length === 1 ? 0.5 : i / (rows.length - 1)) * (w - L - R - 2 * pad);
+  const oneDay = new Date(rows[0].t).toDateString() === new Date(rows[rows.length - 1].t).toDateString();
   const y = (v: number) => h - B - ((v - 1) / 8) * (h - T - B);
   const parts: string[] = [];
   for (const k of [1, 3, 5, 7, 9]) parts.push(`<line class="grid" x1="${L}" x2="${w - R}" y1="${y(k)}" y2="${y(k)}"/><text class="tick" x="${L - 6}" y="${y(k) + 4}" text-anchor="end">${k}</text>`);
-  parts.push(`<text class="axis-title" x="${L - 6}" y="${T - 4}" text-anchor="end">KSS</text>`);
-  const every = Math.max(1, Math.ceil(rows.length / Math.floor((w - L - R) / 70)));
+  parts.push(`<text class="axis-title" x="${L - 6}" y="${T - 10}" text-anchor="end">KSS</text>`);
+  const every = Math.max(1, Math.ceil(rows.length / Math.max(1, Math.floor((w - L - R) / (oneDay ? 70 : 110)))));
   rows.forEach((row, i) => {
     const cx = x(i);
     parts.push(`<line class="err" x1="${cx}" x2="${cx}" y1="${y(row.predicted)}" y2="${y(row.rating)}"/>`);
     parts.push(`<line class="prior-pt" x1="${cx - 5}" x2="${cx + 5}" y1="${y(row.priorOnly)}" y2="${y(row.priorOnly)}"/>`);
     parts.push(`<circle class="pred" cx="${cx}" cy="${y(row.predicted)}" r="3.5"><title>Predicted ${row.predicted.toFixed(1)} before the rating at ${fmtTime(row.t)}</title></circle>`);
     parts.push(`<circle class="checkin" cx="${cx}" cy="${y(row.rating)}" r="5"><title>Your rating ${row.rating} at ${fmtTime(row.t)}</title></circle>`);
-    if (i % every === 0) parts.push(`<text class="tick" x="${cx}" y="${h - B + 15}" text-anchor="middle">${new Date(row.t).toLocaleDateString([], { day: 'numeric', month: 'short' })} ${fmtTime(row.t)}</text>`);
+    if (i % every === 0) parts.push(`<text class="tick" x="${cx}" y="${h - B + 15}" text-anchor="middle">${oneDay ? '' : `${new Date(row.t).toLocaleDateString([], { day: 'numeric', month: 'short' })} `}${fmtTime(row.t)}</text>`);
   });
   const legend = `<div class="legend small"><span class="lg checkin">your rating</span><span class="lg pred">twin's prediction just before</span><span class="lg prior">body-clock model alone</span></div>`;
   return `${legend}<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="Your ratings and the twin's predictions made just before each one">${parts.join('')}</svg>`;

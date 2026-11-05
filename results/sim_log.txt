@@ -1,0 +1,388 @@
+scenario matched done (174 s); max truth difference across k 0
+scenario misreport done (326 s); max truth difference across k 0
+scenario nonlinear done (483 s); max truth difference across k 0
+scenario ratingbias done (633 s); max truth difference across k 0
+scenario autocorr done (796 s); max truth difference across k 0
+scenario trait done (957 s); max truth difference across k 0
+scenario debt done (1119 s); max truth difference across k 0
+scenario workday done (1213 s); max truth difference across k 0
+scenario dissociation done (1373 s); max truth difference across k 0
+sensitivity done (1432 s)
+matched      prior     k=0  MAE 0.819 [0.770, 0.869]  night 0.794  cov90 0.984  width 5.206  win -
+matched      twin      k=0  MAE 0.861 [0.813, 0.907]  night 0.871  cov90 0.952  width 4.253  win -
+matched      oracle    k=0  MAE 0.724 [0.686, 0.762]  night 0.596  cov90 0.867  width 2.862  win -
+matched      checkins  k=1  MAE 0.744 [0.708, 0.781]  night 0.741  cov90 0.945  width 3.818  win -
+matched      noanchor  k=1  MAE 1.782 [1.693, 1.878]  night 1.780  cov90 0.237  width 1.349  win 0.080
+matched      twin      k=1  MAE 0.731 [0.698, 0.766]  night 0.752  cov90 0.929  width 3.362  win 0.543
+matched      oracle    k=1  MAE 0.639 [0.614, 0.665]  night 0.568  cov90 0.886  width 2.658  win 0.593
+matched      checkins  k=2  MAE 0.699 [0.671, 0.728]  night 0.669  cov90 0.928  width 3.218  win -
+matched      noanchor  k=2  MAE 1.761 [1.673, 1.851]  night 1.742  cov90 0.238  width 1.337  win 0.033
+matched      twin      k=2  MAE 0.667 [0.642, 0.694]  night 0.640  cov90 0.917  width 2.946  win 0.587
+matched      oracle    k=2  MAE 0.605 [0.584, 0.626]  night 0.545  cov90 0.883  width 2.457  win 0.643
+matched      checkins  k=3  MAE 0.659 [0.636, 0.682]  night 0.617  cov90 0.906  width 2.840  win -
+matched      noanchor  k=3  MAE 1.741 [1.652, 1.833]  night 1.739  cov90 0.241  width 1.330  win 0.027
+matched      twin      k=3  MAE 0.629 [0.608, 0.650]  night 0.585  cov90 0.901  width 2.642  win 0.640
+matched      oracle    k=3  MAE 0.586 [0.567, 0.605]  night 0.531  cov90 0.872  width 2.295  win 0.690
+matched      checkins  k=4  MAE 0.628 [0.610, 0.647]  night 0.596  cov90 0.899  width 2.650  win -
+matched      noanchor  k=4  MAE 1.723 [1.636, 1.816]  night 1.739  cov90 0.242  width 1.323  win 0.020
+matched      twin      k=4  MAE 0.602 [0.584, 0.620]  night 0.570  cov90 0.895  width 2.476  win 0.633
+matched      oracle    k=4  MAE 0.566 [0.549, 0.584]  night 0.504  cov90 0.868  width 2.192  win 0.693
+matched      checkins  k=6  MAE 0.597 [0.581, 0.614]  night 0.583  cov90 0.880  width 2.424  win -
+matched      noanchor  k=6  MAE 1.684 [1.598, 1.773]  night 1.738  cov90 0.245  width 1.309  win 0.013
+matched      twin      k=6  MAE 0.581 [0.565, 0.598]  night 0.569  cov90 0.875  width 2.273  win 0.597
+matched      oracle    k=6  MAE 0.553 [0.537, 0.569]  night 0.515  cov90 0.852  width 2.050  win 0.670
+matched      checkins  k=8  MAE 0.571 [0.554, 0.587]  night 0.579  cov90 0.876  width 2.306  win -
+matched      noanchor  k=8  MAE 1.655 [1.573, 1.739]  night 1.730  cov90 0.246  width 1.300  win 0.010
+matched      twin      k=8  MAE 0.557 [0.541, 0.572]  night 0.561  cov90 0.871  width 2.164  win 0.573
+matched      oracle    k=8  MAE 0.536 [0.522, 0.551]  night 0.506  cov90 0.846  width 1.968  win 0.647
+misreport    prior     k=0  MAE 0.924 [0.875, 0.975]  night 0.899  cov90 0.969  width 5.206  win -
+misreport    twin      k=0  MAE 0.917 [0.870, 0.964]  night 0.929  cov90 0.936  width 4.253  win -
+misreport    oracle    k=0  MAE 0.783 [0.745, 0.821]  night 0.683  cov90 0.841  width 2.862  win -
+misreport    checkins  k=1  MAE 0.848 [0.809, 0.889]  night 0.873  cov90 0.913  width 3.818  win -
+misreport    noanchor  k=1  MAE 1.776 [1.687, 1.871]  night 1.797  cov90 0.235  width 1.352  win 0.107
+misreport    twin      k=1  MAE 0.792 [0.759, 0.828]  night 0.824  cov90 0.905  width 3.362  win 0.630
+misreport    oracle    k=1  MAE 0.708 [0.681, 0.737]  night 0.660  cov90 0.855  width 2.658  win 0.647
+misreport    checkins  k=3  MAE 0.763 [0.734, 0.793]  night 0.738  cov90 0.856  width 2.840  win -
+misreport    noanchor  k=3  MAE 1.735 [1.648, 1.825]  night 1.753  cov90 0.238  width 1.333  win 0.063
+misreport    twin      k=3  MAE 0.711 [0.685, 0.736]  night 0.694  cov90 0.859  width 2.642  win 0.663
+misreport    oracle    k=3  MAE 0.660 [0.635, 0.683]  night 0.625  cov90 0.829  width 2.295  win 0.730
+misreport    checkins  k=8  MAE 0.652 [0.630, 0.675]  night 0.711  cov90 0.828  width 2.306  win -
+misreport    noanchor  k=8  MAE 1.652 [1.572, 1.736]  night 1.745  cov90 0.244  width 1.302  win 0.030
+misreport    twin      k=8  MAE 0.620 [0.601, 0.640]  night 0.669  cov90 0.828  width 2.165  win 0.627
+misreport    oracle    k=8  MAE 0.596 [0.576, 0.616]  night 0.609  cov90 0.807  width 1.968  win 0.693
+nonlinear    prior     k=0  MAE 0.837 [0.788, 0.890]  night 0.816  cov90 0.982  width 5.206  win -
+nonlinear    twin      k=0  MAE 0.882 [0.833, 0.930]  night 0.829  cov90 0.941  width 4.249  win -
+nonlinear    oracle    k=0  MAE 0.790 [0.752, 0.829]  night 0.648  cov90 0.831  width 2.862  win -
+nonlinear    checkins  k=1  MAE 0.723 [0.690, 0.755]  night 0.706  cov90 0.946  width 3.818  win -
+nonlinear    noanchor  k=1  MAE 1.797 [1.714, 1.883]  night 1.807  cov90 0.231  width 1.326  win 0.070
+nonlinear    twin      k=1  MAE 0.710 [0.680, 0.739]  night 0.682  cov90 0.929  width 3.359  win 0.503
+nonlinear    oracle    k=1  MAE 0.685 [0.661, 0.711]  night 0.598  cov90 0.856  width 2.658  win 0.507
+nonlinear    checkins  k=3  MAE 0.671 [0.646, 0.695]  night 0.626  cov90 0.901  width 2.840  win -
+nonlinear    noanchor  k=3  MAE 1.754 [1.670, 1.840]  night 1.764  cov90 0.236  width 1.309  win 0.050
+nonlinear    twin      k=3  MAE 0.633 [0.612, 0.656]  night 0.577  cov90 0.898  width 2.641  win 0.627
+nonlinear    oracle    k=3  MAE 0.615 [0.594, 0.634]  night 0.522  cov90 0.853  width 2.295  win 0.583
+nonlinear    checkins  k=8  MAE 0.573 [0.558, 0.590]  night 0.576  cov90 0.874  width 2.306  win -
+nonlinear    noanchor  k=8  MAE 1.668 [1.587, 1.750]  night 1.752  cov90 0.242  width 1.281  win 0.020
+nonlinear    twin      k=8  MAE 0.550 [0.536, 0.565]  night 0.525  cov90 0.869  width 2.164  win 0.640
+nonlinear    oracle    k=8  MAE 0.547 [0.532, 0.561]  night 0.507  cov90 0.836  width 1.968  win 0.580
+ratingbias   prior     k=0  MAE 0.819 [0.770, 0.869]  night 0.794  cov90 0.984  width 5.206  win -
+ratingbias   twin      k=0  MAE 0.861 [0.813, 0.907]  night 0.871  cov90 0.952  width 4.253  win -
+ratingbias   oracle    k=0  MAE 0.724 [0.686, 0.762]  night 0.596  cov90 0.867  width 2.862  win -
+ratingbias   checkins  k=1  MAE 0.932 [0.880, 0.984]  night 0.913  cov90 0.875  width 3.818  win -
+ratingbias   noanchor  k=1  MAE 1.783 [1.694, 1.878]  night 1.780  cov90 0.238  width 1.349  win 0.153
+ratingbias   twin      k=1  MAE 0.876 [0.829, 0.922]  night 0.864  cov90 0.862  width 3.363  win 0.620
+ratingbias   oracle    k=1  MAE 0.667 [0.638, 0.697]  night 0.575  cov90 0.869  width 2.658  win 0.713
+ratingbias   checkins  k=3  MAE 0.918 [0.876, 0.962]  night 0.879  cov90 0.767  width 2.840  win -
+ratingbias   noanchor  k=3  MAE 1.742 [1.652, 1.835]  night 1.739  cov90 0.241  width 1.330  win 0.110
+ratingbias   twin      k=3  MAE 0.863 [0.826, 0.904]  night 0.844  cov90 0.768  width 2.642  win 0.683
+ratingbias   oracle    k=3  MAE 0.691 [0.664, 0.719]  night 0.661  cov90 0.802  width 2.295  win 0.813
+ratingbias   checkins  k=8  MAE 0.856 [0.818, 0.898]  night 0.826  cov90 0.697  width 2.306  win -
+ratingbias   noanchor  k=8  MAE 1.658 [1.575, 1.744]  night 1.731  cov90 0.247  width 1.299  win 0.107
+ratingbias   twin      k=8  MAE 0.830 [0.791, 0.871]  night 0.804  cov90 0.690  width 2.164  win 0.630
+ratingbias   oracle    k=8  MAE 0.708 [0.681, 0.739]  night 0.660  cov90 0.721  width 1.968  win 0.813
+autocorr     prior     k=0  MAE 0.819 [0.770, 0.869]  night 0.794  cov90 0.984  width 5.206  win -
+autocorr     twin      k=0  MAE 0.930 [0.877, 0.981]  night 0.915  cov90 0.931  width 4.254  win -
+autocorr     oracle    k=0  MAE 0.895 [0.842, 0.949]  night 0.654  cov90 0.789  width 2.862  win -
+autocorr     checkins  k=1  MAE 0.744 [0.708, 0.781]  night 0.741  cov90 0.945  width 3.818  win -
+autocorr     noanchor  k=1  MAE 2.068 [1.983, 2.161]  night 1.998  cov90 0.192  width 1.378  win 0.030
+autocorr     twin      k=1  MAE 0.760 [0.727, 0.795]  night 0.766  cov90 0.917  width 3.362  win 0.483
+autocorr     oracle    k=1  MAE 0.735 [0.704, 0.768]  night 0.593  cov90 0.841  width 2.658  win 0.463
+autocorr     checkins  k=3  MAE 0.659 [0.636, 0.682]  night 0.617  cov90 0.906  width 2.840  win -
+autocorr     noanchor  k=3  MAE 2.026 [1.935, 2.116]  night 1.957  cov90 0.193  width 1.355  win 0.003
+autocorr     twin      k=3  MAE 0.646 [0.625, 0.666]  night 0.595  cov90 0.893  width 2.642  win 0.527
+autocorr     oracle    k=3  MAE 0.657 [0.634, 0.679]  night 0.548  cov90 0.833  width 2.295  win 0.507
+autocorr     checkins  k=8  MAE 0.571 [0.554, 0.587]  night 0.579  cov90 0.876  width 2.306  win -
+autocorr     noanchor  k=8  MAE 1.931 [1.851, 2.019]  night 1.947  cov90 0.200  width 1.319  win 0.000
+autocorr     twin      k=8  MAE 0.573 [0.557, 0.589]  night 0.573  cov90 0.862  width 2.164  win 0.500
+autocorr     oracle    k=8  MAE 0.590 [0.574, 0.607]  night 0.524  cov90 0.815  width 1.968  win 0.500
+trait        prior     k=0  MAE 0.969 [0.911, 1.028]  night 0.960  cov90 0.963  width 5.206  win -
+trait        twin      k=0  MAE 0.935 [0.883, 0.992]  night 0.931  cov90 0.925  width 4.253  win -
+trait        oracle    k=0  MAE 0.761 [0.724, 0.798]  night 0.608  cov90 0.847  width 2.862  win -
+trait        checkins  k=1  MAE 0.816 [0.776, 0.857]  night 0.797  cov90 0.922  width 3.818  win -
+trait        noanchor  k=1  MAE 1.769 [1.677, 1.870]  night 1.752  cov90 0.253  width 1.354  win 0.100
+trait        twin      k=1  MAE 0.761 [0.727, 0.798]  night 0.745  cov90 0.910  width 3.363  win 0.603
+trait        oracle    k=1  MAE 0.672 [0.645, 0.701]  night 0.574  cov90 0.865  width 2.658  win 0.633
+trait        checkins  k=3  MAE 0.697 [0.674, 0.722]  night 0.645  cov90 0.884  width 2.840  win -
+trait        noanchor  k=3  MAE 1.728 [1.631, 1.824]  night 1.711  cov90 0.256  width 1.335  win 0.043
+trait        twin      k=3  MAE 0.656 [0.635, 0.677]  night 0.602  cov90 0.883  width 2.642  win 0.663
+trait        oracle    k=3  MAE 0.606 [0.587, 0.626]  night 0.532  cov90 0.852  width 2.295  win 0.703
+trait        checkins  k=8  MAE 0.600 [0.582, 0.620]  night 0.622  cov90 0.853  width 2.306  win -
+trait        noanchor  k=8  MAE 1.642 [1.560, 1.733]  night 1.704  cov90 0.263  width 1.304  win 0.023
+trait        twin      k=8  MAE 0.577 [0.560, 0.595]  night 0.582  cov90 0.850  width 2.164  win 0.600
+trait        oracle    k=8  MAE 0.553 [0.538, 0.570]  night 0.520  cov90 0.829  width 1.968  win 0.690
+debt         prior     k=0  MAE 0.858 [0.811, 0.905]  night 0.690  cov90 0.968  width 5.206  win -
+debt         twin      k=0  MAE 0.850 [0.800, 0.904]  night 0.748  cov90 0.938  width 4.271  win -
+debt         oracle    k=0  MAE 0.682 [0.647, 0.716]  night 0.485  cov90 0.875  width 2.862  win -
+debt         checkins  k=1  MAE 0.700 [0.670, 0.730]  night 0.568  cov90 0.944  width 3.818  win -
+debt         noanchor  k=1  MAE 1.813 [1.710, 1.918]  night 1.618  cov90 0.274  width 1.412  win 0.067
+debt         twin      k=1  MAE 0.675 [0.646, 0.707]  night 0.563  cov90 0.929  width 3.385  win 0.583
+debt         oracle    k=1  MAE 0.607 [0.585, 0.633]  night 0.464  cov90 0.887  width 2.658  win 0.633
+debt         checkins  k=3  MAE 0.633 [0.610, 0.655]  night 0.495  cov90 0.907  width 2.840  win -
+debt         noanchor  k=3  MAE 1.768 [1.665, 1.871]  night 1.577  cov90 0.277  width 1.388  win 0.023
+debt         twin      k=3  MAE 0.598 [0.577, 0.618]  night 0.469  cov90 0.902  width 2.653  win 0.650
+debt         oracle    k=3  MAE 0.557 [0.539, 0.575]  night 0.429  cov90 0.875  width 2.295  win 0.683
+debt         checkins  k=8  MAE 0.547 [0.532, 0.562]  night 0.460  cov90 0.875  width 2.306  win -
+debt         noanchor  k=8  MAE 1.675 [1.581, 1.778]  night 1.567  cov90 0.286  width 1.353  win 0.013
+debt         twin      k=8  MAE 0.528 [0.514, 0.542]  night 0.443  cov90 0.869  width 2.173  win 0.633
+debt         oracle    k=8  MAE 0.506 [0.493, 0.521]  night 0.408  cov90 0.849  width 1.968  win 0.660
+workday      prior     k=0  MAE 0.832 [0.781, 0.884]  night -  cov90 0.978  width 4.839  win -
+workday      twin      k=0  MAE 0.857 [0.809, 0.907]  night -  cov90 0.939  width 4.001  win -
+workday      oracle    k=0  MAE 0.803 [0.758, 0.848]  night -  cov90 0.823  width 2.745  win -
+workday      checkins  k=1  MAE 0.741 [0.703, 0.782]  night -  cov90 0.925  width 3.418  win -
+workday      noanchor  k=1  MAE 1.785 [1.682, 1.892]  night -  cov90 0.214  width 1.319  win 0.100
+workday      twin      k=1  MAE 0.724 [0.692, 0.760]  night -  cov90 0.909  width 3.081  win 0.570
+workday      oracle    k=1  MAE 0.704 [0.673, 0.735]  night -  cov90 0.832  width 2.477  win 0.527
+workday      checkins  k=3  MAE 0.682 [0.656, 0.710]  night -  cov90 0.887  width 2.754  win -
+workday      noanchor  k=3  MAE 1.732 [1.635, 1.837]  night -  cov90 0.217  width 1.297  win 0.050
+workday      twin      k=3  MAE 0.661 [0.637, 0.686]  night -  cov90 0.877  width 2.570  win 0.563
+workday      oracle    k=3  MAE 0.640 [0.616, 0.665]  night -  cov90 0.828  width 2.200  win 0.573
+workday      checkins  k=8  MAE 0.556 [0.541, 0.572]  night -  cov90 0.855  width 2.095  win -
+workday      noanchor  k=8  MAE 1.592 [1.503, 1.687]  night -  cov90 0.227  width 1.250  win 0.030
+workday      twin      k=8  MAE 0.542 [0.528, 0.557]  night -  cov90 0.854  width 1.983  win 0.607
+workday      oracle    k=8  MAE 0.541 [0.525, 0.557]  night -  cov90 0.814  width 1.777  win 0.593
+dissociation prior     k=0  MAE 0.819 [0.770, 0.869]  night 0.794  cov90 0.984  width 5.206  win -
+dissociation twin      k=0  MAE 0.861 [0.813, 0.907]  night 0.871  cov90 0.952  width 4.253  win -
+dissociation oracle    k=0  MAE 0.724 [0.686, 0.762]  night 0.596  cov90 0.867  width 2.862  win -
+dissociation checkins  k=1  MAE 0.747 [0.712, 0.785]  night 0.742  cov90 0.944  width 3.818  win -
+dissociation noanchor  k=1  MAE 1.782 [1.693, 1.878]  night 1.780  cov90 0.237  width 1.349  win 0.077
+dissociation twin      k=1  MAE 0.732 [0.699, 0.766]  night 0.754  cov90 0.929  width 3.361  win 0.543
+dissociation oracle    k=1  MAE 0.638 [0.613, 0.664]  night 0.568  cov90 0.887  width 2.658  win 0.597
+dissociation checkins  k=3  MAE 0.665 [0.642, 0.688]  night 0.624  cov90 0.904  width 2.840  win -
+dissociation noanchor  k=3  MAE 1.742 [1.652, 1.833]  night 1.741  cov90 0.241  width 1.329  win 0.023
+dissociation twin      k=3  MAE 0.636 [0.614, 0.658]  night 0.596  cov90 0.899  width 2.641  win 0.620
+dissociation oracle    k=3  MAE 0.585 [0.567, 0.604]  night 0.526  cov90 0.873  width 2.295  win 0.687
+dissociation checkins  k=8  MAE 0.576 [0.560, 0.591]  night 0.581  cov90 0.874  width 2.306  win -
+dissociation noanchor  k=8  MAE 1.655 [1.574, 1.739]  night 1.733  cov90 0.246  width 1.299  win 0.010
+dissociation twin      k=8  MAE 0.562 [0.547, 0.577]  night 0.565  cov90 0.869  width 2.163  win 0.577
+dissociation oracle    k=8  MAE 0.539 [0.525, 0.552]  night 0.508  cov90 0.847  width 1.968  win 0.637
+forecast matched      prior     n=5400 base 0.275 Brier 0.086 BSS 0.000 diff - [-, -] AUROC 0.945 dAUROC - [-, -] cross 79.229 min (n=288)
+forecast matched      checkins  n=5400 base 0.275 Brier 0.066 BSS 0.236 diff - [-, -] AUROC 0.966 dAUROC - [-, -] cross 83.973 min (n=255)
+forecast matched      noanchor  n=5400 base 0.275 Brier 0.203 BSS -1.346 diff 0.137 [0.118, 0.157] AUROC 0.799 dAUROC -0.167 [-0.191, -0.145] cross 164.513 min (n=195)
+forecast matched      twin      n=5400 base 0.275 Brier 0.063 BSS 0.268 diff -0.003 [-0.005, -0.000] AUROC 0.969 dAUROC 0.003 [0.001, 0.005] cross 80.580 min (n=257)
+forecast matched      oracle    n=5400 base 0.275 Brier 0.057 BSS 0.343 diff -0.009 [-0.012, -0.006] AUROC 0.975 dAUROC 0.009 [0.006, 0.011] cross 77.763 min (n=262)
+forecast misreport    prior     n=5400 base 0.266 Brier 0.099 BSS 0.000 diff - [-, -] AUROC 0.922 dAUROC - [-, -] cross 106.615 min (n=288)
+forecast misreport    checkins  n=5400 base 0.266 Brier 0.087 BSS 0.129 diff - [-, -] AUROC 0.942 dAUROC - [-, -] cross 120.112 min (n=258)
+forecast misreport    noanchor  n=5400 base 0.266 Brier 0.205 BSS -1.064 diff 0.119 [0.099, 0.139] AUROC 0.794 dAUROC -0.148 [-0.172, -0.125] cross 179.701 min (n=197)
+forecast misreport    twin      n=5400 base 0.266 Brier 0.081 BSS 0.184 diff -0.005 [-0.008, -0.003] AUROC 0.950 dAUROC 0.008 [0.005, 0.011] cross 115.099 min (n=262)
+forecast misreport    oracle    n=5400 base 0.266 Brier 0.074 BSS 0.257 diff -0.013 [-0.016, -0.010] AUROC 0.958 dAUROC 0.016 [0.012, 0.020] cross 112.035 min (n=259)
+forecast nonlinear    prior     n=5400 base 0.270 Brier 0.092 BSS 0.000 diff - [-, -] AUROC 0.933 dAUROC - [-, -] cross 89.241 min (n=286)
+forecast nonlinear    checkins  n=5400 base 0.270 Brier 0.068 BSS 0.262 diff - [-, -] AUROC 0.963 dAUROC - [-, -] cross 84.851 min (n=255)
+forecast nonlinear    noanchor  n=5400 base 0.270 Brier 0.193 BSS -1.100 diff 0.125 [0.109, 0.143] AUROC 0.794 dAUROC -0.169 [-0.191, -0.146] cross 163.263 min (n=186)
+forecast nonlinear    twin      n=5400 base 0.270 Brier 0.065 BSS 0.296 diff -0.003 [-0.005, -0.001] AUROC 0.966 dAUROC 0.004 [0.002, 0.006] cross 85.161 min (n=254)
+forecast nonlinear    oracle    n=5400 base 0.270 Brier 0.063 BSS 0.317 diff -0.005 [-0.009, -0.001] AUROC 0.971 dAUROC 0.009 [0.005, 0.012] cross 87.518 min (n=255)
+forecast ratingbias   prior     n=5400 base 0.275 Brier 0.086 BSS 0.000 diff - [-, -] AUROC 0.945 dAUROC - [-, -] cross 79.229 min (n=288)
+forecast ratingbias   checkins  n=5400 base 0.275 Brier 0.098 BSS -0.131 diff - [-, -] AUROC 0.932 dAUROC - [-, -] cross 101.802 min (n=232)
+forecast ratingbias   noanchor  n=5400 base 0.275 Brier 0.203 BSS -1.350 diff 0.105 [0.086, 0.126] AUROC 0.799 dAUROC -0.134 [-0.159, -0.110] cross 163.872 min (n=195)
+forecast ratingbias   twin      n=5400 base 0.275 Brier 0.093 BSS -0.077 diff -0.005 [-0.008, -0.002] AUROC 0.939 dAUROC 0.007 [0.004, 0.009] cross 98.979 min (n=238)
+forecast ratingbias   oracle    n=5400 base 0.275 Brier 0.072 BSS 0.161 diff -0.025 [-0.030, -0.020] AUROC 0.960 dAUROC 0.028 [0.023, 0.033] cross 87.048 min (n=251)
+forecast autocorr     prior     n=5400 base 0.275 Brier 0.086 BSS 0.000 diff - [-, -] AUROC 0.945 dAUROC - [-, -] cross 79.229 min (n=288)
+forecast autocorr     checkins  n=5400 base 0.275 Brier 0.066 BSS 0.236 diff - [-, -] AUROC 0.966 dAUROC - [-, -] cross 83.973 min (n=255)
+forecast autocorr     noanchor  n=5400 base 0.275 Brier 0.232 BSS -1.690 diff 0.166 [0.145, 0.188] AUROC 0.760 dAUROC -0.206 [-0.233, -0.180] cross 201.310 min (n=187)
+forecast autocorr     twin      n=5400 base 0.275 Brier 0.064 BSS 0.257 diff -0.002 [-0.004, 0.001] AUROC 0.969 dAUROC 0.002 [-0.000, 0.005] cross 83.100 min (n=259)
+forecast autocorr     oracle    n=5400 base 0.275 Brier 0.059 BSS 0.322 diff -0.007 [-0.011, -0.004] AUROC 0.973 dAUROC 0.007 [0.004, 0.010] cross 78.210 min (n=262)
+forecast trait        prior     n=5400 base 0.274 Brier 0.098 BSS 0.000 diff - [-, -] AUROC 0.922 dAUROC - [-, -] cross 98.390 min (n=272)
+forecast trait        checkins  n=5400 base 0.274 Brier 0.068 BSS 0.305 diff - [-, -] AUROC 0.965 dAUROC - [-, -] cross 88.692 min (n=240)
+forecast trait        noanchor  n=5400 base 0.274 Brier 0.200 BSS -1.053 diff 0.133 [0.113, 0.153] AUROC 0.810 dAUROC -0.155 [-0.178, -0.132] cross 172.737 min (n=190)
+forecast trait        twin      n=5400 base 0.274 Brier 0.062 BSS 0.367 diff -0.006 [-0.009, -0.003] AUROC 0.971 dAUROC 0.006 [0.003, 0.008] cross 85.653 min (n=242)
+forecast trait        oracle    n=5400 base 0.274 Brier 0.057 BSS 0.418 diff -0.011 [-0.014, -0.008] AUROC 0.975 dAUROC 0.010 [0.007, 0.013] cross 80.661 min (n=248)
+forecast debt         prior     n=5400 base 0.398 Brier 0.084 BSS 0.000 diff - [-, -] AUROC 0.958 dAUROC - [-, -] cross 104.926 min (n=299)
+forecast debt         checkins  n=5400 base 0.398 Brier 0.069 BSS 0.182 diff - [-, -] AUROC 0.967 dAUROC - [-, -] cross 92.088 min (n=296)
+forecast debt         noanchor  n=5400 base 0.398 Brier 0.238 BSS -1.820 diff 0.169 [0.150, 0.189] AUROC 0.778 dAUROC -0.188 [-0.211, -0.166] cross 165.302 min (n=235)
+forecast debt         twin      n=5400 base 0.398 Brier 0.064 BSS 0.238 diff -0.005 [-0.007, -0.003] AUROC 0.972 dAUROC 0.005 [0.003, 0.007] cross 87.058 min (n=294)
+forecast debt         oracle    n=5400 base 0.398 Brier 0.059 BSS 0.303 diff -0.010 [-0.013, -0.007] AUROC 0.978 dAUROC 0.011 [0.008, 0.014] cross 81.697 min (n=294)
+forecast workday      prior     n=4200 base 0.014 Brier 0.015 BSS 0.000 diff - [-, -] AUROC 0.944 dAUROC - [-, -] cross - min (n=0)
+forecast workday      checkins  n=4200 base 0.014 Brier 0.012 BSS 0.172 diff - [-, -] AUROC 0.970 dAUROC - [-, -] cross 30.833 min (n=18)
+forecast workday      noanchor  n=4200 base 0.014 Brier 0.112 BSS -6.475 diff 0.099 [0.076, 0.127] AUROC 0.807 dAUROC -0.164 [-0.242, -0.097] cross 169.833 min (n=24)
+forecast workday      twin      n=4200 base 0.014 Brier 0.012 BSS 0.177 diff -0.000 [-0.001, 0.001] AUROC 0.976 dAUROC 0.005 [0.001, 0.011] cross 36.200 min (n=20)
+forecast workday      oracle    n=4200 base 0.014 Brier 0.011 BSS 0.246 diff -0.001 [-0.002, 0.000] AUROC 0.979 dAUROC 0.009 [0.001, 0.019] cross 43.318 min (n=22)
+forecast dissociation prior     n=5400 base 0.275 Brier 0.086 BSS 0.000 diff - [-, -] AUROC 0.945 dAUROC - [-, -] cross 79.229 min (n=288)
+forecast dissociation checkins  n=5400 base 0.275 Brier 0.068 BSS 0.213 diff - [-, -] AUROC 0.965 dAUROC - [-, -] cross 83.831 min (n=255)
+forecast dissociation noanchor  n=5400 base 0.275 Brier 0.203 BSS -1.349 diff 0.135 [0.116, 0.155] AUROC 0.798 dAUROC -0.166 [-0.190, -0.143] cross 164.462 min (n=195)
+forecast dissociation twin      n=5400 base 0.275 Brier 0.064 BSS 0.254 diff -0.004 [-0.006, -0.001] AUROC 0.968 dAUROC 0.004 [0.001, 0.006] cross 80.058 min (n=257)
+forecast dissociation oracle    n=5400 base 0.275 Brier 0.057 BSS 0.340 diff -0.011 [-0.014, -0.008] AUROC 0.975 dAUROC 0.010 [0.008, 0.014] cross 77.260 min (n=262)
+compare matched      twin_k1     - checkins_k1 -0.013 [-0.040, 0.016] better 0.543 worse>0.1 0.273 p05 -0.395 p50 -0.021 p95 0.368 night 0.011
+compare matched      noanchor_k1 - checkins_k1 1.038 [0.936, 1.142] better 0.080 worse>0.1 0.913 p05 -0.076 p50 0.825 p95 2.763 night 1.039
+compare matched      twin_k1     - noanchor_k1 -1.051 [-1.143, -0.960] better 0.960 worse>0.1 0.030 p05 -2.671 p50 -0.863 p95 -0.041 night -1.028
+compare matched      oracle_k1   - twin_k1     -0.093 [-0.129, -0.058] better 0.567 worse>0.1 0.213 p05 -0.687 p50 -0.030 p95 0.277 night -0.183
+compare matched      twin_k2     - checkins_k2 -0.032 [-0.050, -0.014] better 0.587 worse>0.1 0.150 p05 -0.287 p50 -0.028 p95 0.235 night -0.030
+compare matched      noanchor_k2 - checkins_k2 1.062 [0.971, 1.157] better 0.033 worse>0.1 0.953 p05 0.106 p50 0.849 p95 2.727 night 1.073
+compare matched      twin_k2     - noanchor_k2 -1.094 [-1.184, -1.008] better 0.983 worse>0.1 0.007 p05 -2.723 p50 -0.881 p95 -0.131 night -1.103
+compare matched      oracle_k2   - twin_k2     -0.062 [-0.088, -0.039] better 0.597 worse>0.1 0.180 p05 -0.460 p50 -0.034 p95 0.233 night -0.095
+compare matched      twin_k3     - checkins_k3 -0.030 [-0.042, -0.016] better 0.640 worse>0.1 0.123 p05 -0.207 p50 -0.027 p95 0.161 night -0.032
+compare matched      noanchor_k3 - checkins_k3 1.082 [0.991, 1.174] better 0.027 worse>0.1 0.967 p05 0.159 p50 0.882 p95 2.682 night 1.122
+compare matched      twin_k3     - noanchor_k3 -1.112 [-1.200, -1.025] better 0.980 worse>0.1 0.013 p05 -2.681 p50 -0.936 p95 -0.190 night -1.154
+compare matched      oracle_k3   - twin_k3     -0.043 [-0.061, -0.024] better 0.603 worse>0.1 0.137 p05 -0.326 p50 -0.027 p95 0.182 night -0.054
+compare matched      twin_k4     - checkins_k4 -0.027 [-0.038, -0.015] better 0.633 worse>0.1 0.097 p05 -0.175 p50 -0.031 p95 0.132 night -0.026
+compare matched      noanchor_k4 - checkins_k4 1.095 [1.009, 1.187] better 0.020 worse>0.1 0.957 p05 0.166 p50 0.890 p95 2.699 night 1.144
+compare matched      twin_k4     - noanchor_k4 -1.122 [-1.209, -1.038] better 0.987 worse>0.1 0.003 p05 -2.666 p50 -0.908 p95 -0.176 night -1.169
+compare matched      oracle_k4   - twin_k4     -0.036 [-0.051, -0.022] better 0.630 worse>0.1 0.103 p05 -0.256 p50 -0.032 p95 0.169 night -0.066
+compare matched      twin_k6     - checkins_k6 -0.016 [-0.026, -0.006] better 0.597 worse>0.1 0.103 p05 -0.161 p50 -0.015 p95 0.150 night -0.014
+compare matched      noanchor_k6 - checkins_k6 1.087 [1.003, 1.175] better 0.013 worse>0.1 0.980 p05 0.201 p50 0.869 p95 2.615 night 1.155
+compare matched      twin_k6     - noanchor_k6 -1.103 [-1.189, -1.023] better 0.993 worse>0.1 0.003 p05 -2.604 p50 -0.902 p95 -0.203 night -1.169
+compare matched      oracle_k6   - twin_k6     -0.028 [-0.040, -0.016] better 0.613 worse>0.1 0.110 p05 -0.205 p50 -0.022 p95 0.151 night -0.054
+compare matched      twin_k8     - checkins_k8 -0.014 [-0.023, -0.004] better 0.573 worse>0.1 0.067 p05 -0.144 p50 -0.013 p95 0.115 night -0.018
+compare matched      noanchor_k8 - checkins_k8 1.084 [1.001, 1.171] better 0.010 worse>0.1 0.980 p05 0.221 p50 0.851 p95 2.657 night 1.152
+compare matched      twin_k8     - noanchor_k8 -1.097 [-1.182, -1.017] better 0.993 worse>0.1 0.003 p05 -2.624 p50 -0.881 p95 -0.235 night -1.169
+compare matched      oracle_k8   - twin_k8     -0.021 [-0.032, -0.010] better 0.603 worse>0.1 0.097 p05 -0.174 p50 -0.018 p95 0.137 night -0.055
+compare matched      twin_k0     - prior_k0    0.042 [-0.018, 0.099] better 0.467 worse>0.1 0.413 p05 -0.799 p50 0.034 p95 0.960 night 0.077
+compare matched      twin_k3     - prior_k0    -0.190 [-0.243, -0.138] better 0.590 worse>0.1 0.250 p05 -1.114 p50 -0.077 p95 0.307 night -0.209
+compare matched      checkins_k3 - prior_k0    -0.160 [-0.211, -0.111] better 0.590 worse>0.1 0.287 p05 -0.996 p50 -0.052 p95 0.295 night -0.177
+compare misreport    twin_k1     - checkins_k1 -0.056 [-0.085, -0.028] better 0.630 worse>0.1 0.230 p05 -0.446 p50 -0.052 p95 0.386 night -0.049
+compare misreport    noanchor_k1 - checkins_k1 0.928 [0.828, 1.031] better 0.107 worse>0.1 0.857 p05 -0.214 p50 0.731 p95 2.662 night 0.924
+compare misreport    twin_k1     - noanchor_k1 -0.984 [-1.076, -0.893] better 0.943 worse>0.1 0.053 p05 -2.544 p50 -0.822 p95 0.104 night -0.973
+compare misreport    oracle_k1   - twin_k1     -0.085 [-0.120, -0.052] better 0.573 worse>0.1 0.207 p05 -0.604 p50 -0.040 p95 0.284 night -0.164
+compare misreport    twin_k3     - checkins_k3 -0.052 [-0.065, -0.039] better 0.663 worse>0.1 0.110 p05 -0.243 p50 -0.056 p95 0.149 night -0.043
+compare misreport    noanchor_k3 - checkins_k3 0.972 [0.881, 1.067] better 0.063 worse>0.1 0.920 p05 -0.071 p50 0.798 p95 2.532 night 1.016
+compare misreport    twin_k3     - noanchor_k3 -1.024 [-1.114, -0.937] better 0.953 worse>0.1 0.020 p05 -2.520 p50 -0.841 p95 -0.041 night -1.059
+compare misreport    oracle_k3   - twin_k3     -0.051 [-0.068, -0.034] better 0.607 worse>0.1 0.110 p05 -0.308 p50 -0.033 p95 0.182 night -0.069
+compare misreport    twin_k8     - checkins_k8 -0.032 [-0.042, -0.022] better 0.627 worse>0.1 0.057 p05 -0.183 p50 -0.027 p95 0.103 night -0.042
+compare misreport    noanchor_k8 - checkins_k8 0.999 [0.918, 1.084] better 0.030 worse>0.1 0.940 p05 0.087 p50 0.798 p95 2.523 night 1.034
+compare misreport    twin_k8     - noanchor_k8 -1.031 [-1.114, -0.952] better 0.980 worse>0.1 0.010 p05 -2.470 p50 -0.841 p95 -0.130 night -1.076
+compare misreport    oracle_k8   - twin_k8     -0.025 [-0.035, -0.014] better 0.637 worse>0.1 0.087 p05 -0.178 p50 -0.023 p95 0.126 night -0.061
+compare misreport    twin_k0     - prior_k0    -0.008 [-0.065, 0.050] better 0.523 worse>0.1 0.367 p05 -0.804 p50 -0.014 p95 0.918 night 0.030
+compare misreport    twin_k3     - prior_k0    -0.213 [-0.266, -0.164] better 0.663 worse>0.1 0.217 p05 -1.093 p50 -0.121 p95 0.312 night -0.205
+compare misreport    checkins_k3 - prior_k0    -0.161 [-0.211, -0.113] better 0.600 worse>0.1 0.250 p05 -1.006 p50 -0.058 p95 0.330 night -0.162
+compare nonlinear    twin_k1     - checkins_k1 -0.013 [-0.041, 0.012] better 0.503 worse>0.1 0.300 p05 -0.381 p50 -0.005 p95 0.349 night -0.024
+compare nonlinear    noanchor_k1 - checkins_k1 1.075 [0.981, 1.170] better 0.070 worse>0.1 0.913 p05 -0.115 p50 0.931 p95 2.805 night 1.101
+compare nonlinear    twin_k1     - noanchor_k1 -1.088 [-1.175, -1.002] better 0.957 worse>0.1 0.030 p05 -2.626 p50 -0.953 p95 -0.095 night -1.126
+compare nonlinear    oracle_k1   - twin_k1     -0.025 [-0.055, 0.003] better 0.523 worse>0.1 0.287 p05 -0.497 p50 -0.013 p95 0.401 night -0.083
+compare nonlinear    twin_k3     - checkins_k3 -0.037 [-0.051, -0.024] better 0.627 worse>0.1 0.083 p05 -0.218 p50 -0.036 p95 0.133 night -0.049
+compare nonlinear    noanchor_k3 - checkins_k3 1.083 [0.995, 1.171] better 0.050 worse>0.1 0.933 p05 0.009 p50 0.962 p95 2.668 night 1.138
+compare nonlinear    twin_k3     - noanchor_k3 -1.121 [-1.205, -1.037] better 0.977 worse>0.1 0.017 p05 -2.678 p50 -0.989 p95 -0.151 night -1.187
+compare nonlinear    oracle_k3   - twin_k3     -0.019 [-0.038, 0.000] better 0.520 worse>0.1 0.217 p05 -0.343 p50 -0.008 p95 0.226 night -0.055
+compare nonlinear    twin_k8     - checkins_k8 -0.023 [-0.032, -0.014] better 0.640 worse>0.1 0.080 p05 -0.164 p50 -0.023 p95 0.136 night -0.051
+compare nonlinear    noanchor_k8 - checkins_k8 1.095 [1.013, 1.176] better 0.020 worse>0.1 0.973 p05 0.249 p50 0.967 p95 2.517 night 1.176
+compare nonlinear    twin_k8     - noanchor_k8 -1.118 [-1.197, -1.039] better 0.987 worse>0.1 0.003 p05 -2.521 p50 -1.004 p95 -0.251 night -1.228
+compare nonlinear    oracle_k8   - twin_k8     -0.003 [-0.015, 0.008] better 0.477 worse>0.1 0.140 p05 -0.175 p50 0.002 p95 0.172 night -0.018
+compare nonlinear    twin_k0     - prior_k0    0.045 [-0.015, 0.103] better 0.433 worse>0.1 0.437 p05 -0.858 p50 0.056 p95 0.928 night 0.013
+compare nonlinear    twin_k3     - prior_k0    -0.204 [-0.261, -0.150] better 0.617 worse>0.1 0.250 p05 -1.213 p50 -0.076 p95 0.360 night -0.239
+compare nonlinear    checkins_k3 - prior_k0    -0.167 [-0.221, -0.114] better 0.587 worse>0.1 0.297 p05 -1.185 p50 -0.051 p95 0.391 night -0.189
+compare ratingbias   twin_k1     - checkins_k1 -0.057 [-0.089, -0.025] better 0.620 worse>0.1 0.257 p05 -0.514 p50 -0.046 p95 0.402 night -0.049
+compare ratingbias   noanchor_k1 - checkins_k1 0.851 [0.741, 0.960] better 0.153 worse>0.1 0.820 p05 -0.477 p50 0.731 p95 2.681 night 0.867
+compare ratingbias   twin_k1     - noanchor_k1 -0.907 [-1.005, -0.810] better 0.893 worse>0.1 0.080 p05 -2.527 p50 -0.770 p95 0.348 night -0.916
+compare ratingbias   oracle_k1   - twin_k1     -0.209 [-0.258, -0.166] better 0.680 worse>0.1 0.163 p05 -0.947 p50 -0.134 p95 0.270 night -0.290
+compare ratingbias   twin_k3     - checkins_k3 -0.055 [-0.071, -0.039] better 0.683 worse>0.1 0.123 p05 -0.273 p50 -0.054 p95 0.161 night -0.035
+compare ratingbias   noanchor_k3 - checkins_k3 0.824 [0.731, 0.919] better 0.110 worse>0.1 0.833 p05 -0.294 p50 0.680 p95 2.526 night 0.860
+compare ratingbias   twin_k3     - noanchor_k3 -0.879 [-0.970, -0.788] better 0.910 worse>0.1 0.073 p05 -2.549 p50 -0.712 p95 0.187 night -0.895
+compare ratingbias   oracle_k3   - twin_k3     -0.172 [-0.203, -0.142] better 0.770 worse>0.1 0.083 p05 -0.708 p50 -0.113 p95 0.140 night -0.183
+compare ratingbias   twin_k8     - checkins_k8 -0.027 [-0.038, -0.016] better 0.630 worse>0.1 0.090 p05 -0.186 p50 -0.034 p95 0.148 night -0.022
+compare ratingbias   noanchor_k8 - checkins_k8 0.802 [0.714, 0.890] better 0.107 worse>0.1 0.857 p05 -0.258 p50 0.678 p95 2.444 night 0.904
+compare ratingbias   twin_k8     - noanchor_k8 -0.829 [-0.916, -0.741] better 0.900 worse>0.1 0.083 p05 -2.417 p50 -0.707 p95 0.179 night -0.926
+compare ratingbias   oracle_k8   - twin_k8     -0.122 [-0.143, -0.101] better 0.770 worse>0.1 0.060 p05 -0.440 p50 -0.100 p95 0.121 night -0.145
+compare ratingbias   twin_k0     - prior_k0    0.042 [-0.018, 0.099] better 0.467 worse>0.1 0.413 p05 -0.799 p50 0.034 p95 0.960 night 0.077
+compare ratingbias   twin_k3     - prior_k0    0.044 [-0.020, 0.106] better 0.400 worse>0.1 0.460 p05 -0.963 p50 0.071 p95 0.868 night 0.050
+compare ratingbias   checkins_k3 - prior_k0    0.100 [0.037, 0.162] better 0.390 worse>0.1 0.520 p05 -0.866 p50 0.110 p95 0.931 night 0.085
+compare autocorr     twin_k1     - checkins_k1 0.016 [-0.013, 0.046] better 0.483 worse>0.1 0.323 p05 -0.364 p50 0.008 p95 0.407 night 0.025
+compare autocorr     noanchor_k1 - checkins_k1 1.324 [1.226, 1.423] better 0.030 worse>0.1 0.960 p05 0.138 p50 1.146 p95 2.986 night 1.257
+compare autocorr     twin_k1     - noanchor_k1 -1.308 [-1.398, -1.219] better 0.987 worse>0.1 0.010 p05 -2.859 p50 -1.142 p95 -0.221 night -1.231
+compare autocorr     oracle_k1   - twin_k1     -0.026 [-0.065, 0.012] better 0.477 worse>0.1 0.363 p05 -0.580 p50 0.015 p95 0.476 night -0.173
+compare autocorr     twin_k3     - checkins_k3 -0.013 [-0.027, 0.001] better 0.527 worse>0.1 0.163 p05 -0.210 p50 -0.011 p95 0.187 night -0.021
+compare autocorr     noanchor_k3 - checkins_k3 1.368 [1.278, 1.459] better 0.003 worse>0.1 0.980 p05 0.365 p50 1.241 p95 2.934 night 1.340
+compare autocorr     twin_k3     - noanchor_k3 -1.381 [-1.470, -1.296] better 0.997 worse>0.1 0.000 p05 -2.976 p50 -1.248 p95 -0.412 night -1.361
+compare autocorr     oracle_k3   - twin_k3     0.011 [-0.010, 0.033] better 0.457 worse>0.1 0.280 p05 -0.275 p50 0.014 p95 0.324 night -0.047
+compare autocorr     twin_k8     - checkins_k8 0.002 [-0.009, 0.013] better 0.500 worse>0.1 0.130 p05 -0.143 p50 0.001 p95 0.153 night -0.006
+compare autocorr     noanchor_k8 - checkins_k8 1.360 [1.277, 1.447] better 0.000 worse>0.1 0.997 p05 0.445 p50 1.215 p95 2.816 night 1.369
+compare autocorr     twin_k8     - noanchor_k8 -1.358 [-1.443, -1.277] better 0.997 worse>0.1 0.003 p05 -2.805 p50 -1.222 p95 -0.471 night -1.375
+compare autocorr     oracle_k8   - twin_k8     0.017 [0.004, 0.029] better 0.470 worse>0.1 0.190 p05 -0.157 p50 0.008 p95 0.213 night -0.049
+compare autocorr     twin_k0     - prior_k0    0.111 [0.048, 0.173] better 0.447 worse>0.1 0.443 p05 -0.721 p50 0.050 p95 1.121 night 0.121
+compare autocorr     twin_k3     - prior_k0    -0.173 [-0.228, -0.122] better 0.577 worse>0.1 0.293 p05 -1.137 p50 -0.066 p95 0.324 night -0.199
+compare autocorr     checkins_k3 - prior_k0    -0.160 [-0.211, -0.111] better 0.590 worse>0.1 0.287 p05 -0.996 p50 -0.052 p95 0.295 night -0.177
+compare trait        twin_k1     - checkins_k1 -0.054 [-0.083, -0.026] better 0.603 worse>0.1 0.247 p05 -0.430 p50 -0.041 p95 0.362 night -0.052
+compare trait        noanchor_k1 - checkins_k1 0.953 [0.849, 1.058] better 0.100 worse>0.1 0.853 p05 -0.320 p50 0.754 p95 2.703 night 0.955
+compare trait        twin_k1     - noanchor_k1 -1.007 [-1.104, -0.913] better 0.927 worse>0.1 0.037 p05 -2.481 p50 -0.818 p95 0.043 night -1.007
+compare trait        oracle_k1   - twin_k1     -0.090 [-0.124, -0.056] better 0.597 worse>0.1 0.220 p05 -0.601 p50 -0.049 p95 0.334 night -0.170
+compare trait        twin_k3     - checkins_k3 -0.042 [-0.055, -0.029] better 0.663 worse>0.1 0.120 p05 -0.230 p50 -0.048 p95 0.160 night -0.043
+compare trait        noanchor_k3 - checkins_k3 1.030 [0.935, 1.127] better 0.043 worse>0.1 0.930 p05 0.019 p50 0.825 p95 2.676 night 1.066
+compare trait        twin_k3     - noanchor_k3 -1.072 [-1.164, -0.980] better 0.970 worse>0.1 0.020 p05 -2.655 p50 -0.874 p95 -0.150 night -1.109
+compare trait        oracle_k3   - twin_k3     -0.049 [-0.067, -0.031] better 0.613 worse>0.1 0.123 p05 -0.299 p50 -0.041 p95 0.190 night -0.070
+compare trait        twin_k8     - checkins_k8 -0.023 [-0.033, -0.013] better 0.600 worse>0.1 0.077 p05 -0.169 p50 -0.021 p95 0.120 night -0.039
+compare trait        noanchor_k8 - checkins_k8 1.042 [0.954, 1.131] better 0.023 worse>0.1 0.963 p05 0.155 p50 0.823 p95 2.647 night 1.082
+compare trait        twin_k8     - noanchor_k8 -1.065 [-1.154, -0.980] better 0.980 worse>0.1 0.010 p05 -2.594 p50 -0.837 p95 -0.182 night -1.122
+compare trait        oracle_k8   - twin_k8     -0.024 [-0.035, -0.013] better 0.617 worse>0.1 0.100 p05 -0.167 p50 -0.017 p95 0.138 night -0.062
+compare trait        twin_k0     - prior_k0    -0.034 [-0.097, 0.029] better 0.497 worse>0.1 0.397 p05 -1.013 p50 0.007 p95 0.934 night -0.029
+compare trait        twin_k3     - prior_k0    -0.314 [-0.374, -0.254] better 0.673 worse>0.1 0.193 p05 -1.311 p50 -0.183 p95 0.297 night -0.358
+compare trait        checkins_k3 - prior_k0    -0.272 [-0.332, -0.214] better 0.637 worse>0.1 0.260 p05 -1.266 p50 -0.133 p95 0.323 night -0.315
+compare debt         twin_k1     - checkins_k1 -0.025 [-0.049, 0.002] better 0.583 worse>0.1 0.200 p05 -0.369 p50 -0.031 p95 0.388 night -0.005
+compare debt         noanchor_k1 - checkins_k1 1.113 [1.008, 1.225] better 0.067 worse>0.1 0.903 p05 -0.095 p50 0.888 p95 2.962 night 1.050
+compare debt         twin_k1     - noanchor_k1 -1.138 [-1.240, -1.040] better 0.957 worse>0.1 0.030 p05 -2.790 p50 -0.889 p95 -0.023 night -1.055
+compare debt         oracle_k1   - twin_k1     -0.068 [-0.100, -0.038] better 0.543 worse>0.1 0.223 p05 -0.613 p50 -0.019 p95 0.260 night -0.099
+compare debt         twin_k3     - checkins_k3 -0.035 [-0.047, -0.023] better 0.650 worse>0.1 0.103 p05 -0.220 p50 -0.043 p95 0.151 night -0.027
+compare debt         noanchor_k3 - checkins_k3 1.135 [1.038, 1.240] better 0.023 worse>0.1 0.947 p05 0.085 p50 0.885 p95 2.823 night 1.081
+compare debt         twin_k3     - noanchor_k3 -1.170 [-1.271, -1.075] better 0.987 worse>0.1 0.010 p05 -2.829 p50 -0.939 p95 -0.147 night -1.108
+compare debt         oracle_k3   - twin_k3     -0.041 [-0.058, -0.023] better 0.597 worse>0.1 0.137 p05 -0.323 p50 -0.022 p95 0.205 night -0.040
+compare debt         twin_k8     - checkins_k8 -0.019 [-0.027, -0.011] better 0.633 worse>0.1 0.060 p05 -0.135 p50 -0.021 p95 0.109 night -0.016
+compare debt         noanchor_k8 - checkins_k8 1.128 [1.036, 1.228] better 0.013 worse>0.1 0.970 p05 0.164 p50 0.872 p95 2.787 night 1.108
+compare debt         twin_k8     - noanchor_k8 -1.147 [-1.246, -1.056] better 0.990 worse>0.1 0.010 p05 -2.813 p50 -0.910 p95 -0.201 night -1.124
+compare debt         oracle_k8   - twin_k8     -0.022 [-0.032, -0.011] better 0.607 worse>0.1 0.083 p05 -0.171 p50 -0.021 p95 0.127 night -0.035
+compare debt         twin_k0     - prior_k0    -0.008 [-0.068, 0.055] better 0.483 worse>0.1 0.417 p05 -0.978 p50 0.010 p95 0.897 night 0.057
+compare debt         twin_k3     - prior_k0    -0.261 [-0.315, -0.207] better 0.657 worse>0.1 0.193 p05 -1.188 p50 -0.168 p95 0.343 night -0.221
+compare debt         checkins_k3 - prior_k0    -0.226 [-0.277, -0.175] better 0.657 worse>0.1 0.230 p05 -1.093 p50 -0.131 p95 0.361 night -0.195
+compare workday      twin_k1     - checkins_k1 -0.017 [-0.043, 0.008] better 0.570 worse>0.1 0.243 p05 -0.353 p50 -0.028 p95 0.326 night -
+compare workday      noanchor_k1 - checkins_k1 1.044 [0.931, 1.168] better 0.100 worse>0.1 0.870 p05 -0.169 p50 0.746 p95 3.173 night -
+compare workday      twin_k1     - noanchor_k1 -1.061 [-1.175, -0.952] better 0.933 worse>0.1 0.060 p05 -3.053 p50 -0.804 p95 0.131 night -
+compare workday      oracle_k1   - twin_k1     -0.020 [-0.054, 0.014] better 0.547 worse>0.1 0.317 p05 -0.574 p50 -0.019 p95 0.491 night -
+compare workday      twin_k3     - checkins_k3 -0.021 [-0.036, -0.007] better 0.563 worse>0.1 0.133 p05 -0.233 p50 -0.022 p95 0.174 night -
+compare workday      noanchor_k3 - checkins_k3 1.050 [0.948, 1.160] better 0.050 worse>0.1 0.903 p05 0.002 p50 0.827 p95 2.775 night -
+compare workday      twin_k3     - noanchor_k3 -1.071 [-1.177, -0.973] better 0.953 worse>0.1 0.020 p05 -2.831 p50 -0.832 p95 -0.036 night -
+compare workday      oracle_k3   - twin_k3     -0.021 [-0.045, 0.003] better 0.540 worse>0.1 0.257 p05 -0.392 p50 -0.016 p95 0.333 night -
+compare workday      twin_k8     - checkins_k8 -0.014 [-0.021, -0.006] better 0.607 worse>0.1 0.050 p05 -0.127 p50 -0.008 p95 0.099 night -
+compare workday      noanchor_k8 - checkins_k8 1.035 [0.949, 1.129] better 0.030 worse>0.1 0.943 p05 0.075 p50 0.840 p95 2.609 night -
+compare workday      twin_k8     - noanchor_k8 -1.049 [-1.139, -0.966] better 0.983 worse>0.1 0.003 p05 -2.527 p50 -0.849 p95 -0.126 night -
+compare workday      oracle_k8   - twin_k8     -0.001 [-0.013, 0.010] better 0.547 worse>0.1 0.167 p05 -0.169 p50 -0.013 p95 0.178 night -
+compare workday      twin_k0     - prior_k0    0.025 [-0.037, 0.086] better 0.490 worse>0.1 0.397 p05 -0.897 p50 0.014 p95 0.850 night -
+compare workday      twin_k3     - prior_k0    -0.171 [-0.226, -0.118] better 0.610 worse>0.1 0.297 p05 -1.137 p50 -0.088 p95 0.455 night -
+compare workday      checkins_k3 - prior_k0    -0.150 [-0.205, -0.098] better 0.597 worse>0.1 0.303 p05 -1.075 p50 -0.086 p95 0.493 night -
+compare dissociation twin_k1     - checkins_k1 -0.015 [-0.043, 0.014] better 0.543 worse>0.1 0.270 p05 -0.399 p50 -0.023 p95 0.368 night 0.012
+compare dissociation noanchor_k1 - checkins_k1 1.035 [0.932, 1.138] better 0.077 worse>0.1 0.913 p05 -0.076 p50 0.824 p95 2.763 night 1.038
+compare dissociation twin_k1     - noanchor_k1 -1.049 [-1.142, -0.958] better 0.953 worse>0.1 0.033 p05 -2.671 p50 -0.847 p95 -0.024 night -1.026
+compare dissociation oracle_k1   - twin_k1     -0.095 [-0.132, -0.059] better 0.567 worse>0.1 0.207 p05 -0.688 p50 -0.030 p95 0.275 night -0.186
+compare dissociation twin_k3     - checkins_k3 -0.029 [-0.042, -0.015] better 0.620 worse>0.1 0.133 p05 -0.207 p50 -0.032 p95 0.167 night -0.028
+compare dissociation noanchor_k3 - checkins_k3 1.077 [0.985, 1.169] better 0.023 worse>0.1 0.960 p05 0.140 p50 0.861 p95 2.713 night 1.118
+compare dissociation twin_k3     - noanchor_k3 -1.106 [-1.195, -1.017] better 0.983 worse>0.1 0.013 p05 -2.702 p50 -0.913 p95 -0.183 night -1.145
+compare dissociation oracle_k3   - twin_k3     -0.051 [-0.069, -0.032] better 0.617 worse>0.1 0.130 p05 -0.348 p50 -0.029 p95 0.174 night -0.070
+compare dissociation twin_k8     - checkins_k8 -0.014 [-0.024, -0.004] better 0.577 worse>0.1 0.083 p05 -0.145 p50 -0.017 p95 0.116 night -0.016
+compare dissociation noanchor_k8 - checkins_k8 1.079 [0.996, 1.168] better 0.010 worse>0.1 0.970 p05 0.185 p50 0.834 p95 2.609 night 1.152
+compare dissociation twin_k8     - noanchor_k8 -1.093 [-1.178, -1.011] better 0.997 worse>0.1 0.003 p05 -2.622 p50 -0.878 p95 -0.225 night -1.168
+compare dissociation oracle_k8   - twin_k8     -0.023 [-0.035, -0.013] better 0.603 worse>0.1 0.090 p05 -0.194 p50 -0.018 p95 0.137 night -0.057
+compare dissociation twin_k0     - prior_k0    0.042 [-0.018, 0.099] better 0.467 worse>0.1 0.413 p05 -0.799 p50 0.034 p95 0.960 night 0.077
+compare dissociation twin_k3     - prior_k0    -0.183 [-0.236, -0.135] better 0.590 worse>0.1 0.247 p05 -1.023 p50 -0.084 p95 0.323 night -0.198
+compare dissociation checkins_k3 - prior_k0    -0.154 [-0.204, -0.106] better 0.593 worse>0.1 0.287 p05 -0.932 p50 -0.052 p95 0.304 night -0.170
+compare dissociation twin_k0     - checkins_k3 0.196 [0.147, 0.248] better 0.363 worse>0.1 0.523 p05 -0.359 p50 0.113 p95 1.082 night 0.247
+compare dissociation twin_k0     - twin_k3     0.225 [0.181, 0.270] better 0.297 worse>0.1 0.560 p05 -0.288 p50 0.141 p95 1.032 night 0.275
+sensitivity offsetPriorSd              0.84  checkins  MAE 0.647 [0.625, 0.668] cov90 0.898 width 2.731
+sensitivity offsetPriorSd              0.84  twin      MAE 0.614 [0.594, 0.634] cov90 0.897 width 2.553
+sensitivity offsetPriorSd              1.2   checkins  MAE 0.659 [0.636, 0.680] cov90 0.906 width 2.840
+sensitivity offsetPriorSd              1.2   twin      MAE 0.629 [0.609, 0.650] cov90 0.901 width 2.642
+sensitivity offsetPriorSd              1.6   checkins  MAE 0.671 [0.648, 0.693] cov90 0.906 width 2.937
+sensitivity offsetPriorSd              1.6   twin      MAE 0.647 [0.626, 0.669] cov90 0.899 width 2.709
+sensitivity offsetDriftSdPerSqrtHour   0.15  checkins  MAE 0.629 [0.606, 0.650] cov90 0.818 width 2.151
+sensitivity offsetDriftSdPerSqrtHour   0.15  twin      MAE 0.615 [0.593, 0.637] cov90 0.813 width 2.049
+sensitivity offsetDriftSdPerSqrtHour   0.3   checkins  MAE 0.659 [0.636, 0.680] cov90 0.906 width 2.840
+sensitivity offsetDriftSdPerSqrtHour   0.3   twin      MAE 0.629 [0.609, 0.650] cov90 0.901 width 2.642
+sensitivity offsetDriftSdPerSqrtHour   0.6   checkins  MAE 0.720 [0.695, 0.743] cov90 0.975 width 4.366
+sensitivity offsetDriftSdPerSqrtHour   0.6   twin      MAE 0.708 [0.686, 0.729] cov90 0.957 width 3.655
+sensitivity totPerHour                 0     checkins  MAE 0.653 [0.632, 0.673] cov90 0.909 width 2.840
+sensitivity totPerHour                 0     twin      MAE 0.620 [0.600, 0.640] cov90 0.905 width 2.641
+sensitivity totPerHour                 0.4   checkins  MAE 0.659 [0.636, 0.680] cov90 0.906 width 2.840
+sensitivity totPerHour                 0.4   twin      MAE 0.629 [0.609, 0.650] cov90 0.901 width 2.642
+sensitivity totPerHour                 0.8   checkins  MAE 0.700 [0.675, 0.724] cov90 0.884 width 2.840
+sensitivity totPerHour                 0.8   twin      MAE 0.669 [0.646, 0.691] cov90 0.879 width 2.643
+sensitivity kssNoiseSd                 0.5   checkins  MAE 0.707 [0.683, 0.731] cov90 0.819 width 2.474
+sensitivity kssNoiseSd                 0.5   twin      MAE 0.668 [0.646, 0.691] cov90 0.823 width 2.322
+sensitivity kssNoiseSd                 0.75  checkins  MAE 0.659 [0.636, 0.680] cov90 0.906 width 2.840
+sensitivity kssNoiseSd                 0.75  twin      MAE 0.629 [0.609, 0.650] cov90 0.901 width 2.642
+sensitivity kssNoiseSd                 1     checkins  MAE 0.630 [0.609, 0.651] cov90 0.952 width 3.175
+sensitivity kssNoiseSd                 1     twin      MAE 0.618 [0.597, 0.640] cov90 0.937 width 2.917
+sensitivity anchorDrift_x              0.5   checkins  MAE 0.659 [0.636, 0.680] cov90 0.906 width 2.840
+sensitivity anchorDrift_x              0.5   twin      MAE 0.657 [0.635, 0.677] cov90 0.872 width 2.531
+sensitivity anchorDrift_x              1     checkins  MAE 0.659 [0.636, 0.680] cov90 0.906 width 2.840
+sensitivity anchorDrift_x              1     twin      MAE 0.629 [0.609, 0.650] cov90 0.901 width 2.642
+sensitivity anchorDrift_x              2     checkins  MAE 0.659 [0.636, 0.680] cov90 0.906 width 2.840
+sensitivity anchorDrift_x              2     twin      MAE 0.635 [0.614, 0.657] cov90 0.904 width 2.700
+sensitivity slopeSd_x                  0     checkins  MAE 0.659 [0.636, 0.680] cov90 0.906 width 2.840
+sensitivity slopeSd_x                  0     twin      MAE 0.633 [0.612, 0.655] cov90 0.897 width 2.619
+sensitivity slopeSd_x                  1     checkins  MAE 0.659 [0.636, 0.680] cov90 0.906 width 2.840
+sensitivity slopeSd_x                  1     twin      MAE 0.629 [0.609, 0.650] cov90 0.901 width 2.642
+sensitivity slopeSd_x                  2     checkins  MAE 0.659 [0.636, 0.680] cov90 0.906 width 2.840
+sensitivity slopeSd_x                  2     twin      MAE 0.628 [0.608, 0.649] cov90 0.904 width 2.666
+done in 1431.8 s

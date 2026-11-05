@@ -394,3 +394,14 @@ describe('forecast with a work rhythm', () => {
     expect(tot(f, 5)).toBeCloseTo(10 / 60, 6); // back at work at 15 minutes
   });
 });
+
+describe('face-model delegate', () => {
+  it('treats software WebGL renderers as having no usable graphics processor', async () => {
+    const { softwareWebGl } = await import('../src/sensing/camera.ts');
+    expect(softwareWebGl('ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)')).toBe(true);
+    expect(softwareWebGl('llvmpipe (LLVM 15.0.7, 256 bits)')).toBe(true);
+    expect(softwareWebGl('ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)')).toBe(false);
+    expect(softwareWebGl('ANGLE (Intel, Intel(R) Iris(R) Xe Graphics Direct3D11 vs_5_0 ps_5_0, D3D11)')).toBe(false);
+    expect(softwareWebGl(null)).toBe(false);
+  });
+});

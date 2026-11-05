@@ -57,10 +57,22 @@ export function sleepStatus(events: TwinEvent[], now: number, cfg: TwinConfig = 
     const inWindow = recorded.filter((s) => s.wake > from && s.wake <= to);
     const entry = inWindow.at(-1) ?? null;
     // an older entry exists if any recorded wake is earlier than this window
-    // with fillMissingNights, a night the twin filled in (habitual, or today's default) shows in priorHistory
-    const filled = !entry && cfg.fillMissingNights && r.priorHistory.some((s) => s.wake > from && s.wake <= to && !recorded.includes(s));
-    const status: NightStatus = entry ? 'recorded' : filled ? 'filled-habitual' : oldestWake <= from ? 'assumed-no-sleep' : 'assumed-habitual';
-    nights.push({ index: k, from, to, entry, status });
+    let status: NightStatus = entry ? 'recorded' : oldestWake <= from ? 'assumed-no-sleep' : 'assumed-habitual';
+    let used: SleepEpisode | null = entry;
+    if (!entry && cfg.fillMissingNights && oldestWake <= from) {
+      // with fillMissingNights the windows are not aligned to nights: look at the sleep the prior actually
+      // uses here (an episode that wakes in the window, or whose sleep overlaps it)
+      const H0 = (e: SleepEpisode) => e.wake - e.hours * H;
+      const touching = r.priorHistory.filter((e) => e.hours > 0 && ((e.wake > from && e.wake <= to) || (H0(e) < to && e.wake > from)));
+      const assumed = touching.find((e) => !recorded.includes(e));
+      const real = touching.find((e) => recorded.includes(e));
+      if (assumed) status = 'filled-habitual';
+      else if (real) {
+        status = 'recorded';
+        used = real;
+      }
+    }
+    nights.push({ index: k, from, to, entry: used, status });
   }
   const missingNights = nights.filter((n) => !n.entry).map((n) => n.index);
   const hoursSinceWake = (now - r.sleep.wake) / H;

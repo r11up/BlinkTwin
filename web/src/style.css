@@ -282,6 +282,7 @@ dialog.checkin-dialog::backdrop { background: var(--bg); }
 .div-msg { margin: 0.35rem 0 0; }
 /* sleep history */
 .no-sleep { display: inline-flex; align-items: center; gap: 0.35rem; }
+.sleep-form input[type='checkbox'] { width: auto; min-height: 0; }
 .sleep-status { margin: 0.7rem 0 0.2rem; padding: 0.45rem 0.6rem; border-radius: 8px; color: var(--muted); }
 .sleep-status.attention { color: var(--ink); background: rgba(245, 158, 11, 0.1); border-left: 3px solid var(--warn); }
 .sleep-status:empty { display: none; }
