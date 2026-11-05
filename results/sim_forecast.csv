@@ -1,0 +1,6 @@
+method,label,n,prevalence,brier,brier_climatology,auroc
+"prior","Rhythm model only",5400,0.205,0.09772943968863596,0.162975,0.9225382342339613
+"checkins","Check-ins only",5400,0.205,0.06745696813857677,0.162975,0.9643148201805801
+"noanchor","Check-ins + passive, no anchoring",5400,0.205,0.06512463621103598,0.162975,0.9615878540957938
+"anchor","BlinkTwin: check-ins anchor passive signals",5400,0.205,0.06201327752305589,0.162975,0.9643427011178257
+"slopes","BlinkTwin + personal slopes",5400,0.205,0.06452317823091153,0.162975,0.9610990433997826

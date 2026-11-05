@@ -108,7 +108,7 @@ both = cp
 (out / "openneuro_summary.json").write_text(json.dumps(summary, indent=2))
 
 plt.rcParams.update({"font.size": 8, "axes.spines.top": False, "axes.spines.right": False, "pdf.fonttype": 42})
-fig, ax = plt.subplots(1, 3, figsize=(7.0, 2.3))
+fig, ax = plt.subplots(1, 3, figsize=(7.0, 2.4))
 for a, (col, label) in zip(ax[:2], [("KSS", "KSS (1-9)"), ("PVT_item2", "PVT median RT (ms)")]):
     d = df.dropna(subset=[f"{col}_NS", f"{col}_SD"])
     jitter = np.random.default_rng(0).uniform(-0.06, 0.06, len(d))
@@ -123,7 +123,7 @@ ax[2].axvline(0, color="0.85", lw=0.8)
 ax[2].scatter(both["d_rt"], both["d_sss"] + np.random.default_rng(1).uniform(-0.12, 0.12, len(both)), s=12, color="C1")
 ax[2].set_xlabel("Change in median RT (ms)")
 ax[2].set_ylabel("Change in SSS (1-7)")
-ax[2].set_title(f"Spearman rho = {rho.statistic:.2f}, p = {rho.pvalue:.2f} (n = {len(both)})", fontsize=8)
+ax[2].set_title(f"rho = {rho.statistic:.2f}, p = {rho.pvalue:.2f}, n = {len(both)}", fontsize=8)
 fig.tight_layout()
 fig.savefig(out / "fig_openneuro.pdf")
 print(json.dumps(summary, indent=2))

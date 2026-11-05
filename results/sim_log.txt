@@ -1,0 +1,148 @@
+tuning camRInflate=1  MAE 0.764
+tuning camRInflate=4  MAE 0.720
+tuning camRInflate=10  MAE 0.682
+tuning camRInflate=20  MAE 0.655
+tuning camRInflate=40  MAE 0.635
+tuning camRInflate=80  MAE 0.625
+tuning camRInflate=160  MAE 0.623
+tuning camRInflate=320  MAE 0.625
+tuning camRInflate=640  MAE 0.627
+tuning camRInflate=1280  MAE 0.630
+tuning camRInflate=1000000000  MAE 0.634
+camera weight chosen on tuning cohort: camRInflate = 160
+population mappings fitted on training cohort: {"pvt":{"mean":[3.544463348243917,1.3994152491673724],"priorSd":[1.2999793145576792,0.37728510237197443],"noiseSd":1.9033791696800808},"cam":{"mean":[0.6246436022761168,0.6397387401698956,2.103330428610975],"priorSd":[1.1320939886996884,0.051986937008494785,0.8311116331117507],"noiseSd":1.423209967252637}}
+prior       k=0  MAE 0.930 [0.873, 0.992]  night 0.916  cov90 0.972
+checkins    k=1  MAE 0.732 [0.696, 0.770]  night 0.732  cov90 0.947
+checkins    k=2  MAE 0.704 [0.676, 0.734]  night 0.653  cov90 0.920
+checkins    k=3  MAE 0.645 [0.625, 0.667]  night 0.622  cov90 0.912
+checkins    k=4  MAE 0.651 [0.632, 0.674]  night 0.620  cov90 0.887
+checkins    k=6  MAE 0.575 [0.559, 0.592]  night 0.549  cov90 0.895
+checkins    k=8  MAE 0.563 [0.548, 0.581]  night 0.577  cov90 0.890
+passive     k=0  MAE 0.837 [0.797, 0.880]  night 0.789  cov90 0.832
+noanchor    k=1  MAE 0.740 [0.711, 0.771]  night 0.737  cov90 0.853
+noanchor    k=2  MAE 0.699 [0.675, 0.726]  night 0.655  cov90 0.848
+noanchor    k=3  MAE 0.649 [0.628, 0.672]  night 0.633  cov90 0.859
+noanchor    k=4  MAE 0.656 [0.634, 0.678]  night 0.651  cov90 0.836
+noanchor    k=6  MAE 0.587 [0.569, 0.606]  night 0.579  cov90 0.852
+noanchor    k=8  MAE 0.573 [0.555, 0.591]  night 0.600  cov90 0.848
+anchor      k=0  MAE 0.843 [0.803, 0.887]  night 0.804  cov90 0.906
+anchor      k=1  MAE 0.703 [0.677, 0.733]  night 0.699  cov90 0.913
+anchor      k=2  MAE 0.674 [0.651, 0.697]  night 0.639  cov90 0.899
+anchor      k=3  MAE 0.625 [0.606, 0.644]  night 0.612  cov90 0.899
+anchor      k=4  MAE 0.640 [0.621, 0.659]  night 0.638  cov90 0.867
+anchor      k=6  MAE 0.572 [0.555, 0.588]  night 0.568  cov90 0.879
+anchor      k=8  MAE 0.558 [0.545, 0.575]  night 0.587  cov90 0.872
+slopes      k=1  MAE 0.735 [0.706, 0.765]  night 0.777  cov90 0.898
+slopes      k=2  MAE 0.690 [0.668, 0.716]  night 0.672  cov90 0.885
+slopes      k=3  MAE 0.657 [0.636, 0.679]  night 0.697  cov90 0.874
+slopes      k=4  MAE 0.670 [0.650, 0.693]  night 0.721  cov90 0.841
+slopes      k=6  MAE 0.610 [0.594, 0.629]  night 0.676  cov90 0.849
+slopes      k=8  MAE 0.599 [0.583, 0.616]  night 0.705  cov90 0.841
+forecast prior       Brier 0.098 (climatology 0.163)  AUROC 0.923
+forecast checkins    Brier 0.067 (climatology 0.163)  AUROC 0.964
+forecast noanchor    Brier 0.065 (climatology 0.163)  AUROC 0.962
+forecast anchor      Brier 0.062 (climatology 0.163)  AUROC 0.964
+forecast slopes      Brier 0.065 (climatology 0.163)  AUROC 0.961
+[
+ {
+  "a": "anchor_k3",
+  "b": "prior_k0",
+  "mean_diff": -0.3050123255793328,
+  "ci": [
+   -0.36039055664668634,
+   -0.24536313512394956
+  ],
+  "share_a_better": 0.6766666666666666
+ },
+ {
+  "a": "checkins_k3",
+  "b": "prior_k0",
+  "mean_diff": -0.28452498199334764,
+  "ci": [
+   -0.3433023981153696,
+   -0.2236955000352061
+  ],
+  "share_a_better": 0.66
+ },
+ {
+  "a": "noanchor_k1",
+  "b": "checkins_k1",
+  "mean_diff": 0.008251327456878727,
+  "ci": [
+   -0.021757863049044764,
+   0.038344895541268034
+  ],
+  "share_a_better": 0.43
+ },
+ {
+  "a": "anchor_k1",
+  "b": "checkins_k1",
+  "mean_diff": -0.028990162220518947,
+  "ci": [
+   -0.04938391604003058,
+   -0.008394066276434652
+  ],
+  "share_a_better": 0.5
+ },
+ {
+  "a": "anchor_k1",
+  "b": "noanchor_k1",
+  "mean_diff": -0.037241489677397696,
+  "ci": [
+   -0.05228433163463543,
+   -0.0230581386869334
+  ],
+  "share_a_better": 0.66
+ },
+ {
+  "a": "anchor_k3",
+  "b": "checkins_k3",
+  "mean_diff": -0.020487343585985265,
+  "ci": [
+   -0.03402826770569434,
+   -0.007087773854385706
+  ],
+  "share_a_better": 0.5366666666666666
+ },
+ {
+  "a": "anchor_k8",
+  "b": "checkins_k8",
+  "mean_diff": -0.004754368099128678,
+  "ci": [
+   -0.014129137020450292,
+   0.006065748745210335
+  ],
+  "share_a_better": 0.4766666666666667
+ },
+ {
+  "a": "slopes_k8",
+  "b": "anchor_k8",
+  "mean_diff": 0.04016566763027675,
+  "ci": [
+   0.03423783874619774,
+   0.046222714079005474
+  ],
+  "share_a_better": 0.22666666666666666
+ },
+ {
+  "a": "anchor_k0",
+  "b": "prior_k0",
+  "mean_diff": -0.08654442090737706,
+  "ci": [
+   -0.11662467974285429,
+   -0.054020598780192004
+  ],
+  "share_a_better": 0.5333333333333333
+ },
+ {
+  "a": "passive_k0",
+  "b": "prior_k0",
+  "mean_diff": -0.09260758653286423,
+  "ci": [
+   -0.13338906192055877,
+   -0.05390987907751297
+  ],
+  "share_a_better": 0.53
+ }
+]
+done in 12.1 s

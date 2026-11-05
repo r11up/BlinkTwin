@@ -20,7 +20,8 @@ export type TwinEvent =
   | { t: number; type: 'kss'; value: number }
   | { t: number; type: 'tlx'; value: number; items?: number[] }
   | { t: number; type: 'pvt'; medianRt: number; lapses: number; n: number; falseStarts: number }
-  | { t: number; type: 'cam'; perclos: number; blinkRate: number; meanBlinkMs: number; coverage: number };
+  | { t: number; type: 'cam'; perclos: number; blinkRate: number; meanBlinkMs: number; coverage: number; nods?: number; headMovement?: number }
+  | { t: number; type: 'alert'; level: 'warning' | 'alarm'; reason: string };
 
 export type Source = 'kss' | 'pvt' | 'cam';
 
@@ -40,6 +41,10 @@ export interface TwinConfig {
   kssNoiseSd: number;
   offsetPriorSd: number;
   offsetDriftSdPerSqrtHour: number;
+  // Each passive channel carries its own bias: a person's reaction time or eyes can sit consistently above
+  // or below the population mapping. Check-ins anchor the level; passive signals mainly track change.
+  biasPriorSd: number;
+  biasDriftSdPerSqrtHour: number;
   pvt: RegressionPrior; // KSS ~ a + b * (medianRt - 300) / 100
   cam: RegressionPrior; // KSS ~ a + b1 * perclos% + b2 * (meanBlinkMs - 150) / 100
   camRInflate: number; // camera windows are autocorrelated, so each counts for less
@@ -65,13 +70,19 @@ export const DEFAULT_CONFIG: TwinConfig = {
   kssNoiseSd: 0.75,
   offsetPriorSd: 1.2,
   offsetDriftSdPerSqrtHour: 0.3,
-  pvt: { mean: [4.5, 1.5], priorSd: [1.2, 0.8], noiseSd: 1.5 },
-  cam: { mean: [4.0, 0.25, 1.0], priorSd: [1.2, 0.15, 0.8], noiseSd: 1.7 },
-  camRInflate: 4,
+  biasPriorSd: 1.2,
+  biasDriftSdPerSqrtHour: 0.05,
+  // Population mappings fitted on DROZY (14 adults, 3 sessions of increasing sleep deprivation; mixed
+  // models with a random intercept per person; see analysis/drozy_analysis.py and results/drozy_summary.json).
+  pvt: { mean: [3.494, 2.222], priorSd: [1.136, 0.672], noiseSd: 1.572 },
+  cam: { mean: [3.609, 0.187, 1.441], priorSd: [0.399, 0.274, 1.149], noiseSd: 1.896 },
+  camRInflate: 160, // chosen on a separate tuning cohort in the simulation study (scripts/simulate.ts)
   camMinCoverage: 0.6,
   pairWindowMinutes: { pvt: 30, cam: 5 },
   usePassive: true,
-  personalise: true,
+  // Learning each person's slopes from a handful of check-ins did not help in the simulation study or on
+  // DROZY, so by default only the per-channel anchors (biases) are personal.
+  personalise: false,
   workload: {
     demand: { unset: 40, break: 15, reading: 40, focus: 65, meeting: 50, other: 40 },
     tlxNoiseSd: 8,
@@ -99,6 +110,7 @@ export interface TwinResult {
   now: Snapshot;
   contributions: Record<Source, number>;
   calibration: { pvt: Blr; cam: Blr; blink: Blr };
+  anchors: { pvt: number; pvtSd: number; cam: number; camSd: number };
   sleep: SleepEpisode;
   taskStart: number | null;
   context: ContextId;
@@ -149,8 +161,13 @@ export function replay(
   let taskStart: number | null = null;
   let breakStart: number | null = null;
   let frozenTot = 0;
-  let d = 0;
-  let dVar = cfg.offsetPriorSd ** 2;
+  // state x = [offset d, reaction-time bias, camera bias]; P its covariance
+  const x = [0, 0, 0];
+  const P = [
+    [cfg.offsetPriorSd ** 2, 0, 0],
+    [0, cfg.biasPriorSd ** 2, 0],
+    [0, 0, cfg.biasPriorSd ** 2],
+  ];
   let w = cfg.workload.demand.unset;
   let wVar = 20 ** 2;
   const tlxByContext: Record<string, number[]> = {};
@@ -178,7 +195,9 @@ export function replay(
   const advance = (to: number) => {
     const dtH = Math.max(0, (to - clock) / HOUR);
     if (dtH === 0) return;
-    dVar += cfg.offsetDriftSdPerSqrtHour ** 2 * dtH;
+    P[0][0] += cfg.offsetDriftSdPerSqrtHour ** 2 * dtH;
+    P[1][1] += cfg.biasDriftSdPerSqrtHour ** 2 * dtH;
+    P[2][2] += cfg.biasDriftSdPerSqrtHour ** 2 * dtH;
     const alpha = Math.exp((-dtH * 60) / cfg.workload.reversionMinutes);
     const mu = demand(context);
     w = mu + (w - mu) * alpha;
@@ -187,12 +206,16 @@ export function replay(
     clock = to;
   };
   const prior = (t: number) => priorKss(t, sleep, cfg.tpm, cfg.tzOffsetMinutes);
+  /** Kalman update of the state with observation z = h . x + noise(r). Credits the change in d to `source`. */
   const updateOffset = (z: number, r: number, source: Source) => {
-    const gain = dVar / (dVar + r);
-    const delta = gain * (z - d);
-    d += delta;
-    dVar *= 1 - gain;
-    contributions[source] += delta;
+    const h = source === 'pvt' ? [1, 1, 0] : source === 'cam' ? [1, 0, 1] : [1, 0, 0];
+    const ph = P.map((row) => row[0] * h[0] + row[1] * h[1] + row[2] * h[2]);
+    const sVar = h[0] * ph[0] + h[1] * ph[1] + h[2] * ph[2] + r;
+    const k = ph.map((v) => v / sVar);
+    const innov = z - (h[0] * x[0] + h[1] * x[1] + h[2] * x[2]);
+    for (let i = 0; i < 3; i++) x[i] += k[i] * innov;
+    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) P[i][j] -= k[i] * ph[j];
+    contributions[source] += k[0] * innov;
   };
   const snap = (t: number): Snapshot => {
     const p = prior(t);
@@ -201,10 +224,10 @@ export function replay(
       t,
       prior: p,
       tot: tt,
-      offset: d,
-      offsetSd: Math.sqrt(dVar),
-      kss: clampKss(p + tt + d),
-      kssSd: Math.sqrt(dVar),
+      offset: x[0],
+      offsetSd: Math.sqrt(P[0][0]),
+      kss: clampKss(p + tt + x[0]),
+      kssSd: Math.sqrt(P[0][0]),
       workload: Math.min(100, Math.max(0, w)),
       workloadSd: Math.sqrt(wVar),
       context,
@@ -296,6 +319,7 @@ export function replay(
     now: snap(opts.until),
     contributions,
     calibration: { pvt: pvtModel, cam: camModel, blink: blinkModel },
+    anchors: { pvt: x[1], pvtSd: Math.sqrt(P[1][1]), cam: x[2], camSd: Math.sqrt(P[2][2]) },
     sleep,
     taskStart,
     context,

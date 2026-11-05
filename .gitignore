@@ -19,3 +19,6 @@ paper/*.synctex.gz
 paper/*.toc
 # OS
 .DS_Store
+# DROZY per-session and per-minute tables contain the dataset's ratings; regenerate them with the analysis scripts
+results/drozy_*.csv
+web/public/models/

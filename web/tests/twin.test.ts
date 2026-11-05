@@ -76,7 +76,7 @@ describe('twin replay', () => {
       { t: day + 10.1 * H, type: 'kss', value: 6 },
       { t: day + 11 * H, type: 'cam', perclos: 0.08, blinkRate: 12, meanBlinkMs: 260, coverage: 0.95 },
     ];
-    const r = replay(ev, UTC, { until: day + 12 * H });
+    const r = replay(ev, { ...UTC, personalise: true }, { until: day + 12 * H });
     const sum = r.contributions.kss + r.contributions.pvt + r.contributions.cam;
     expect(sum).toBeCloseTo(r.now.offset, 9);
     expect(r.calibration.pvt.n).toBe(1);
@@ -169,5 +169,80 @@ describe('PVT-B scoring', () => {
     expect(s.lapses).toBe(2);
     expect(s.falseStarts).toBe(3);
     expect(s.medianRt).toBe(300);
+  });
+});
+
+import { AlertEngine } from '../src/sensing/alerts.ts';
+import { HeadTracker, poseFromMatrix } from '../src/sensing/head.ts';
+
+describe('head pose', () => {
+  it('reads zero angles from an identity matrix and a known pitch', () => {
+    const id = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+    expect(poseFromMatrix(id)).toEqual({ pitch: 0, yaw: -0, roll: 0 });
+    const a = (20 * Math.PI) / 180;
+    // rotation about x by 20 degrees, column-major
+    const rx = [1, 0, 0, 0, 0, Math.cos(a), Math.sin(a), 0, 0, -Math.sin(a), Math.cos(a), 0, 0, 0, 0, 1];
+    expect(poseFromMatrix(rx).pitch).toBeCloseTo(20, 5);
+  });
+
+  it('detects a nod relative to the resting pose', () => {
+    const h = new HeadTracker();
+    let t = 0;
+    for (; t < 10_000; t += 40) h.push(t, { pitch: 5, yaw: 0, roll: 0 });
+    for (; t < 10_800; t += 40) h.push(t, { pitch: 25, yaw: 0, roll: 0 });
+    expect(h.droppedFor(t - 40)).toBeGreaterThan(600);
+    for (; t < 12_000; t += 40) h.push(t, { pitch: 5, yaw: 0, roll: 0 });
+    expect(h.nodsIn(t)).toBe(1);
+  });
+});
+
+describe('alerts', () => {
+  const frame = (t: number, closedMs = 0, headMs = 0, closure = 0) => ({ t, face: true, eyesClosedForMs: closedMs, headDroppedForMs: headMs, closure });
+
+  it('sounds an alarm after a second of closed eyes and clears once eyes stay open', () => {
+    const a = new AlertEngine();
+    expect(a.frame(frame(0, 500, 0, 1)).state.level).toBe('ok');
+    const r = a.frame(frame(600, 1100, 0, 1));
+    expect(r.state.level).toBe('alarm');
+    expect(r.escalated).toBe(true);
+    a.frame(frame(700));
+    expect(a.frame(frame(1500)).state.level).toBe('alarm');
+    expect(a.frame(frame(2300)).state.level).toBe('ok');
+  });
+
+  it('alarms on a head drop only when the eyes are closing', () => {
+    const a = new AlertEngine();
+    expect(a.frame(frame(0, 0, 1500, 0.1)).state.level).toBe('ok');
+    expect(a.frame(frame(100, 0, 1600, 0.7)).state.level).toBe('alarm');
+  });
+
+  it('warns on high PERCLOS, with a cooldown', () => {
+    const a = new AlertEngine();
+    a.updateMinute({ perclos: 0.2, longClosures: 0, meanBlinkMs: 150, blinks: 12, twinKss: 4 });
+    expect(a.frame(frame(1000)).state.level).toBe('warning');
+    a.acknowledge(1100);
+    expect(a.frame(frame(2000)).state.level).toBe('ok');
+    a.updateMinute({ perclos: 0.02, longClosures: 0, meanBlinkMs: 150, blinks: 12, twinKss: 7.4 });
+    expect(a.frame(frame(400_000)).state.reason).toContain('KSS');
+  });
+
+  it('gives a notice when the face is lost', () => {
+    const a = new AlertEngine();
+    a.frame(frame(0));
+    expect(a.frame({ t: 6000, face: false, eyesClosedForMs: 0, headDroppedForMs: 0, closure: 0 }).state.level).toBe('notice');
+  });
+});
+
+describe('anchoring', () => {
+  it('a passive channel that reads a person wrong is absorbed by its anchor, not the offset', () => {
+    // camera always says "very sleepy" while the person keeps reporting the rhythm-model level
+    const ev: TwinEvent[] = [{ t: day + 6 * H, type: 'sleep', wake: day + 7 * H, hours: 8 }];
+    for (let m = 0; m < 8 * 60; m++) ev.push({ t: day + 9 * H + m * 60_000, type: 'cam', perclos: 0.2, blinkRate: 15, meanBlinkMs: 400, coverage: 1 });
+    for (let h = 10; h <= 16; h += 2) ev.push({ t: day + h * H, type: 'kss', value: Math.round(priorKss(day + h * H, { wake: day + 7 * H, hours: 8 }, TPM_DEFAULTS, 0)) });
+    const cfg = { ...UTC, camRInflate: 4 };
+    const anchored = replay(ev, cfg, { until: day + 17 * H });
+    const naive = replay(ev, { ...cfg, biasPriorSd: 1e-4, biasDriftSdPerSqrtHour: 0 }, { until: day + 17 * H });
+    expect(Math.abs(anchored.now.offset)).toBeLessThan(Math.abs(naive.now.offset));
+    expect(anchored.anchors.cam).toBeGreaterThan(0.5);
   });
 });

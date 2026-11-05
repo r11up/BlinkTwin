@@ -14,6 +14,7 @@ export interface CamWindow {
   t: number; // end of window
   perclos: number; // fraction of face-present frames with eyes >= 80% closed (normalised)
   blinkRate: number; // blinks per minute
+  blinks: number; // ordinary blinks in the window
   meanBlinkMs: number; // mean duration of ordinary blinks
   longClosures: number; // closures longer than maxBlinkMs
   coverage: number; // fraction of frames with a face
@@ -82,6 +83,11 @@ export class BlinkMeter {
     return closure;
   }
 
+  /** How long the eyes have been continuously closed at time t (0 if open). */
+  closedFor(t: number): number {
+    return this.closingSince === null ? 0 : t - this.closingSince;
+  }
+
   window(tEnd: number, lengthMs = 60_000): CamWindow {
     const from = tEnd - lengthMs;
     const frames = this.frames.filter((f) => f.t > from && f.t <= tEnd);
@@ -93,6 +99,7 @@ export class BlinkMeter {
       t: tEnd,
       perclos: face.length ? closed / face.length : 0,
       blinkRate: blinks.length / minutes,
+      blinks: blinks.length,
       meanBlinkMs: blinks.length ? blinks.reduce((s, b) => s + b.durationMs, 0) / blinks.length : 0,
       longClosures: this.longClosures.filter((b) => b.end > from && b.end <= tEnd).length,
       coverage: frames.length ? face.length / frames.length : 0,

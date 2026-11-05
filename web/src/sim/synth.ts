@@ -25,7 +25,7 @@ export function gauss(rng: Rng, mean = 0, sd = 1): number {
   return mean + sd * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
 }
 
-/** Population distribution of person-level parameters. Feature mappings are refitted from data (see analysis/). */
+/** Population distribution of person-level parameters. Reaction-time and eye parameters are fitted on DROZY (results/drozy_summary.json). */
 export interface PopulationSpec {
   offsetSd: number;
   phaseSdHours: number;
@@ -36,7 +36,7 @@ export interface PopulationSpec {
   ratingNoiseSd: number;
   rt: { intercept: [number, number]; slope: [number, number]; noiseSd: number }; // ms at KSS 3, ms per KSS point
   blinkMs: { intercept: [number, number]; slope: [number, number]; noiseSd: number };
-  perclos: { slope: [number, number]; noiseSd: number }; // per KSS point above 4
+  perclos: { intercept: number; slope: [number, number]; noiseSd: number }; // slope per KSS point above 4
   blinkRate: { intercept: [number, number]; loadSlope: number; noiseSd: number };
   workload: { offsetSd: number; ratingNoiseSd: number; fluctuationSd: number };
 }
@@ -49,9 +49,9 @@ export const POPULATION: PopulationSpec = {
   fluctuationSd: 0.5,
   fluctuationTauHours: 1.5,
   ratingNoiseSd: 0.7,
-  rt: { intercept: [300, 30], slope: [15, 10], noiseSd: 18 },
-  blinkMs: { intercept: [150, 25], slope: [15, 8], noiseSd: 25 },
-  perclos: { slope: [0.012, 0.008], noiseSd: 0.01 },
+  rt: { intercept: [339.2, 50.6], slope: [18.83, 7.74], noiseSd: 36.1 },
+  blinkMs: { intercept: [187.5, 25.9], slope: [11.88, 4.76], noiseSd: 43.1 },
+  perclos: { intercept: 0.0299, slope: [0.009, 0.0049], noiseSd: 0.0226 },
   blinkRate: { intercept: [17, 5], loadSlope: -0.12, noiseSd: 3 },
   workload: { offsetSd: 10, ratingNoiseSd: 8, fluctuationSd: 6 },
 };
@@ -161,7 +161,7 @@ export function simulate(person: Person, protocol: Protocol, rng: Rng, pop: Popu
 
     if (p.camera && ctx !== 'unset' && (time - p.start) % M === 0 && time > p.start) {
       const blinkMs = Math.max(60, person.blinkMsIntercept + person.blinkMsSlope * (kss - 3) + gauss(rng, 0, pop.blinkMs.noiseSd));
-      const perclos = Math.min(0.5, Math.max(0, person.perclosSlope * Math.max(0, kss - 4) + gauss(rng, 0, pop.perclos.noiseSd)));
+      const perclos = Math.min(0.5, Math.max(0, pop.perclos.intercept + person.perclosSlope * Math.max(0, kss - 4) + gauss(rng, 0, pop.perclos.noiseSd)));
       const blinkRate = Math.max(2, person.blinkRateBase + pop.blinkRate.loadSlope * (workload - 50) + gauss(rng, 0, pop.blinkRate.noiseSd));
       events.push({ t: time, type: 'cam', perclos, blinkRate, meanBlinkMs: blinkMs, coverage: 0.9 });
     }

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BlinkTwin</title>
+    <meta name="description" content="A personal digital twin of sleepiness and cognitive load that runs in your browser." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M2 16c4-7 9-10 14-10s10 3 14 10c-4 7-9 10-14 10S6 23 2 16z' fill='%23165d8f'/%3E%3Ccircle cx='16' cy='16' r='5' fill='white'/%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M2 16c4-7 9-10 14-10s10 3 14 10c-4 7-9 10-14 10S6 23 2 16z" /><circle cx="16" cy="16" r="5" /></svg>
+        <div><h1>BlinkTwin</h1><p>A personal digital twin of sleepiness and cognitive load</p></div>
+      </div>
+      <div class="top-actions">
+        <span class="privacy">Runs on your device. Video never leaves this page.</span>
+        <button class="ghost" data-science="forecast">The science</button>
+        <button id="btn-demo" class="ghost">Demo day</button>
+        <button id="btn-quit" class="ghost" title="Stop the local BlinkTwin server">Quit</button>
+      </div>
+    </header>
+    <div id="alarm" class="alarm" hidden role="alertdialog" aria-live="assertive">
+      <div class="alarm-box"><div class="alarm-title">Wake up</div><p id="alarm-reason"></p><p class="small">Stop what you are doing. If you are driving, pull over safely.</p><button id="alarm-ok" class="primary">I'm awake</button></div>
+    </div>
+    <div id="warn" class="banner warn" hidden role="alert"><b>You look drowsy.</b> <span id="warn-reason"></span>. Consider a break. <button id="warn-ok" class="ghost">OK</button></div>
+    <div id="demo-banner" class="banner" hidden>Demo: a simulated person's day. Your own data is untouched.</div>
+
+    <main class="grid">
+      <section class="card now">
+        <div class="card-head"><h2>Now</h2><button class="info-link" data-science="now" type="button">ⓘ How is this estimated?</button></div>
+        <div class="now-pair">
+          <div class="now-block">
+            <div class="label">Sleepiness (KSS 1–9)</div>
+            <div class="big"><span id="now-kss">–</span><small id="now-kss-sd"></small></div>
+            <div id="now-kss-word" class="word"></div>
+          </div>
+          <div class="now-block">
+            <div class="label">Cognitive load (NASA-TLX 0–100)</div>
+            <div class="big load"><span id="now-load">–</span><small id="now-load-sd"></small></div>
+            <div id="now-load-word" class="word"></div>
+          </div>
+        </div>
+        <p id="forecast-line" class="forecast-line"></p>
+        <div class="info-row"><button class="info-link" data-science="forecast" type="button">ⓘ How is this predicted?</button><button class="info-link" data-science="workload" type="button">ⓘ How is workload estimated?</button></div>
+        <div class="actions">
+          <button id="btn-checkin" class="primary">Check in</button>
+          <button id="btn-pvt">Reaction test</button>
+          <label class="small muted"><input type="checkbox" id="pvt-quick" /> 1-minute version</label>
+        </div>
+        <p id="pvt-last" class="small muted"></p>
+        <button class="info-link" data-science="pvt" type="button">ⓘ What does the reaction test measure?</button>
+        <h2 class="sub">Why the twin thinks so</h2>
+        <div id="why" class="why"></div>
+      </section>
+
+      <section class="card camera">
+        <div class="card-head"><h2>Eyes and head, live</h2><button class="info-link" data-science="eyes" type="button">ⓘ How</button></div>
+        <div class="video-wrap"><video id="video" playsinline muted></video><canvas id="overlay"></canvas><div class="eye-meter" title="Eye closure"><span id="eye-bar"></span></div></div>
+        <div id="head-live" class="cam-live"></div>
+        <div id="cam-live" class="cam-live"></div>
+        <div class="trace-wrap"><canvas id="trace"></canvas><div class="trace-legend small"><span class="lg closure">eye closure</span><span class="lg pitch">head pitch</span><span class="muted">last 30 s</span></div></div>
+        <div class="actions"><button id="cam-toggle" class="primary">Start camera</button><button id="cam-stop" class="stop" disabled>■ Stop camera</button><label class="small muted" id="hide-wrap" hidden><input type="checkbox" id="hide-video" /> Hide video (keep tracking)</label></div>
+        <p id="cam-status" class="small muted">Camera off. When on, BlinkTwin sounds an alarm if your eyes stay closed for over a second or your head drops.</p>
+        <p id="alert-status" class="small"></p>
+        <button class="info-link" data-science="alarms" type="button">ⓘ When does it alarm?</button>
+      </section>
+
+      <section class="card wide timeline">
+        <div class="card-head">
+          <h2>Today</h2>
+          <div class="legend small">
+            <span class="lg prior">rhythm model</span><span class="lg twin">twin estimate (90% band)</span><span class="lg forecast">forecast</span><span class="lg checkin">check-in</span><span class="lg pvt">reaction test</span><span class="lg cam">webcam</span>
+          </div>
+        </div>
+        <div id="kss-chart" class="chart"></div>
+        <div id="load-chart" class="chart small-chart"></div>
+        <div class="what-if">
+          <span class="small muted">What if…</span>
+          <button data-scenario="break">I take a 15-minute break</button>
+          <button data-scenario="bed">I go to bed at 23:00</button>
+          <button data-scenario="push">I keep going</button>
+        </div>
+        <p id="scenario-note" class="small"></p>
+        <button class="info-link" data-science="whatif" type="button">ⓘ How are what-ifs computed?</button>
+      </section>
+
+      <section class="card">
+        <h2>What I'm doing</h2>
+        <div id="contexts" class="segmented"></div>
+        <form id="sleep-form" class="sleep-form">
+          <label>Woke up at <input type="time" id="wake" /></label>
+          <label>Slept <input type="number" id="slept" min="0" max="14" step="0.5" /> h</label>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>Your personal model</h2><button class="info-link" data-science="anchoring" type="button">ⓘ Why check-ins matter</button></div>
+        <div id="calib"></div>
+        <p class="small muted">Check-ins anchor the twin: they set your level, and your blinks and reaction times then track changes from it. Each signal gets its own anchor, so a camera or reaction time that reads you wrong cannot drag the estimate away.</p>
+      </section>
+
+      <section class="card">
+        <h2>Your data</h2>
+        <p id="data-counts" class="small"></p>
+        <div class="actions"><button id="btn-csv" class="ghost">Export CSV</button><button id="btn-json" class="ghost">Export JSON</button><button id="btn-clear" class="ghost danger">Delete my data</button></div>
+        <p class="small muted">Research prototype. Not a medical device; it does not diagnose anything.</p>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

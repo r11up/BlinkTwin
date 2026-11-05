@@ -1,0 +1,526 @@
+{
+  "n_people": 300,
+  "n_train": 200,
+  "population_mappings": {
+    "pvt": {
+      "mean": [
+        3.544463348243917,
+        1.3994152491673724
+      ],
+      "priorSd": [
+        1.2999793145576792,
+        0.37728510237197443
+      ],
+      "noiseSd": 1.9033791696800808
+    },
+    "cam": {
+      "mean": [
+        0.6246436022761168,
+        0.6397387401698956,
+        2.103330428610975
+      ],
+      "priorSd": [
+        1.1320939886996884,
+        0.051986937008494785,
+        0.8311116331117507
+      ],
+      "noiseSd": 1.423209967252637
+    }
+  },
+  "protocol": "wake 07:00 after 7.5 h sleep, 24 h awake; PVT every 2 h and before each check-in; webcam during 50-min task blocks",
+  "config": {
+    "camRInflate": 160,
+    "totPerHour": 0.4,
+    "kssNoiseSd": 0.75
+  },
+  "mae": [
+    {
+      "method": "prior",
+      "label": "Rhythm model only",
+      "k": 0,
+      "mae": 0.929824659276903,
+      "mae_lo": 0.8732225540434548,
+      "mae_hi": 0.9919968492168387,
+      "night_mae": 0.915867333230114,
+      "coverage90": 0.9716666666666667
+    },
+    {
+      "method": "checkins",
+      "label": "Check-ins only",
+      "k": 1,
+      "mae": 0.732052618339461,
+      "mae_lo": 0.6959303157666532,
+      "mae_hi": 0.7703595253228861,
+      "night_mae": 0.731748618194917,
+      "coverage90": 0.9467840375586857
+    },
+    {
+      "method": "checkins",
+      "label": "Check-ins only",
+      "k": 2,
+      "mae": 0.7037419544347534,
+      "mae_lo": 0.6764314767874552,
+      "mae_hi": 0.733550463320337,
+      "night_mae": 0.6530437023704414,
+      "coverage90": 0.9202816901408456
+    },
+    {
+      "method": "checkins",
+      "label": "Check-ins only",
+      "k": 3,
+      "mae": 0.6452996772835554,
+      "mae_lo": 0.6245727724220089,
+      "mae_hi": 0.6671305434788719,
+      "night_mae": 0.6224617775630015,
+      "coverage90": 0.9122769953051653
+    },
+    {
+      "method": "checkins",
+      "label": "Check-ins only",
+      "k": 4,
+      "mae": 0.6513639920628463,
+      "mae_lo": 0.6319227581118952,
+      "mae_hi": 0.6740965851986993,
+      "night_mae": 0.6204823749569786,
+      "coverage90": 0.8872769953051648
+    },
+    {
+      "method": "checkins",
+      "label": "Check-ins only",
+      "k": 6,
+      "mae": 0.575334355780052,
+      "mae_lo": 0.5593307899141632,
+      "mae_hi": 0.5921165434996863,
+      "night_mae": 0.5485838633651402,
+      "coverage90": 0.8953521126760569
+    },
+    {
+      "method": "checkins",
+      "label": "Check-ins only",
+      "k": 8,
+      "mae": 0.5631990840897297,
+      "mae_lo": 0.5484444628550367,
+      "mae_hi": 0.5805570661316016,
+      "night_mae": 0.5774345987267213,
+      "coverage90": 0.8898356807511738
+    },
+    {
+      "method": "passive",
+      "label": "Passive signals only (population mapping)",
+      "k": 0,
+      "mae": 0.8372170727440394,
+      "mae_lo": 0.7970104011537431,
+      "mae_hi": 0.8796918129120844,
+      "night_mae": 0.7891018638821687,
+      "coverage90": 0.8324882629107987
+    },
+    {
+      "method": "noanchor",
+      "label": "Check-ins + passive, no anchoring",
+      "k": 1,
+      "mae": 0.74030394579634,
+      "mae_lo": 0.7110567186853323,
+      "mae_hi": 0.7705496739925121,
+      "night_mae": 0.7367238932734212,
+      "coverage90": 0.8529342723004699
+    },
+    {
+      "method": "noanchor",
+      "label": "Check-ins + passive, no anchoring",
+      "k": 2,
+      "mae": 0.698799148963883,
+      "mae_lo": 0.6750660175179287,
+      "mae_hi": 0.7256710900778757,
+      "night_mae": 0.6554540722969584,
+      "coverage90": 0.8476291079812209
+    },
+    {
+      "method": "noanchor",
+      "label": "Check-ins + passive, no anchoring",
+      "k": 3,
+      "mae": 0.6487412754581302,
+      "mae_lo": 0.6276611171673628,
+      "mae_hi": 0.6723655113971637,
+      "night_mae": 0.6333462964871512,
+      "coverage90": 0.8593896713615027
+    },
+    {
+      "method": "noanchor",
+      "label": "Check-ins + passive, no anchoring",
+      "k": 4,
+      "mae": 0.6558949994246221,
+      "mae_lo": 0.6339303146264031,
+      "mae_hi": 0.678062015737241,
+      "night_mae": 0.6510735429274087,
+      "coverage90": 0.8355868544600947
+    },
+    {
+      "method": "noanchor",
+      "label": "Check-ins + passive, no anchoring",
+      "k": 6,
+      "mae": 0.587194102394287,
+      "mae_lo": 0.569065475758749,
+      "mae_hi": 0.6055334534639687,
+      "night_mae": 0.5793535201852068,
+      "coverage90": 0.8523943661971837
+    },
+    {
+      "method": "noanchor",
+      "label": "Check-ins + passive, no anchoring",
+      "k": 8,
+      "mae": 0.5734175621587096,
+      "mae_lo": 0.5553061567200415,
+      "mae_hi": 0.590855656474735,
+      "night_mae": 0.5995420490689101,
+      "coverage90": 0.8477934272300474
+    },
+    {
+      "method": "anchor",
+      "label": "BlinkTwin: check-ins anchor passive signals",
+      "k": 0,
+      "mae": 0.8432802383695261,
+      "mae_lo": 0.8026511071015906,
+      "mae_hi": 0.8868181297450779,
+      "night_mae": 0.8043262522769249,
+      "coverage90": 0.9055164319248835
+    },
+    {
+      "method": "anchor",
+      "label": "BlinkTwin: check-ins anchor passive signals",
+      "k": 1,
+      "mae": 0.7030624561189424,
+      "mae_lo": 0.6772886426711503,
+      "mae_hi": 0.7326061679319951,
+      "night_mae": 0.6991015858714418,
+      "coverage90": 0.9130281690140855
+    },
+    {
+      "method": "anchor",
+      "label": "BlinkTwin: check-ins anchor passive signals",
+      "k": 2,
+      "mae": 0.6738316323029175,
+      "mae_lo": 0.65072634526413,
+      "mae_hi": 0.6974356032436774,
+      "night_mae": 0.6393612418773887,
+      "coverage90": 0.8985446009389674
+    },
+    {
+      "method": "anchor",
+      "label": "BlinkTwin: check-ins anchor passive signals",
+      "k": 3,
+      "mae": 0.6248123336975712,
+      "mae_lo": 0.6056523190328418,
+      "mae_hi": 0.6436515180548658,
+      "night_mae": 0.6122329626888259,
+      "coverage90": 0.8992253521126764
+    },
+    {
+      "method": "anchor",
+      "label": "BlinkTwin: check-ins anchor passive signals",
+      "k": 4,
+      "mae": 0.6402892493765036,
+      "mae_lo": 0.6213847846996676,
+      "mae_hi": 0.658557253335376,
+      "night_mae": 0.6376063220558034,
+      "coverage90": 0.8668779342723008
+    },
+    {
+      "method": "anchor",
+      "label": "BlinkTwin: check-ins anchor passive signals",
+      "k": 6,
+      "mae": 0.5716190864313748,
+      "mae_lo": 0.5547268275278057,
+      "mae_hi": 0.5876138274857173,
+      "night_mae": 0.5679772353597589,
+      "coverage90": 0.8794131455399067
+    },
+    {
+      "method": "anchor",
+      "label": "BlinkTwin: check-ins anchor passive signals",
+      "k": 8,
+      "mae": 0.5584447159906016,
+      "mae_lo": 0.5446145372903595,
+      "mae_hi": 0.5746017238947277,
+      "night_mae": 0.5871606020757484,
+      "coverage90": 0.8723943661971835
+    },
+    {
+      "method": "slopes",
+      "label": "BlinkTwin + personal slopes",
+      "k": 1,
+      "mae": 0.7347215000966777,
+      "mae_lo": 0.7063464862009332,
+      "mae_hi": 0.765284927644618,
+      "night_mae": 0.7773239117471261,
+      "coverage90": 0.8976995305164326
+    },
+    {
+      "method": "slopes",
+      "label": "BlinkTwin + personal slopes",
+      "k": 2,
+      "mae": 0.690321960064014,
+      "mae_lo": 0.6679371474348103,
+      "mae_hi": 0.7160144461970311,
+      "night_mae": 0.672456568043359,
+      "coverage90": 0.8845305164319253
+    },
+    {
+      "method": "slopes",
+      "label": "BlinkTwin + personal slopes",
+      "k": 3,
+      "mae": 0.6573632044662528,
+      "mae_lo": 0.6362180421913933,
+      "mae_hi": 0.6787077561176006,
+      "night_mae": 0.6969474567819087,
+      "coverage90": 0.8744835680751173
+    },
+    {
+      "method": "slopes",
+      "label": "BlinkTwin + personal slopes",
+      "k": 4,
+      "mae": 0.6702931610082558,
+      "mae_lo": 0.6495693267897973,
+      "mae_hi": 0.6928569610533234,
+      "night_mae": 0.7211893012978107,
+      "coverage90": 0.8407511737089208
+    },
+    {
+      "method": "slopes",
+      "label": "BlinkTwin + personal slopes",
+      "k": 6,
+      "mae": 0.6104602412712581,
+      "mae_lo": 0.5939357837005165,
+      "mae_hi": 0.6289091884535138,
+      "night_mae": 0.6762792122841881,
+      "coverage90": 0.8493661971830985
+    },
+    {
+      "method": "slopes",
+      "label": "BlinkTwin + personal slopes",
+      "k": 8,
+      "mae": 0.5986103836208778,
+      "mae_lo": 0.5830878763000212,
+      "mae_hi": 0.615773995712438,
+      "night_mae": 0.7048378796047864,
+      "coverage90": 0.8411032863849763
+    }
+  ],
+  "camera_weight": [
+    {
+      "camRInflate": 1,
+      "k": 3,
+      "mae": 0.7639499518691308,
+      "cohort": "tuning"
+    },
+    {
+      "camRInflate": 4,
+      "k": 3,
+      "mae": 0.7198538990336385,
+      "cohort": "tuning"
+    },
+    {
+      "camRInflate": 10,
+      "k": 3,
+      "mae": 0.6824841562858566,
+      "cohort": "tuning"
+    },
+    {
+      "camRInflate": 20,
+      "k": 3,
+      "mae": 0.6554691765782342,
+      "cohort": "tuning"
+    },
+    {
+      "camRInflate": 40,
+      "k": 3,
+      "mae": 0.6353899400256428,
+      "cohort": "tuning"
+    },
+    {
+      "camRInflate": 80,
+      "k": 3,
+      "mae": 0.6252189654102963,
+      "cohort": "tuning"
+    },
+    {
+      "camRInflate": 160,
+      "k": 3,
+      "mae": 0.6226740361142948,
+      "cohort": "tuning"
+    },
+    {
+      "camRInflate": 320,
+      "k": 3,
+      "mae": 0.6245315052995731,
+      "cohort": "tuning"
+    },
+    {
+      "camRInflate": 640,
+      "k": 3,
+      "mae": 0.6274966576815312,
+      "cohort": "tuning"
+    },
+    {
+      "camRInflate": 1280,
+      "k": 3,
+      "mae": 0.6301749248168946,
+      "cohort": "tuning"
+    },
+    {
+      "camRInflate": 1000000000,
+      "k": 3,
+      "mae": 0.6344430211962101,
+      "cohort": "tuning"
+    }
+  ],
+  "forecast": [
+    {
+      "method": "prior",
+      "label": "Rhythm model only",
+      "n": 5400,
+      "prevalence": 0.205,
+      "brier": 0.09772943968863596,
+      "brier_climatology": 0.162975,
+      "auroc": 0.9225382342339613
+    },
+    {
+      "method": "checkins",
+      "label": "Check-ins only",
+      "n": 5400,
+      "prevalence": 0.205,
+      "brier": 0.06745696813857677,
+      "brier_climatology": 0.162975,
+      "auroc": 0.9643148201805801
+    },
+    {
+      "method": "noanchor",
+      "label": "Check-ins + passive, no anchoring",
+      "n": 5400,
+      "prevalence": 0.205,
+      "brier": 0.06512463621103598,
+      "brier_climatology": 0.162975,
+      "auroc": 0.9615878540957938
+    },
+    {
+      "method": "anchor",
+      "label": "BlinkTwin: check-ins anchor passive signals",
+      "n": 5400,
+      "prevalence": 0.205,
+      "brier": 0.06201327752305589,
+      "brier_climatology": 0.162975,
+      "auroc": 0.9643427011178257
+    },
+    {
+      "method": "slopes",
+      "label": "BlinkTwin + personal slopes",
+      "n": 5400,
+      "prevalence": 0.205,
+      "brier": 0.06452317823091153,
+      "brier_climatology": 0.162975,
+      "auroc": 0.9610990433997826
+    }
+  ],
+  "comparisons": [
+    {
+      "a": "anchor_k3",
+      "b": "prior_k0",
+      "mean_diff": -0.3050123255793328,
+      "ci": [
+        -0.36039055664668634,
+        -0.24536313512394956
+      ],
+      "share_a_better": 0.6766666666666666
+    },
+    {
+      "a": "checkins_k3",
+      "b": "prior_k0",
+      "mean_diff": -0.28452498199334764,
+      "ci": [
+        -0.3433023981153696,
+        -0.2236955000352061
+      ],
+      "share_a_better": 0.66
+    },
+    {
+      "a": "noanchor_k1",
+      "b": "checkins_k1",
+      "mean_diff": 0.008251327456878727,
+      "ci": [
+        -0.021757863049044764,
+        0.038344895541268034
+      ],
+      "share_a_better": 0.43
+    },
+    {
+      "a": "anchor_k1",
+      "b": "checkins_k1",
+      "mean_diff": -0.028990162220518947,
+      "ci": [
+        -0.04938391604003058,
+        -0.008394066276434652
+      ],
+      "share_a_better": 0.5
+    },
+    {
+      "a": "anchor_k1",
+      "b": "noanchor_k1",
+      "mean_diff": -0.037241489677397696,
+      "ci": [
+        -0.05228433163463543,
+        -0.0230581386869334
+      ],
+      "share_a_better": 0.66
+    },
+    {
+      "a": "anchor_k3",
+      "b": "checkins_k3",
+      "mean_diff": -0.020487343585985265,
+      "ci": [
+        -0.03402826770569434,
+        -0.007087773854385706
+      ],
+      "share_a_better": 0.5366666666666666
+    },
+    {
+      "a": "anchor_k8",
+      "b": "checkins_k8",
+      "mean_diff": -0.004754368099128678,
+      "ci": [
+        -0.014129137020450292,
+        0.006065748745210335
+      ],
+      "share_a_better": 0.4766666666666667
+    },
+    {
+      "a": "slopes_k8",
+      "b": "anchor_k8",
+      "mean_diff": 0.04016566763027675,
+      "ci": [
+        0.03423783874619774,
+        0.046222714079005474
+      ],
+      "share_a_better": 0.22666666666666666
+    },
+    {
+      "a": "anchor_k0",
+      "b": "prior_k0",
+      "mean_diff": -0.08654442090737706,
+      "ci": [
+        -0.11662467974285429,
+        -0.054020598780192004
+      ],
+      "share_a_better": 0.5333333333333333
+    },
+    {
+      "a": "passive_k0",
+      "b": "prior_k0",
+      "mean_diff": -0.09260758653286423,
+      "ci": [
+        -0.13338906192055877,
+        -0.05390987907751297
+      ],
+      "share_a_better": 0.53
+    }
+  ],
+  "runtime_s": 12.121
+}

@@ -1,0 +1,478 @@
+{
+  "dataset": "DROZY (Massoz et al., 2016)",
+  "n_tests": 36,
+  "n_subjects": 14,
+  "by_test": {
+    "1": {
+      "kss": {
+        "mean": 3.25,
+        "sd": 1.2880570286640687,
+        "n": 12
+      },
+      "median_rt": {
+        "mean": 345.7083333333333,
+        "sd": 38.28093421329245,
+        "n": 12
+      },
+      "lapses500": {
+        "mean": 4.25,
+        "sd": 4.309081319513687,
+        "n": 12
+      },
+      "perclos_pct": {
+        "mean": 2.846666666666667,
+        "sd": 0.757798286105374,
+        "n": 12
+      },
+      "blink_rate": {
+        "mean": 32.04174999999999,
+        "sd": 16.77806126585873,
+        "n": 12
+      },
+      "mean_blink_ms": {
+        "mean": 179.60833333333335,
+        "sd": 47.495443960128405,
+        "n": 12
+      },
+      "long_closures_per_min": {
+        "mean": 0.16658333333333333,
+        "sd": 0.38333262516403627,
+        "n": 12
+      }
+    },
+    "2": {
+      "kss": {
+        "mean": 5.583333333333333,
+        "sd": 1.8319554050414562,
+        "n": 12
+      },
+      "median_rt": {
+        "mean": 390.9583333333333,
+        "sd": 82.6172605599111,
+        "n": 12
+      },
+      "lapses500": {
+        "mean": 14.833333333333334,
+        "sd": 18.135015519121783,
+        "n": 12
+      },
+      "perclos_pct": {
+        "mean": 4.477250000000001,
+        "sd": 2.5194817694048988,
+        "n": 12
+      },
+      "blink_rate": {
+        "mean": 31.61758333333334,
+        "sd": 16.245974183601376,
+        "n": 12
+      },
+      "mean_blink_ms": {
+        "mean": 224.75000000000003,
+        "sd": 54.95762830664102,
+        "n": 12
+      },
+      "long_closures_per_min": {
+        "mean": 0.6944166666666668,
+        "sd": 0.9780058986932482,
+        "n": 12
+      }
+    },
+    "3": {
+      "kss": {
+        "mean": 7.333333333333333,
+        "sd": 1.3706888336846839,
+        "n": 12
+      },
+      "median_rt": {
+        "mean": 416.625,
+        "sd": 83.4993535630938,
+        "n": 12
+      },
+      "lapses500": {
+        "mean": 23.75,
+        "sd": 18.30114253760727,
+        "n": 12
+      },
+      "perclos_pct": {
+        "mean": 5.860166666666667,
+        "sd": 5.322244175214629,
+        "n": 12
+      },
+      "blink_rate": {
+        "mean": 31.10183333333333,
+        "sd": 14.413193872492682,
+        "n": 12
+      },
+      "mean_blink_ms": {
+        "mean": 242.9,
+        "sd": 50.34618338879504,
+        "n": 12
+      },
+      "long_closures_per_min": {
+        "mean": 1.3610833333333334,
+        "sd": 2.1309318259788834,
+        "n": 12
+      }
+    }
+  },
+  "kss_per_test_step": {
+    "slope": 2.015971546303228,
+    "ci": [
+      1.4925109593658274,
+      2.5394321332406284
+    ],
+    "p": 4.410145397628545e-14
+  },
+  "blink_validation_vs_eog": {
+    "n_tests": 36,
+    "spearman_rho": 0.8805662805662806,
+    "pearson_r": 0.8917730408665825,
+    "bias_per_min": -5.368500000000001,
+    "loa_per_min": [
+      -19.051143009956814,
+      8.314143009956812
+    ],
+    "landmark_blink_rate_range": [
+      6.778,
+      72.333
+    ],
+    "landmark_blink_ms_range": [
+      137.9,
+      363.8
+    ],
+    "landmark_blink_ms_median": 202.7
+  },
+  "mixed_kss_on_feature": {
+    "rt100": {
+      "label": "median RT, per 100 ms above 300 ms",
+      "n": 36,
+      "subjects": 14,
+      "intercept": 3.494201638508716,
+      "slope": 2.222014104724621,
+      "ci": [
+        1.0714862724421264,
+        3.372541937007116
+      ],
+      "p": 0.0001535368840002116,
+      "random_intercept_sd": 1.1355475076075812,
+      "residual_sd": 1.5724317828361525,
+      "converged": true,
+      "random_slope": {
+        "converged": false,
+        "slope": 2.1266646259885404,
+        "random_slope_sd": 0.6715824740244567,
+        "note": "boundary or non-convergence; treat as unreliable"
+      }
+    },
+    "perclos_pct": {
+      "label": "PERCLOS, per 1 percentage point",
+      "n": 36,
+      "subjects": 14,
+      "intercept": 4.145972096771522,
+      "slope": 0.2821696648982468,
+      "ci": [
+        0.08136944471146762,
+        0.482969885085026
+      ],
+      "p": 0.005883722176700603,
+      "random_intercept_sd": 0.2043546790508857,
+      "residual_sd": 2.032286086534259,
+      "converged": true,
+      "random_slope": {
+        "converged": false,
+        "slope": 0.38200225093881146,
+        "random_slope_sd": 0.2744494232572139,
+        "note": "boundary or non-convergence; treat as unreliable"
+      }
+    },
+    "blinkms100": {
+      "label": "mean blink duration, per 100 ms above 150 ms",
+      "n": 36,
+      "subjects": 14,
+      "intercept": 4.123361183007947,
+      "slope": 1.9236094541502844,
+      "ci": [
+        0.7093838520687572,
+        3.1378350562318116
+      ],
+      "p": 0.0019026061139375218,
+      "random_intercept_sd": 0.1649742660252747,
+      "residual_sd": 1.9905883764481218,
+      "converged": true,
+      "random_slope": {
+        "converged": false,
+        "slope": 2.4055810956497883,
+        "random_slope_sd": 1.1486355282222187,
+        "note": "boundary or non-convergence; treat as unreliable"
+      }
+    },
+    "blink_rate": {
+      "label": "blink rate, per blink/min",
+      "n": 36,
+      "subjects": 14,
+      "intercept": 4.891614204471435,
+      "slope": 0.015742989428023282,
+      "ci": [
+        -0.03609526274244271,
+        0.06758124159848927
+      ],
+      "p": 0.5516896177497195,
+      "random_intercept_sd": 0.0003221333152019646,
+      "residual_sd": 2.2654754359671365,
+      "converged": false,
+      "random_slope": {
+        "converged": false,
+        "slope": 0.026027603915660925,
+        "random_slope_sd": 0.05616605912544495,
+        "note": "boundary or non-convergence; treat as unreliable"
+      }
+    },
+    "lapses500": {
+      "label": "PVT lapses (>500 ms), per lapse",
+      "n": 36,
+      "subjects": 14,
+      "intercept": 4.061018832658321,
+      "slope": 0.09227656550879353,
+      "ci": [
+        0.05314679778763091,
+        0.13140633322995615
+      ],
+      "p": 3.8001312334379524e-06,
+      "random_intercept_sd": 0.6850489413906262,
+      "residual_sd": 1.6262785697373576,
+      "converged": true,
+      "random_slope": {
+        "converged": false,
+        "slope": 0.09040531907155111,
+        "random_slope_sd": 0.030069751359019424,
+        "note": "boundary or non-convergence; treat as unreliable"
+      }
+    }
+  },
+  "rmcorr_with_kss": {
+    "rt100": {
+      "r": 0.7746501223624062,
+      "df": 21,
+      "p": 1.4302018164175555e-05,
+      "n": 35,
+      "subjects": 13
+    },
+    "perclos_pct": {
+      "r": 0.5324482679175495,
+      "df": 21,
+      "p": 0.00890934496750945,
+      "n": 35,
+      "subjects": 13
+    },
+    "blinkms100": {
+      "r": 0.5081258261813562,
+      "df": 21,
+      "p": 0.013304596726104526,
+      "n": 35,
+      "subjects": 13
+    },
+    "blink_rate": {
+      "r": 0.35023422862678155,
+      "df": 21,
+      "p": 0.10134511953562599,
+      "n": 35,
+      "subjects": 13
+    },
+    "lapses500": {
+      "r": 0.7315015164786492,
+      "df": 21,
+      "p": 7.304492500638156e-05,
+      "n": 35,
+      "subjects": 13
+    }
+  },
+  "per_subject_slopes": {
+    "kss_per_100ms_rt": {
+      "sd_deconvolved": 0.0,
+      "n_subjects": 9,
+      "mean": 4.788109238789353,
+      "sd": 1.7038502168890999,
+      "min": 2.5100081299976345,
+      "max": 7.54627432368295,
+      "share_negative": 0.0
+    },
+    "kss_per_pct_perclos": {
+      "sd_deconvolved": 3.289189971433636,
+      "n_subjects": 9,
+      "mean": -0.7854713522785524,
+      "sd": 3.8880904820861373,
+      "min": -8.006722386784555,
+      "max": 3.7669068125523695,
+      "share_negative": 0.3333333333333333
+    },
+    "kss_per_100ms_blink": {
+      "sd_deconvolved": 5.670454683424189,
+      "n_subjects": 9,
+      "mean": 0.9514360103714073,
+      "sd": 6.312076879523218,
+      "min": -12.631748639333034,
+      "max": 7.754682662001358,
+      "share_negative": 0.3333333333333333
+    }
+  },
+  "loso_calibration": {
+    "rt": {
+      "population": {
+        "mae": 1.6793589463560208,
+        "n_predictions": 22
+      },
+      "calibrated_full": {
+        "mae": 2.3576198091841833,
+        "n_predictions": 22,
+        "vs_population_wilcoxon_p": 0.05961527827280067
+      },
+      "calibrated_shrunk": {
+        "mae": 1.903531920440444,
+        "n_predictions": 22,
+        "vs_population_wilcoxon_p": 0.09764023472998615
+      },
+      "carry_forward": {
+        "mae": 3.4545454545454546,
+        "n_predictions": 22
+      },
+      "population_mean": {
+        "mae": 2.0407551450332195,
+        "n_predictions": 22
+      }
+    },
+    "eyes": {
+      "population": {
+        "mae": 1.93876047460433,
+        "n_predictions": 22
+      },
+      "calibrated_full": {
+        "mae": 2.7893084961705736,
+        "n_predictions": 22,
+        "vs_population_wilcoxon_p": 0.0029588808766121966
+      },
+      "calibrated_shrunk": {
+        "mae": 2.0062156695020184,
+        "n_predictions": 22,
+        "vs_population_wilcoxon_p": 0.0029551052285491063
+      },
+      "carry_forward": {
+        "mae": 3.4545454545454546,
+        "n_predictions": 22
+      },
+      "population_mean": {
+        "mae": 2.0407551450332195,
+        "n_predictions": 22
+      }
+    },
+    "rt+eyes": {
+      "population": {
+        "mae": 1.8201335961884688,
+        "n_predictions": 22
+      },
+      "calibrated_full": {
+        "mae": 2.4175521918723897,
+        "n_predictions": 22,
+        "vs_population_wilcoxon_p": 0.020238002764143816
+      },
+      "calibrated_shrunk": {
+        "mae": 1.9646939355672586,
+        "n_predictions": 22,
+        "vs_population_wilcoxon_p": 0.15765553415333144
+      },
+      "carry_forward": {
+        "mae": 3.4545454545454546,
+        "n_predictions": 22
+      },
+      "population_mean": {
+        "mae": 2.0407551450332195,
+        "n_predictions": 22
+      }
+    }
+  },
+  "loso_two_checkins_rt": {
+    "population": {
+      "mae": 1.8170251381687261,
+      "n_predictions": 9
+    },
+    "blr_two_checkins": {
+      "mae": 2.0763241968930632,
+      "n_predictions": 9
+    },
+    "blr_one_checkin": {
+      "mae": 2.543314027741806,
+      "n_predictions": 9
+    },
+    "exact_line_two_points": {
+      "mae": 3.5428408574606185,
+      "n_predictions": 9
+    }
+  },
+  "loso_two_checkins_note": "Subjects with all three tests: tests 1 and 2 are check-ins, test 3 (most sleep deprived) is predicted. BLR uses BlinkTwin's update equations with a population prior fitted on the other subjects.",
+  "loso_note": "Each held-out subject's first available test is the calibration check-in; MAE is over their later tests. calibrated_shrunk scales the intercept shift by tau^2/(tau^2+sigma^2) from a random-intercept model on the training subjects, as BlinkTwin's Kalman update does. Tests are ordered by increasing sleep deprivation.",
+  "suggested_priors": {
+    "twin_pvt": {
+      "mean": [
+        3.494201638508716,
+        2.222014104724621
+      ],
+      "priorSd": [
+        1.1355475076075812,
+        0.6715824740244567
+      ],
+      "noiseSd": 1.5724317828361525,
+      "feature": "[1, (medianRt - 300) / 100]"
+    },
+    "twin_cam": {
+      "mean": [
+        3.6089159902029357,
+        0.1873845844050172,
+        1.440620542954146
+      ],
+      "priorSd": [
+        0.39885138903210626,
+        0.2744494232572139,
+        1.1486355282222187
+      ],
+      "priorSd_upper_deconvolved": [
+        null,
+        3.289189971433636,
+        5.670454683424189
+      ],
+      "noiseSd": 1.8963710839547219,
+      "feature": "[1, perclos * 100, (meanBlinkMs - 150) / 100]"
+    },
+    "synth_population": {
+      "rt": {
+        "intercept_at_kss3": [
+          339.1822002185769,
+          50.628274503306244
+        ],
+        "slope_per_kss": [
+          18.83067152011258,
+          7.736365290732104
+        ],
+        "noise_sd": 36.07940560176752
+      },
+      "blinkMs": {
+        "intercept_at_kss3": [
+          187.53630941234894,
+          25.903998759867918
+        ],
+        "slope_per_kss": [
+          11.878250612849673,
+          4.763569881614863
+        ],
+        "noise_sd": 43.119176267103086
+      },
+      "perclos": {
+        "slope_per_kss_above4": [
+          0.009007674603684589,
+          0.0049214846247846375
+        ],
+        "noise_sd": 0.02259780182425298,
+        "intercept": 0.02989087522817806
+      }
+    },
+    "caveat": "14 subjects, 36 tests with KSS; NIR Kinect camera and lab PVT, not a laptop webcam. Use as weakly informative priors."
+  }
+}

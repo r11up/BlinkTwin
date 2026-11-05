@@ -5,13 +5,20 @@
   "description": "BlinkTwin: a browser-based personal digital twin of sleepiness and cognitive load",
   "type": "module",
   "scripts": {
+    "postinstall": "node scripts/copy-wasm.mjs",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "simulate": "vite-node scripts/simulate.ts"
+    "typecheck": "tsc --noEmit",
+    "simulate": "node scripts/simulate.ts",
+    "drozy-eyes": "node scripts/drozy_eyes.ts",
+    "predev": "node scripts/copy-wasm.mjs",
+    "prebuild": "node scripts/copy-wasm.mjs",
+    "science-doc": "node scripts/science-md.ts"
   },
   "devDependencies": {
+    "@types/node": "^26.6.5",
     "typescript": "7.0.2",
     "vite": "8.3.5",
     "vitest": "4.1.12"
