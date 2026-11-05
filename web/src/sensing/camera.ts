@@ -23,6 +23,7 @@ export interface FrameInfo {
   pose: Pose | null; // relative to resting pose
   headDroppedForMs: number;
   gaze: { x: number; y: number } | null;
+  lookingDown: boolean;
 }
 
 export interface LiveSummary extends CamWindow {
@@ -168,6 +169,7 @@ export class Camera {
         pose,
         headDroppedForMs: pose ? this.head.droppedFor(now) : 0,
         gaze: face ? gazeFromBlendshapes(score) : null,
+        lookingDown: face && (score('eyeLookDownLeft') + score('eyeLookDownRight')) / 2 > 0.45,
       });
       this.draw(res.faceLandmarks?.[0], closure);
       if (now - this.lastLive >= 1000) {

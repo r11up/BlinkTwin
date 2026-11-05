@@ -1,526 +1,2315 @@
 {
-  "n_people": 300,
-  "n_train": 200,
-  "population_mappings": {
-    "pvt": {
-      "mean": [
-        3.544463348243917,
-        1.3994152491673724
-      ],
-      "priorSd": [
-        1.2999793145576792,
-        0.37728510237197443
-      ],
-      "noiseSd": 1.9033791696800808
-    },
-    "cam": {
-      "mean": [
-        0.6246436022761168,
-        0.6397387401698956,
-        2.103330428610975
-      ],
-      "priorSd": [
-        1.1320939886996884,
-        0.051986937008494785,
-        0.8311116331117507
-      ],
-      "noiseSd": 1.423209967252637
-    }
+ "n_people_per_scenario": 300,
+ "protocol": "wake 07:00 reporting 7.5 h sleep, 24 h awake; PVT every 2 h and right after each check-in; webcam during 50-min task blocks; check-ins spread over the first 16 h",
+ "twin": "released defaults (DEFAULT_CONFIG, forward models fitted on DROZY); no parameter tuned on simulated people",
+ "scenarios": {
+  "matched": "Matches the twin's assumptions",
+  "misreport": "Body clock off by up to 2 h and sleep misreported (SD 1.5 h)",
+  "nonlinear": "Nonlinear signals with heavy-tailed noise",
+  "ratingbias": "People rate themselves with a personal bias (SD 0.8) and more noise (SD 1.0)",
+  "autocorr": "Webcam noise far more autocorrelated than assumed (rho 0.7)"
+ },
+ "mae": [
+  {
+   "scenario": "matched",
+   "method": "prior",
+   "label": "Rhythm model only",
+   "k": 0,
+   "mae": 0.8108963616227589,
+   "mae_lo": 0.7639835724388279,
+   "mae_hi": 0.8581496501744759,
+   "night_mae": 0.7833024922161655,
+   "coverage90": 0.9841314553990613,
+   "win_vs_checkins": null
   },
-  "protocol": "wake 07:00 after 7.5 h sleep, 24 h awake; PVT every 2 h and before each check-in; webcam during 50-min task blocks",
-  "config": {
-    "camRInflate": 160,
-    "totPerHour": 0.4,
-    "kssNoiseSd": 0.75
+  {
+   "scenario": "matched",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 0,
+   "mae": 0.8609823906785999,
+   "mae_lo": 0.8130874732813423,
+   "mae_hi": 0.9074500736452173,
+   "night_mae": 0.8710010123728108,
+   "coverage90": 0.9517136150234748,
+   "win_vs_checkins": null
   },
-  "mae": [
-    {
-      "method": "prior",
-      "label": "Rhythm model only",
-      "k": 0,
-      "mae": 0.929824659276903,
-      "mae_lo": 0.8732225540434548,
-      "mae_hi": 0.9919968492168387,
-      "night_mae": 0.915867333230114,
-      "coverage90": 0.9716666666666667
-    },
-    {
-      "method": "checkins",
-      "label": "Check-ins only",
-      "k": 1,
-      "mae": 0.732052618339461,
-      "mae_lo": 0.6959303157666532,
-      "mae_hi": 0.7703595253228861,
-      "night_mae": 0.731748618194917,
-      "coverage90": 0.9467840375586857
-    },
-    {
-      "method": "checkins",
-      "label": "Check-ins only",
-      "k": 2,
-      "mae": 0.7037419544347534,
-      "mae_lo": 0.6764314767874552,
-      "mae_hi": 0.733550463320337,
-      "night_mae": 0.6530437023704414,
-      "coverage90": 0.9202816901408456
-    },
-    {
-      "method": "checkins",
-      "label": "Check-ins only",
-      "k": 3,
-      "mae": 0.6452996772835554,
-      "mae_lo": 0.6245727724220089,
-      "mae_hi": 0.6671305434788719,
-      "night_mae": 0.6224617775630015,
-      "coverage90": 0.9122769953051653
-    },
-    {
-      "method": "checkins",
-      "label": "Check-ins only",
-      "k": 4,
-      "mae": 0.6513639920628463,
-      "mae_lo": 0.6319227581118952,
-      "mae_hi": 0.6740965851986993,
-      "night_mae": 0.6204823749569786,
-      "coverage90": 0.8872769953051648
-    },
-    {
-      "method": "checkins",
-      "label": "Check-ins only",
-      "k": 6,
-      "mae": 0.575334355780052,
-      "mae_lo": 0.5593307899141632,
-      "mae_hi": 0.5921165434996863,
-      "night_mae": 0.5485838633651402,
-      "coverage90": 0.8953521126760569
-    },
-    {
-      "method": "checkins",
-      "label": "Check-ins only",
-      "k": 8,
-      "mae": 0.5631990840897297,
-      "mae_lo": 0.5484444628550367,
-      "mae_hi": 0.5805570661316016,
-      "night_mae": 0.5774345987267213,
-      "coverage90": 0.8898356807511738
-    },
-    {
-      "method": "passive",
-      "label": "Passive signals only (population mapping)",
-      "k": 0,
-      "mae": 0.8372170727440394,
-      "mae_lo": 0.7970104011537431,
-      "mae_hi": 0.8796918129120844,
-      "night_mae": 0.7891018638821687,
-      "coverage90": 0.8324882629107987
-    },
-    {
-      "method": "noanchor",
-      "label": "Check-ins + passive, no anchoring",
-      "k": 1,
-      "mae": 0.74030394579634,
-      "mae_lo": 0.7110567186853323,
-      "mae_hi": 0.7705496739925121,
-      "night_mae": 0.7367238932734212,
-      "coverage90": 0.8529342723004699
-    },
-    {
-      "method": "noanchor",
-      "label": "Check-ins + passive, no anchoring",
-      "k": 2,
-      "mae": 0.698799148963883,
-      "mae_lo": 0.6750660175179287,
-      "mae_hi": 0.7256710900778757,
-      "night_mae": 0.6554540722969584,
-      "coverage90": 0.8476291079812209
-    },
-    {
-      "method": "noanchor",
-      "label": "Check-ins + passive, no anchoring",
-      "k": 3,
-      "mae": 0.6487412754581302,
-      "mae_lo": 0.6276611171673628,
-      "mae_hi": 0.6723655113971637,
-      "night_mae": 0.6333462964871512,
-      "coverage90": 0.8593896713615027
-    },
-    {
-      "method": "noanchor",
-      "label": "Check-ins + passive, no anchoring",
-      "k": 4,
-      "mae": 0.6558949994246221,
-      "mae_lo": 0.6339303146264031,
-      "mae_hi": 0.678062015737241,
-      "night_mae": 0.6510735429274087,
-      "coverage90": 0.8355868544600947
-    },
-    {
-      "method": "noanchor",
-      "label": "Check-ins + passive, no anchoring",
-      "k": 6,
-      "mae": 0.587194102394287,
-      "mae_lo": 0.569065475758749,
-      "mae_hi": 0.6055334534639687,
-      "night_mae": 0.5793535201852068,
-      "coverage90": 0.8523943661971837
-    },
-    {
-      "method": "noanchor",
-      "label": "Check-ins + passive, no anchoring",
-      "k": 8,
-      "mae": 0.5734175621587096,
-      "mae_lo": 0.5553061567200415,
-      "mae_hi": 0.590855656474735,
-      "night_mae": 0.5995420490689101,
-      "coverage90": 0.8477934272300474
-    },
-    {
-      "method": "anchor",
-      "label": "BlinkTwin: check-ins anchor passive signals",
-      "k": 0,
-      "mae": 0.8432802383695261,
-      "mae_lo": 0.8026511071015906,
-      "mae_hi": 0.8868181297450779,
-      "night_mae": 0.8043262522769249,
-      "coverage90": 0.9055164319248835
-    },
-    {
-      "method": "anchor",
-      "label": "BlinkTwin: check-ins anchor passive signals",
-      "k": 1,
-      "mae": 0.7030624561189424,
-      "mae_lo": 0.6772886426711503,
-      "mae_hi": 0.7326061679319951,
-      "night_mae": 0.6991015858714418,
-      "coverage90": 0.9130281690140855
-    },
-    {
-      "method": "anchor",
-      "label": "BlinkTwin: check-ins anchor passive signals",
-      "k": 2,
-      "mae": 0.6738316323029175,
-      "mae_lo": 0.65072634526413,
-      "mae_hi": 0.6974356032436774,
-      "night_mae": 0.6393612418773887,
-      "coverage90": 0.8985446009389674
-    },
-    {
-      "method": "anchor",
-      "label": "BlinkTwin: check-ins anchor passive signals",
-      "k": 3,
-      "mae": 0.6248123336975712,
-      "mae_lo": 0.6056523190328418,
-      "mae_hi": 0.6436515180548658,
-      "night_mae": 0.6122329626888259,
-      "coverage90": 0.8992253521126764
-    },
-    {
-      "method": "anchor",
-      "label": "BlinkTwin: check-ins anchor passive signals",
-      "k": 4,
-      "mae": 0.6402892493765036,
-      "mae_lo": 0.6213847846996676,
-      "mae_hi": 0.658557253335376,
-      "night_mae": 0.6376063220558034,
-      "coverage90": 0.8668779342723008
-    },
-    {
-      "method": "anchor",
-      "label": "BlinkTwin: check-ins anchor passive signals",
-      "k": 6,
-      "mae": 0.5716190864313748,
-      "mae_lo": 0.5547268275278057,
-      "mae_hi": 0.5876138274857173,
-      "night_mae": 0.5679772353597589,
-      "coverage90": 0.8794131455399067
-    },
-    {
-      "method": "anchor",
-      "label": "BlinkTwin: check-ins anchor passive signals",
-      "k": 8,
-      "mae": 0.5584447159906016,
-      "mae_lo": 0.5446145372903595,
-      "mae_hi": 0.5746017238947277,
-      "night_mae": 0.5871606020757484,
-      "coverage90": 0.8723943661971835
-    },
-    {
-      "method": "slopes",
-      "label": "BlinkTwin + personal slopes",
-      "k": 1,
-      "mae": 0.7347215000966777,
-      "mae_lo": 0.7063464862009332,
-      "mae_hi": 0.765284927644618,
-      "night_mae": 0.7773239117471261,
-      "coverage90": 0.8976995305164326
-    },
-    {
-      "method": "slopes",
-      "label": "BlinkTwin + personal slopes",
-      "k": 2,
-      "mae": 0.690321960064014,
-      "mae_lo": 0.6679371474348103,
-      "mae_hi": 0.7160144461970311,
-      "night_mae": 0.672456568043359,
-      "coverage90": 0.8845305164319253
-    },
-    {
-      "method": "slopes",
-      "label": "BlinkTwin + personal slopes",
-      "k": 3,
-      "mae": 0.6573632044662528,
-      "mae_lo": 0.6362180421913933,
-      "mae_hi": 0.6787077561176006,
-      "night_mae": 0.6969474567819087,
-      "coverage90": 0.8744835680751173
-    },
-    {
-      "method": "slopes",
-      "label": "BlinkTwin + personal slopes",
-      "k": 4,
-      "mae": 0.6702931610082558,
-      "mae_lo": 0.6495693267897973,
-      "mae_hi": 0.6928569610533234,
-      "night_mae": 0.7211893012978107,
-      "coverage90": 0.8407511737089208
-    },
-    {
-      "method": "slopes",
-      "label": "BlinkTwin + personal slopes",
-      "k": 6,
-      "mae": 0.6104602412712581,
-      "mae_lo": 0.5939357837005165,
-      "mae_hi": 0.6289091884535138,
-      "night_mae": 0.6762792122841881,
-      "coverage90": 0.8493661971830985
-    },
-    {
-      "method": "slopes",
-      "label": "BlinkTwin + personal slopes",
-      "k": 8,
-      "mae": 0.5986103836208778,
-      "mae_lo": 0.5830878763000212,
-      "mae_hi": 0.615773995712438,
-      "night_mae": 0.7048378796047864,
-      "coverage90": 0.8411032863849763
-    }
-  ],
-  "camera_weight": [
-    {
-      "camRInflate": 1,
-      "k": 3,
-      "mae": 0.7639499518691308,
-      "cohort": "tuning"
-    },
-    {
-      "camRInflate": 4,
-      "k": 3,
-      "mae": 0.7198538990336385,
-      "cohort": "tuning"
-    },
-    {
-      "camRInflate": 10,
-      "k": 3,
-      "mae": 0.6824841562858566,
-      "cohort": "tuning"
-    },
-    {
-      "camRInflate": 20,
-      "k": 3,
-      "mae": 0.6554691765782342,
-      "cohort": "tuning"
-    },
-    {
-      "camRInflate": 40,
-      "k": 3,
-      "mae": 0.6353899400256428,
-      "cohort": "tuning"
-    },
-    {
-      "camRInflate": 80,
-      "k": 3,
-      "mae": 0.6252189654102963,
-      "cohort": "tuning"
-    },
-    {
-      "camRInflate": 160,
-      "k": 3,
-      "mae": 0.6226740361142948,
-      "cohort": "tuning"
-    },
-    {
-      "camRInflate": 320,
-      "k": 3,
-      "mae": 0.6245315052995731,
-      "cohort": "tuning"
-    },
-    {
-      "camRInflate": 640,
-      "k": 3,
-      "mae": 0.6274966576815312,
-      "cohort": "tuning"
-    },
-    {
-      "camRInflate": 1280,
-      "k": 3,
-      "mae": 0.6301749248168946,
-      "cohort": "tuning"
-    },
-    {
-      "camRInflate": 1000000000,
-      "k": 3,
-      "mae": 0.6344430211962101,
-      "cohort": "tuning"
-    }
-  ],
-  "forecast": [
-    {
-      "method": "prior",
-      "label": "Rhythm model only",
-      "n": 5400,
-      "prevalence": 0.205,
-      "brier": 0.09772943968863596,
-      "brier_climatology": 0.162975,
-      "auroc": 0.9225382342339613
-    },
-    {
-      "method": "checkins",
-      "label": "Check-ins only",
-      "n": 5400,
-      "prevalence": 0.205,
-      "brier": 0.06745696813857677,
-      "brier_climatology": 0.162975,
-      "auroc": 0.9643148201805801
-    },
-    {
-      "method": "noanchor",
-      "label": "Check-ins + passive, no anchoring",
-      "n": 5400,
-      "prevalence": 0.205,
-      "brier": 0.06512463621103598,
-      "brier_climatology": 0.162975,
-      "auroc": 0.9615878540957938
-    },
-    {
-      "method": "anchor",
-      "label": "BlinkTwin: check-ins anchor passive signals",
-      "n": 5400,
-      "prevalence": 0.205,
-      "brier": 0.06201327752305589,
-      "brier_climatology": 0.162975,
-      "auroc": 0.9643427011178257
-    },
-    {
-      "method": "slopes",
-      "label": "BlinkTwin + personal slopes",
-      "n": 5400,
-      "prevalence": 0.205,
-      "brier": 0.06452317823091153,
-      "brier_climatology": 0.162975,
-      "auroc": 0.9610990433997826
-    }
-  ],
-  "comparisons": [
-    {
-      "a": "anchor_k3",
-      "b": "prior_k0",
-      "mean_diff": -0.3050123255793328,
-      "ci": [
-        -0.36039055664668634,
-        -0.24536313512394956
-      ],
-      "share_a_better": 0.6766666666666666
-    },
-    {
-      "a": "checkins_k3",
-      "b": "prior_k0",
-      "mean_diff": -0.28452498199334764,
-      "ci": [
-        -0.3433023981153696,
-        -0.2236955000352061
-      ],
-      "share_a_better": 0.66
-    },
-    {
-      "a": "noanchor_k1",
-      "b": "checkins_k1",
-      "mean_diff": 0.008251327456878727,
-      "ci": [
-        -0.021757863049044764,
-        0.038344895541268034
-      ],
-      "share_a_better": 0.43
-    },
-    {
-      "a": "anchor_k1",
-      "b": "checkins_k1",
-      "mean_diff": -0.028990162220518947,
-      "ci": [
-        -0.04938391604003058,
-        -0.008394066276434652
-      ],
-      "share_a_better": 0.5
-    },
-    {
-      "a": "anchor_k1",
-      "b": "noanchor_k1",
-      "mean_diff": -0.037241489677397696,
-      "ci": [
-        -0.05228433163463543,
-        -0.0230581386869334
-      ],
-      "share_a_better": 0.66
-    },
-    {
-      "a": "anchor_k3",
-      "b": "checkins_k3",
-      "mean_diff": -0.020487343585985265,
-      "ci": [
-        -0.03402826770569434,
-        -0.007087773854385706
-      ],
-      "share_a_better": 0.5366666666666666
-    },
-    {
-      "a": "anchor_k8",
-      "b": "checkins_k8",
-      "mean_diff": -0.004754368099128678,
-      "ci": [
-        -0.014129137020450292,
-        0.006065748745210335
-      ],
-      "share_a_better": 0.4766666666666667
-    },
-    {
-      "a": "slopes_k8",
-      "b": "anchor_k8",
-      "mean_diff": 0.04016566763027675,
-      "ci": [
-        0.03423783874619774,
-        0.046222714079005474
-      ],
-      "share_a_better": 0.22666666666666666
-    },
-    {
-      "a": "anchor_k0",
-      "b": "prior_k0",
-      "mean_diff": -0.08654442090737706,
-      "ci": [
-        -0.11662467974285429,
-        -0.054020598780192004
-      ],
-      "share_a_better": 0.5333333333333333
-    },
-    {
-      "a": "passive_k0",
-      "b": "prior_k0",
-      "mean_diff": -0.09260758653286423,
-      "ci": [
-        -0.13338906192055877,
-        -0.05390987907751297
-      ],
-      "share_a_better": 0.53
-    }
-  ],
-  "runtime_s": 12.121
+  {
+   "scenario": "matched",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 0,
+   "mae": 0.7237567413169937,
+   "mae_lo": 0.686218015633587,
+   "mae_hi": 0.7621769308163296,
+   "night_mae": 0.5959720970180288,
+   "coverage90": 0.8673943661971836,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "matched",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 1,
+   "mae": 0.7349867272807319,
+   "mae_lo": 0.7033822072360109,
+   "mae_hi": 0.7692546782874954,
+   "night_mae": 0.7248742938045399,
+   "coverage90": 0.9512206572769948,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "matched",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 1,
+   "mae": 1.7558854098627557,
+   "mae_lo": 1.665127042987285,
+   "mae_hi": 1.84938501192151,
+   "night_mae": 1.7937738272006452,
+   "coverage90": 0.22265258215962447,
+   "win_vs_checkins": 0.08666666666666667
+  },
+  {
+   "scenario": "matched",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 1,
+   "mae": 0.7190019817219993,
+   "mae_lo": 0.6888710365720635,
+   "mae_hi": 0.7504859253161075,
+   "night_mae": 0.7415623829062249,
+   "coverage90": 0.9318309859154931,
+   "win_vs_checkins": 0.53
+  },
+  {
+   "scenario": "matched",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 1,
+   "mae": 0.6429263697615635,
+   "mae_lo": 0.6206951255643542,
+   "mae_hi": 0.6665941779689802,
+   "night_mae": 0.5766535854617406,
+   "coverage90": 0.8832394366197186,
+   "win_vs_checkins": 0.58
+  },
+  {
+   "scenario": "matched",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 2,
+   "mae": 0.7039716567370613,
+   "mae_lo": 0.6751457170622633,
+   "mae_hi": 0.7347762971580329,
+   "night_mae": 0.6559727201567248,
+   "coverage90": 0.9237793427230053,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "matched",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 2,
+   "mae": 1.7210713054689102,
+   "mae_lo": 1.6296701567737415,
+   "mae_hi": 1.812360061079044,
+   "night_mae": 1.7411545108639526,
+   "coverage90": 0.2418544600938968,
+   "win_vs_checkins": 0.07666666666666666
+  },
+  {
+   "scenario": "matched",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 2,
+   "mae": 0.6642491783799108,
+   "mae_lo": 0.6372670894433751,
+   "mae_hi": 0.6921191264886328,
+   "night_mae": 0.6450296424464477,
+   "coverage90": 0.915446009389672,
+   "win_vs_checkins": 0.6333333333333333
+  },
+  {
+   "scenario": "matched",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 2,
+   "mae": 0.614198685519463,
+   "mae_lo": 0.5918643972547054,
+   "mae_hi": 0.6353968217523458,
+   "night_mae": 0.5539665861454033,
+   "coverage90": 0.883004694835681,
+   "win_vs_checkins": 0.6366666666666667
+  },
+  {
+   "scenario": "matched",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 3,
+   "mae": 0.6603909633243019,
+   "mae_lo": 0.637610073571224,
+   "mae_hi": 0.6817964826473144,
+   "night_mae": 0.6213189540903314,
+   "coverage90": 0.9097183098591559,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "matched",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 3,
+   "mae": 1.6826256090875356,
+   "mae_lo": 1.6001607556330457,
+   "mae_hi": 1.7675883630728841,
+   "night_mae": 1.7278291619594495,
+   "coverage90": 0.2403755868544602,
+   "win_vs_checkins": 0.03
+  },
+  {
+   "scenario": "matched",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 3,
+   "mae": 0.634006800095216,
+   "mae_lo": 0.6117988532977087,
+   "mae_hi": 0.6560514160575933,
+   "night_mae": 0.6159740034185379,
+   "coverage90": 0.8959859154929583,
+   "win_vs_checkins": 0.63
+  },
+  {
+   "scenario": "matched",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 3,
+   "mae": 0.5967905349269228,
+   "mae_lo": 0.5774350070141382,
+   "mae_hi": 0.6156342022910002,
+   "night_mae": 0.5442133013757114,
+   "coverage90": 0.8688262910798128,
+   "win_vs_checkins": 0.6466666666666666
+  },
+  {
+   "scenario": "matched",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 4,
+   "mae": 0.6289429908203187,
+   "mae_lo": 0.608734851740377,
+   "mae_hi": 0.6500171302488563,
+   "night_mae": 0.5969252427571948,
+   "coverage90": 0.894389671361503,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "matched",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 4,
+   "mae": 1.6709628848417306,
+   "mae_lo": 1.581091141750683,
+   "mae_hi": 1.7578426576017168,
+   "night_mae": 1.6756517759699088,
+   "coverage90": 0.2510798122065727,
+   "win_vs_checkins": 0.04
+  },
+  {
+   "scenario": "matched",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 4,
+   "mae": 0.6136259138745892,
+   "mae_lo": 0.5942535750478432,
+   "mae_hi": 0.6330537139610722,
+   "night_mae": 0.5961014489405988,
+   "coverage90": 0.8837558685446018,
+   "win_vs_checkins": 0.5833333333333334
+  },
+  {
+   "scenario": "matched",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 4,
+   "mae": 0.576255555719094,
+   "mae_lo": 0.5595214272889755,
+   "mae_hi": 0.5928118407733133,
+   "night_mae": 0.5340089512493106,
+   "coverage90": 0.8594600938967137,
+   "win_vs_checkins": 0.65
+  },
+  {
+   "scenario": "matched",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 6,
+   "mae": 0.581271750699727,
+   "mae_lo": 0.5644809774011738,
+   "mae_hi": 0.5992008757608925,
+   "night_mae": 0.5673450907053168,
+   "coverage90": 0.8890845070422538,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "matched",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 6,
+   "mae": 1.668647173016421,
+   "mae_lo": 1.5795411801687962,
+   "mae_hi": 1.76024214639341,
+   "night_mae": 1.743748912221718,
+   "coverage90": 0.24455399061032854,
+   "win_vs_checkins": 0.04
+  },
+  {
+   "scenario": "matched",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 6,
+   "mae": 0.5658281332842406,
+   "mae_lo": 0.5495705214154413,
+   "mae_hi": 0.5832223320792652,
+   "night_mae": 0.5591830863717908,
+   "coverage90": 0.8804460093896722,
+   "win_vs_checkins": 0.5766666666666667
+  },
+  {
+   "scenario": "matched",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 6,
+   "mae": 0.546211851358075,
+   "mae_lo": 0.5312332922366169,
+   "mae_hi": 0.561998525760598,
+   "night_mae": 0.5218468776810765,
+   "coverage90": 0.8550938967136151,
+   "win_vs_checkins": 0.6266666666666667
+  },
+  {
+   "scenario": "matched",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 8,
+   "mae": 0.5684540877506264,
+   "mae_lo": 0.5520529518524719,
+   "mae_hi": 0.5846412579521448,
+   "night_mae": 0.5866843418783422,
+   "coverage90": 0.8816666666666667,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "matched",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 8,
+   "mae": 1.6127652374046384,
+   "mae_lo": 1.534845094745891,
+   "mae_hi": 1.6897089134639733,
+   "night_mae": 1.6841281891234656,
+   "coverage90": 0.25208920187793415,
+   "win_vs_checkins": 0.013333333333333334
+  },
+  {
+   "scenario": "matched",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 8,
+   "mae": 0.5547901367878469,
+   "mae_lo": 0.5390127936035571,
+   "mae_hi": 0.5712142158185866,
+   "night_mae": 0.5902495353668691,
+   "coverage90": 0.8718075117370887,
+   "win_vs_checkins": 0.5933333333333334
+  },
+  {
+   "scenario": "matched",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 8,
+   "mae": 0.5383887247934043,
+   "mae_lo": 0.5230584836353519,
+   "mae_hi": 0.5540551094186114,
+   "night_mae": 0.5266865671597303,
+   "coverage90": 0.8468075117370888,
+   "win_vs_checkins": 0.6233333333333333
+  },
+  {
+   "scenario": "misreport",
+   "method": "prior",
+   "label": "Rhythm model only",
+   "k": 0,
+   "mae": 0.9179852831194989,
+   "mae_lo": 0.8682009379599249,
+   "mae_hi": 0.9672979494179146,
+   "night_mae": 0.8764275389093977,
+   "coverage90": 0.9684741784037562,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "misreport",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 0,
+   "mae": 0.9165571525109285,
+   "mae_lo": 0.8701663822123649,
+   "mae_hi": 0.963847586007419,
+   "night_mae": 0.9293204513653793,
+   "coverage90": 0.9364553990610328,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "misreport",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 0,
+   "mae": 0.7833787237955282,
+   "mae_lo": 0.7451857369674993,
+   "mae_hi": 0.8212969924420238,
+   "night_mae": 0.6831463502759301,
+   "coverage90": 0.8409859154929575,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "misreport",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 1,
+   "mae": 0.8548569647977838,
+   "mae_lo": 0.8150596179838312,
+   "mae_hi": 0.8953959533304863,
+   "night_mae": 0.8726133076780057,
+   "coverage90": 0.9090140845070432,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "misreport",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 1,
+   "mae": 1.754651699724972,
+   "mae_lo": 1.6633258294878879,
+   "mae_hi": 1.848617735419201,
+   "night_mae": 1.7978647227224178,
+   "coverage90": 0.22546948356807509,
+   "win_vs_checkins": 0.11333333333333333
+  },
+  {
+   "scenario": "misreport",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 1,
+   "mae": 0.7982681378879277,
+   "mae_lo": 0.7655691030520454,
+   "mae_hi": 0.8315432149057532,
+   "night_mae": 0.8286180552708842,
+   "coverage90": 0.9034741784037565,
+   "win_vs_checkins": 0.6166666666666667
+  },
+  {
+   "scenario": "misreport",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 1,
+   "mae": 0.7186040195494194,
+   "mae_lo": 0.691256730479375,
+   "mae_hi": 0.7484258645996159,
+   "night_mae": 0.6722003665997047,
+   "coverage90": 0.8438262910798134,
+   "win_vs_checkins": 0.6733333333333333
+  },
+  {
+   "scenario": "misreport",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 3,
+   "mae": 0.7453669502621985,
+   "mae_lo": 0.7169739825545371,
+   "mae_hi": 0.7741747886959723,
+   "night_mae": 0.7250994404397642,
+   "coverage90": 0.8660093896713622,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "misreport",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 3,
+   "mae": 1.6753042986282214,
+   "mae_lo": 1.5911748030782902,
+   "mae_hi": 1.7580077712868634,
+   "night_mae": 1.7190637513296543,
+   "coverage90": 0.24011737089201876,
+   "win_vs_checkins": 0.06666666666666667
+  },
+  {
+   "scenario": "misreport",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 3,
+   "mae": 0.7014208332600069,
+   "mae_lo": 0.6744971392838162,
+   "mae_hi": 0.7277609816549304,
+   "night_mae": 0.7046436489410849,
+   "coverage90": 0.8604929577464789,
+   "win_vs_checkins": 0.6833333333333333
+  },
+  {
+   "scenario": "misreport",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 3,
+   "mae": 0.6590960166306008,
+   "mae_lo": 0.6350531126504412,
+   "mae_hi": 0.6825278909802546,
+   "night_mae": 0.626215637743038,
+   "coverage90": 0.8285211267605642,
+   "win_vs_checkins": 0.7333333333333333
+  },
+  {
+   "scenario": "misreport",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 8,
+   "mae": 0.6551618574483055,
+   "mae_lo": 0.6321094276299271,
+   "mae_hi": 0.6787797158514001,
+   "night_mae": 0.7294421345508976,
+   "coverage90": 0.8324882629107981,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "misreport",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 8,
+   "mae": 1.61079469076451,
+   "mae_lo": 1.531637969513229,
+   "mae_hi": 1.689513893863428,
+   "night_mae": 1.6764255023693129,
+   "coverage90": 0.25492957746478867,
+   "win_vs_checkins": 0.056666666666666664
+  },
+  {
+   "scenario": "misreport",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 8,
+   "mae": 0.6246354926159964,
+   "mae_lo": 0.6034336318076701,
+   "mae_hi": 0.6467300438014789,
+   "night_mae": 0.7029361827779981,
+   "coverage90": 0.8277699530516436,
+   "win_vs_checkins": 0.6766666666666666
+  },
+  {
+   "scenario": "misreport",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 8,
+   "mae": 0.6062955663253785,
+   "mae_lo": 0.5857570415999451,
+   "mae_hi": 0.6275778004707421,
+   "night_mae": 0.6427973690333247,
+   "coverage90": 0.8019953051643195,
+   "win_vs_checkins": 0.68
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "prior",
+   "label": "Rhythm model only",
+   "k": 0,
+   "mae": 0.8286708412193545,
+   "mae_lo": 0.7806708719587798,
+   "mae_hi": 0.8771936337417015,
+   "night_mae": 0.8009941126651321,
+   "coverage90": 0.9842018779342723,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 0,
+   "mae": 0.8819492351484144,
+   "mae_lo": 0.8330367782891228,
+   "mae_hi": 0.9303280882181353,
+   "night_mae": 0.829355803388127,
+   "coverage90": 0.9407746478873246,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 0,
+   "mae": 0.7901948701485524,
+   "mae_lo": 0.7518498264325083,
+   "mae_hi": 0.8287164833551763,
+   "night_mae": 0.647818242101009,
+   "coverage90": 0.8307511737089206,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 1,
+   "mae": 0.7521816759312346,
+   "mae_lo": 0.7160328364249383,
+   "mae_hi": 0.7915670215086401,
+   "night_mae": 0.743432413865575,
+   "coverage90": 0.9426760563380293,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 1,
+   "mae": 1.813891785768307,
+   "mae_lo": 1.7254089030455229,
+   "mae_hi": 1.9029374869471014,
+   "night_mae": 1.8787450819064095,
+   "coverage90": 0.23011737089201878,
+   "win_vs_checkins": 0.07666666666666666
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 1,
+   "mae": 0.7469749828368264,
+   "mae_lo": 0.7132868838073597,
+   "mae_hi": 0.7857645131556815,
+   "night_mae": 0.7480726510066001,
+   "coverage90": 0.9138497652582165,
+   "win_vs_checkins": 0.5466666666666666
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 1,
+   "mae": 0.6737901853872901,
+   "mae_lo": 0.6478946083734736,
+   "mae_hi": 0.7022892043273158,
+   "night_mae": 0.5829188545138417,
+   "coverage90": 0.8649530516431931,
+   "win_vs_checkins": 0.5966666666666667
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 3,
+   "mae": 0.66061438826206,
+   "mae_lo": 0.6377435140085638,
+   "mae_hi": 0.6841420713617953,
+   "night_mae": 0.6048096655127233,
+   "coverage90": 0.9024413145539913,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 3,
+   "mae": 1.7577112887807531,
+   "mae_lo": 1.6734159414371392,
+   "mae_hi": 1.8432523161640089,
+   "night_mae": 1.8399254507168898,
+   "coverage90": 0.23676056338028184,
+   "win_vs_checkins": 0.04
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 3,
+   "mae": 0.6343873941130725,
+   "mae_lo": 0.6136064956827346,
+   "mae_hi": 0.6548083318925342,
+   "night_mae": 0.575649481784778,
+   "coverage90": 0.8976056338028169,
+   "win_vs_checkins": 0.6166666666666667
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 3,
+   "mae": 0.6086490658190541,
+   "mae_lo": 0.5889099524576382,
+   "mae_hi": 0.6277059457891547,
+   "night_mae": 0.5290173566359884,
+   "coverage90": 0.8568309859154937,
+   "win_vs_checkins": 0.62
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 8,
+   "mae": 0.5744151180748935,
+   "mae_lo": 0.5592143940308606,
+   "mae_hi": 0.5896351508383465,
+   "night_mae": 0.578047966145996,
+   "coverage90": 0.8773943661971831,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 8,
+   "mae": 1.6764996669362537,
+   "mae_lo": 1.5935126041717786,
+   "mae_hi": 1.7698203960565508,
+   "night_mae": 1.7724721910449568,
+   "coverage90": 0.24539906103286388,
+   "win_vs_checkins": 0.023333333333333334
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 8,
+   "mae": 0.5627937404559779,
+   "mae_lo": 0.5474969140497027,
+   "mae_hi": 0.5785973498005273,
+   "night_mae": 0.5588858770392661,
+   "coverage90": 0.8640140845070429,
+   "win_vs_checkins": 0.5833333333333334
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 8,
+   "mae": 0.5526621888100591,
+   "mae_lo": 0.5376929885346726,
+   "mae_hi": 0.5684701135265561,
+   "night_mae": 0.5170456952593169,
+   "coverage90": 0.8342018779342726,
+   "win_vs_checkins": 0.62
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "prior",
+   "label": "Rhythm model only",
+   "k": 0,
+   "mae": 0.8108963616227589,
+   "mae_lo": 0.7639835724388279,
+   "mae_hi": 0.8581496501744759,
+   "night_mae": 0.7833024922161655,
+   "coverage90": 0.9841314553990613,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 0,
+   "mae": 0.8609823906785999,
+   "mae_lo": 0.8130874732813423,
+   "mae_hi": 0.9074500736452173,
+   "night_mae": 0.8710010123728108,
+   "coverage90": 0.9517136150234748,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 0,
+   "mae": 0.7237567413169937,
+   "mae_lo": 0.686218015633587,
+   "mae_hi": 0.7621769308163296,
+   "night_mae": 0.5959720970180288,
+   "coverage90": 0.8673943661971836,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 1,
+   "mae": 0.9357969258292917,
+   "mae_lo": 0.8859162308687077,
+   "mae_hi": 0.986774316030932,
+   "night_mae": 0.925138400318338,
+   "coverage90": 0.8776760563380284,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 1,
+   "mae": 1.756687935799033,
+   "mae_lo": 1.665265872497835,
+   "mae_hi": 1.8494861917666405,
+   "night_mae": 1.7937714559048967,
+   "coverage90": 0.2226760563380282,
+   "win_vs_checkins": 0.18
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 1,
+   "mae": 0.8824550347633222,
+   "mae_lo": 0.84033497495903,
+   "mae_hi": 0.9268459077653334,
+   "night_mae": 0.8856242681878195,
+   "coverage90": 0.8609859154929579,
+   "win_vs_checkins": 0.5733333333333334
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 1,
+   "mae": 0.6949216963814715,
+   "mae_lo": 0.667189429165289,
+   "mae_hi": 0.7238406826175768,
+   "night_mae": 0.6021078111629704,
+   "coverage90": 0.8568075117370895,
+   "win_vs_checkins": 0.7
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 3,
+   "mae": 0.9055293438481742,
+   "mae_lo": 0.865160986729285,
+   "mae_hi": 0.9491836895060372,
+   "night_mae": 0.8922904412457674,
+   "coverage90": 0.7750704225352116,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 3,
+   "mae": 1.6840789807486005,
+   "mae_lo": 1.6008790110225775,
+   "mae_hi": 1.7685535578858669,
+   "night_mae": 1.7289839392756956,
+   "coverage90": 0.24011737089201873,
+   "win_vs_checkins": 0.13666666666666666
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 3,
+   "mae": 0.8547724199342467,
+   "mae_lo": 0.8149518178475065,
+   "mae_hi": 0.8955326207255054,
+   "night_mae": 0.8692420592818195,
+   "coverage90": 0.7718544600938964,
+   "win_vs_checkins": 0.7
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 3,
+   "mae": 0.6925054302480792,
+   "mae_lo": 0.66809919893607,
+   "mae_hi": 0.7166308503020153,
+   "night_mae": 0.6768778158474237,
+   "coverage90": 0.8064084507042253,
+   "win_vs_checkins": 0.7866666666666666
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 8,
+   "mae": 0.8524855190264915,
+   "mae_lo": 0.814391681232167,
+   "mae_hi": 0.895682494351689,
+   "night_mae": 0.8538377177472843,
+   "coverage90": 0.695399061032865,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 8,
+   "mae": 1.621908745416275,
+   "mae_lo": 1.5451237461633507,
+   "mae_hi": 1.699151809077092,
+   "night_mae": 1.6875148852191733,
+   "coverage90": 0.24936619718309871,
+   "win_vs_checkins": 0.13333333333333333
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 8,
+   "mae": 0.824045683934979,
+   "mae_lo": 0.7871059499822218,
+   "mae_hi": 0.8642281982363496,
+   "night_mae": 0.8446863999673923,
+   "coverage90": 0.686924882629108,
+   "win_vs_checkins": 0.6566666666666666
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 8,
+   "mae": 0.7113182629937495,
+   "mae_lo": 0.682524417518933,
+   "mae_hi": 0.7443879241316265,
+   "night_mae": 0.6935282104395643,
+   "coverage90": 0.717816901408451,
+   "win_vs_checkins": 0.82
+  },
+  {
+   "scenario": "autocorr",
+   "method": "prior",
+   "label": "Rhythm model only",
+   "k": 0,
+   "mae": 0.8108963616227589,
+   "mae_lo": 0.7639835724388279,
+   "mae_hi": 0.8581496501744759,
+   "night_mae": 0.7833024922161655,
+   "coverage90": 0.9841314553990613,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "autocorr",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 0,
+   "mae": 0.9297224536983555,
+   "mae_lo": 0.8766711575278623,
+   "mae_hi": 0.9811945071715181,
+   "night_mae": 0.9147251956430958,
+   "coverage90": 0.9309624413145544,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "autocorr",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 0,
+   "mae": 0.8953533846707802,
+   "mae_lo": 0.841770274703913,
+   "mae_hi": 0.9488083053465789,
+   "night_mae": 0.6538256108433145,
+   "coverage90": 0.7892957746478877,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "autocorr",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 1,
+   "mae": 0.7349867272807319,
+   "mae_lo": 0.7033822072360109,
+   "mae_hi": 0.7692546782874954,
+   "night_mae": 0.7248742938045399,
+   "coverage90": 0.9512206572769948,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "autocorr",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 1,
+   "mae": 2.061793446934134,
+   "mae_lo": 1.9724058829114537,
+   "mae_hi": 2.1517353338784586,
+   "night_mae": 2.012912973074277,
+   "coverage90": 0.1805399061032864,
+   "win_vs_checkins": 0.03
+  },
+  {
+   "scenario": "autocorr",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 1,
+   "mae": 0.7516951734612958,
+   "mae_lo": 0.7204372343922341,
+   "mae_hi": 0.7851396337542027,
+   "night_mae": 0.7590184547175743,
+   "coverage90": 0.9179107981220659,
+   "win_vs_checkins": 0.5
+  },
+  {
+   "scenario": "autocorr",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 1,
+   "mae": 0.7324949160448778,
+   "mae_lo": 0.7039665057433088,
+   "mae_hi": 0.7633171603633114,
+   "night_mae": 0.6031043493128256,
+   "coverage90": 0.8384976525821605,
+   "win_vs_checkins": 0.49333333333333335
+  },
+  {
+   "scenario": "autocorr",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 3,
+   "mae": 0.6603909633243019,
+   "mae_lo": 0.637610073571224,
+   "mae_hi": 0.6817964826473144,
+   "night_mae": 0.6213189540903314,
+   "coverage90": 0.9097183098591559,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "autocorr",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 3,
+   "mae": 1.9490133332695245,
+   "mae_lo": 1.867683349230604,
+   "mae_hi": 2.033900486768377,
+   "night_mae": 1.9131130563135066,
+   "coverage90": 0.2059154929577463,
+   "win_vs_checkins": 0
+  },
+  {
+   "scenario": "autocorr",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 3,
+   "mae": 0.6520147488403613,
+   "mae_lo": 0.6293676146934879,
+   "mae_hi": 0.6744428684268245,
+   "night_mae": 0.631502546793651,
+   "coverage90": 0.8871361502347426,
+   "win_vs_checkins": 0.5233333333333333
+  },
+  {
+   "scenario": "autocorr",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 3,
+   "mae": 0.6633094921824763,
+   "mae_lo": 0.6395451233379129,
+   "mae_hi": 0.686878792891448,
+   "night_mae": 0.5629334739495823,
+   "coverage90": 0.8293427230046949,
+   "win_vs_checkins": 0.5066666666666667
+  },
+  {
+   "scenario": "autocorr",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 8,
+   "mae": 0.5684540877506264,
+   "mae_lo": 0.5520529518524719,
+   "mae_hi": 0.5846412579521448,
+   "night_mae": 0.5866843418783422,
+   "coverage90": 0.8816666666666667,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "autocorr",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 8,
+   "mae": 1.8843849609403152,
+   "mae_lo": 1.8049993646983615,
+   "mae_hi": 1.9601621996721212,
+   "night_mae": 1.8858367354158887,
+   "coverage90": 0.21098591549295787,
+   "win_vs_checkins": 0.01
+  },
+  {
+   "scenario": "autocorr",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 8,
+   "mae": 0.573084829526595,
+   "mae_lo": 0.5565972497288026,
+   "mae_hi": 0.5897982631454073,
+   "night_mae": 0.607879651504087,
+   "coverage90": 0.8605633802816904,
+   "win_vs_checkins": 0.5133333333333333
+  },
+  {
+   "scenario": "autocorr",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 8,
+   "mae": 0.5905052791280948,
+   "mae_lo": 0.5732725672942236,
+   "mae_hi": 0.6086161279865463,
+   "night_mae": 0.5468847707875255,
+   "coverage90": 0.8136150234741781,
+   "win_vs_checkins": 0.44666666666666666
+  }
+ ],
+ "forecast": [
+  {
+   "scenario": "matched",
+   "method": "prior",
+   "label": "Rhythm model only",
+   "k": 0,
+   "brier": 0.08763375774802676,
+   "brier_climatology": 0.19920819615912208,
+   "auroc": 0.9446358362178384,
+   "brier_diff_vs_checkins": null,
+   "brier_diff_lo": null,
+   "brier_diff_hi": null,
+   "crossing_mae_min": 83.60416666666667,
+   "crossing_n": 288
+  },
+  {
+   "scenario": "matched",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 3,
+   "brier": 0.0685743105407949,
+   "brier_climatology": 0.19995665294924556,
+   "auroc": 0.9663376973335784,
+   "brier_diff_vs_checkins": null,
+   "brier_diff_lo": null,
+   "brier_diff_hi": null,
+   "crossing_mae_min": 165.27659574468086,
+   "crossing_n": 282
+  },
+  {
+   "scenario": "matched",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 3,
+   "brier": 0.2103060609465943,
+   "brier_climatology": 0.19995665294924556,
+   "auroc": 0.8010419267824851,
+   "brier_diff_vs_checkins": 0.1417317504057996,
+   "brier_diff_lo": 0.12365399560380934,
+   "brier_diff_hi": 0.16161191151710153,
+   "crossing_mae_min": 193.65480427046262,
+   "crossing_n": 281
+  },
+  {
+   "scenario": "matched",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 3,
+   "brier": 0.06657447655776359,
+   "brier_climatology": 0.19995665294924556,
+   "auroc": 0.9689267358357504,
+   "brier_diff_vs_checkins": -0.001999833983031288,
+   "brier_diff_lo": -0.004508336420336331,
+   "brier_diff_hi": 0.0005395777101159669,
+   "crossing_mae_min": 165.53900709219857,
+   "crossing_n": 282
+  },
+  {
+   "scenario": "matched",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 3,
+   "brier": 0.06065156733511831,
+   "brier_climatology": 0.19995665294924556,
+   "auroc": 0.9758224347663829,
+   "brier_diff_vs_checkins": -0.007922743205676578,
+   "brier_diff_lo": -0.011061475317762566,
+   "brier_diff_hi": -0.004777700996326219,
+   "crossing_mae_min": 166.19148936170214,
+   "crossing_n": 282
+  },
+  {
+   "scenario": "misreport",
+   "method": "prior",
+   "label": "Rhythm model only",
+   "k": 0,
+   "brier": 0.09972799432911539,
+   "brier_climatology": 0.195295987654321,
+   "auroc": 0.9220932982910292,
+   "brier_diff_vs_checkins": null,
+   "brier_diff_lo": null,
+   "brier_diff_hi": null,
+   "crossing_mae_min": 109.01736111111111,
+   "crossing_n": 288
+  },
+  {
+   "scenario": "misreport",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 3,
+   "brier": 0.08713333594176498,
+   "brier_climatology": 0.1949489368998628,
+   "auroc": 0.9481067727101694,
+   "brier_diff_vs_checkins": null,
+   "brier_diff_lo": null,
+   "brier_diff_hi": null,
+   "crossing_mae_min": 179.74285714285713,
+   "crossing_n": 280
+  },
+  {
+   "scenario": "misreport",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 3,
+   "brier": 0.21722010288203558,
+   "brier_climatology": 0.1949489368998628,
+   "auroc": 0.7934911730781037,
+   "brier_diff_vs_checkins": 0.13008676694027066,
+   "brier_diff_lo": 0.11030239569361891,
+   "brier_diff_hi": 0.15030052515522263,
+   "crossing_mae_min": 214.3189964157706,
+   "crossing_n": 279
+  },
+  {
+   "scenario": "misreport",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 3,
+   "brier": 0.0824784353298331,
+   "brier_climatology": 0.1949489368998628,
+   "auroc": 0.9542423528654315,
+   "brier_diff_vs_checkins": -0.004654900611931842,
+   "brier_diff_lo": -0.007598096545320949,
+   "brier_diff_hi": -0.0017971247877253075,
+   "crossing_mae_min": 179.78571428571428,
+   "crossing_n": 280
+  },
+  {
+   "scenario": "misreport",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 3,
+   "brier": 0.0769250609190446,
+   "brier_climatology": 0.1949489368998628,
+   "auroc": 0.9618789767852755,
+   "brier_diff_vs_checkins": -0.01020827502272043,
+   "brier_diff_lo": -0.013913430481773332,
+   "brier_diff_hi": -0.006482996255784229,
+   "crossing_mae_min": 181.02142857142857,
+   "crossing_n": 280
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "prior",
+   "label": "Rhythm model only",
+   "k": 0,
+   "brier": 0.0927783233924067,
+   "brier_climatology": 0.197014780521262,
+   "auroc": 0.9330324140275522,
+   "brier_diff_vs_checkins": null,
+   "brier_diff_lo": null,
+   "brier_diff_hi": null,
+   "crossing_mae_min": 92.5979020979021,
+   "crossing_n": 286
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 3,
+   "brier": 0.07195837939004106,
+   "brier_climatology": 0.20078175582990399,
+   "auroc": 0.9639718446210593,
+   "brier_diff_vs_checkins": null,
+   "brier_diff_lo": null,
+   "brier_diff_hi": null,
+   "crossing_mae_min": 164.9758620689655,
+   "crossing_n": 290
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 3,
+   "brier": 0.20182499694412642,
+   "brier_climatology": 0.20078175582990399,
+   "auroc": 0.7862954576043298,
+   "brier_diff_vs_checkins": 0.1298666175540855,
+   "brier_diff_lo": 0.11264149757242303,
+   "brier_diff_hi": 0.1482639112670444,
+   "crossing_mae_min": 187.81724137931033,
+   "crossing_n": 290
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 3,
+   "brier": 0.06656637963101582,
+   "brier_climatology": 0.20078175582990399,
+   "auroc": 0.9673862249000649,
+   "brier_diff_vs_checkins": -0.0053919997590251845,
+   "brier_diff_lo": -0.007687598791179828,
+   "brier_diff_hi": -0.0031680938665944753,
+   "crossing_mae_min": 164.81724137931033,
+   "crossing_n": 290
+  },
+  {
+   "scenario": "nonlinear",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 3,
+   "brier": 0.059855826249789516,
+   "brier_climatology": 0.20078175582990399,
+   "auroc": 0.9726772717614756,
+   "brier_diff_vs_checkins": -0.012102553140251535,
+   "brier_diff_lo": -0.015923229276869368,
+   "brier_diff_hi": -0.008606608668087337,
+   "crossing_mae_min": 160.20344827586206,
+   "crossing_n": 290
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "prior",
+   "label": "Rhythm model only",
+   "k": 0,
+   "brier": 0.08763375774802676,
+   "brier_climatology": 0.19920819615912208,
+   "auroc": 0.9446358362178384,
+   "brier_diff_vs_checkins": null,
+   "brier_diff_lo": null,
+   "brier_diff_hi": null,
+   "crossing_mae_min": 83.60416666666667,
+   "crossing_n": 288
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 3,
+   "brier": 0.09767597556527728,
+   "brier_climatology": 0.19995665294924556,
+   "auroc": 0.9353587608837032,
+   "brier_diff_vs_checkins": null,
+   "brier_diff_lo": null,
+   "brier_diff_hi": null,
+   "crossing_mae_min": 168.2836879432624,
+   "crossing_n": 282
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 3,
+   "brier": 0.2104460940251952,
+   "brier_climatology": 0.19995665294924556,
+   "auroc": 0.8006828812005894,
+   "brier_diff_vs_checkins": 0.11277011845991787,
+   "brier_diff_lo": 0.09327383905741878,
+   "brier_diff_hi": 0.1339109157984004,
+   "crossing_mae_min": 193.59786476868328,
+   "crossing_n": 281
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 3,
+   "brier": 0.0933695108903503,
+   "brier_climatology": 0.19995665294924556,
+   "auroc": 0.9412696784762679,
+   "brier_diff_vs_checkins": -0.004306464674927061,
+   "brier_diff_lo": -0.007237692123561665,
+   "brier_diff_hi": -0.0013145334275990828,
+   "crossing_mae_min": 168.3404255319149,
+   "crossing_n": 282
+  },
+  {
+   "scenario": "ratingbias",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 3,
+   "brier": 0.07212998570189467,
+   "brier_climatology": 0.19995665294924556,
+   "auroc": 0.9638927229769964,
+   "brier_diff_vs_checkins": -0.025545989863382714,
+   "brier_diff_lo": -0.03058306607631605,
+   "brier_diff_hi": -0.020838587706629455,
+   "crossing_mae_min": 166.53191489361703,
+   "crossing_n": 282
+  },
+  {
+   "scenario": "autocorr",
+   "method": "prior",
+   "label": "Rhythm model only",
+   "k": 0,
+   "brier": 0.08763375774802676,
+   "brier_climatology": 0.19920819615912208,
+   "auroc": 0.9446358362178384,
+   "brier_diff_vs_checkins": null,
+   "brier_diff_lo": null,
+   "brier_diff_hi": null,
+   "crossing_mae_min": 83.60416666666667,
+   "crossing_n": 288
+  },
+  {
+   "scenario": "autocorr",
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 3,
+   "brier": 0.0685743105407949,
+   "brier_climatology": 0.19995665294924556,
+   "auroc": 0.9663376973335784,
+   "brier_diff_vs_checkins": null,
+   "brier_diff_lo": null,
+   "brier_diff_hi": null,
+   "crossing_mae_min": 165.27659574468086,
+   "crossing_n": 282
+  },
+  {
+   "scenario": "autocorr",
+   "method": "noanchor",
+   "label": "Check-ins + passive, no anchors",
+   "k": 3,
+   "brier": 0.2469024210667953,
+   "brier_climatology": 0.19995665294924556,
+   "auroc": 0.755642512368936,
+   "brier_diff_vs_checkins": 0.1783281105260004,
+   "brier_diff_lo": 0.15812234383975696,
+   "brier_diff_hi": 0.2000793016581488,
+   "crossing_mae_min": 208.3167259786477,
+   "crossing_n": 281
+  },
+  {
+   "scenario": "autocorr",
+   "method": "twin",
+   "label": "BlinkTwin (anchored)",
+   "k": 3,
+   "brier": 0.06777789925023085,
+   "brier_climatology": 0.19995665294924556,
+   "auroc": 0.9677829694227281,
+   "brier_diff_vs_checkins": -0.0007964112905640995,
+   "brier_diff_lo": -0.003561949763839736,
+   "brier_diff_hi": 0.002030585339279096,
+   "crossing_mae_min": 165.5177304964539,
+   "crossing_n": 282
+  },
+  {
+   "scenario": "autocorr",
+   "method": "oracle",
+   "label": "Oracle: true personal signal parameters",
+   "k": 3,
+   "brier": 0.06292834670109065,
+   "brier_climatology": 0.19995665294924556,
+   "auroc": 0.9741253934323214,
+   "brier_diff_vs_checkins": -0.005645963839704242,
+   "brier_diff_lo": -0.009086573482665712,
+   "brier_diff_hi": -0.0020084631280150905,
+   "crossing_mae_min": 166.84397163120568,
+   "crossing_n": 282
+  }
+ ],
+ "comparisons": [
+  {
+   "scenario": "matched",
+   "a": "twin_k1",
+   "b": "checkins_k1",
+   "mean_diff": -0.015984745558732336,
+   "ci": [
+    -0.04224935514676665,
+    0.011362674348040029
+   ],
+   "share_a_better": 0.53
+  },
+  {
+   "scenario": "matched",
+   "a": "noanchor_k1",
+   "b": "checkins_k1",
+   "mean_diff": 1.0208986825820248,
+   "ci": [
+    0.9169620377268406,
+    1.1215434356406928
+   ],
+   "share_a_better": 0.08666666666666667
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k1",
+   "b": "noanchor_k1",
+   "mean_diff": -1.0368834281407575,
+   "ci": [
+    -1.1266282825607052,
+    -0.9438546394970101
+   ],
+   "share_a_better": 0.9533333333333334
+  },
+  {
+   "scenario": "matched",
+   "a": "oracle_k1",
+   "b": "twin_k1",
+   "mean_diff": -0.07607561196043565,
+   "ci": [
+    -0.10850997144075478,
+    -0.04540039291092736
+   ],
+   "share_a_better": 0.5466666666666666
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k2",
+   "b": "checkins_k2",
+   "mean_diff": -0.039722478357151314,
+   "ci": [
+    -0.05590032987699875,
+    -0.024178535439903007
+   ],
+   "share_a_better": 0.6333333333333333
+  },
+  {
+   "scenario": "matched",
+   "a": "noanchor_k2",
+   "b": "checkins_k2",
+   "mean_diff": 1.017099648731849,
+   "ci": [
+    0.9237560885689398,
+    1.1078775745661449
+   ],
+   "share_a_better": 0.07666666666666666
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k2",
+   "b": "noanchor_k2",
+   "mean_diff": -1.0568221270890004,
+   "ci": [
+    -1.1469160958000388,
+    -0.9648245297548735
+   ],
+   "share_a_better": 0.9433333333333334
+  },
+  {
+   "scenario": "matched",
+   "a": "oracle_k2",
+   "b": "twin_k2",
+   "mean_diff": -0.050050492860447784,
+   "ci": [
+    -0.07485119594006173,
+    -0.024930726587273733
+   ],
+   "share_a_better": 0.59
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k3",
+   "b": "checkins_k3",
+   "mean_diff": -0.026384163229086426,
+   "ci": [
+    -0.039463609583204204,
+    -0.013263973955161306
+   ],
+   "share_a_better": 0.63
+  },
+  {
+   "scenario": "matched",
+   "a": "noanchor_k3",
+   "b": "checkins_k3",
+   "mean_diff": 1.0222346457632334,
+   "ci": [
+    0.9426796593717451,
+    1.1146218467160718
+   ],
+   "share_a_better": 0.03
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k3",
+   "b": "noanchor_k3",
+   "mean_diff": -1.0486188089923194,
+   "ci": [
+    -1.134985241013801,
+    -0.9710114214994843
+   ],
+   "share_a_better": 0.9766666666666667
+  },
+  {
+   "scenario": "matched",
+   "a": "oracle_k3",
+   "b": "twin_k3",
+   "mean_diff": -0.037216265168292934,
+   "ci": [
+    -0.056035968692650415,
+    -0.01991817785957862
+   ],
+   "share_a_better": 0.61
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k4",
+   "b": "checkins_k4",
+   "mean_diff": -0.015317076945729612,
+   "ci": [
+    -0.025141376836506916,
+    -0.0056574629274475435
+   ],
+   "share_a_better": 0.5833333333333334
+  },
+  {
+   "scenario": "matched",
+   "a": "noanchor_k4",
+   "b": "checkins_k4",
+   "mean_diff": 1.0420198940214127,
+   "ci": [
+    0.9552373456613882,
+    1.1383035889677875
+   ],
+   "share_a_better": 0.04
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k4",
+   "b": "noanchor_k4",
+   "mean_diff": -1.0573369709671423,
+   "ci": [
+    -1.151554026231407,
+    -0.9726751083118973
+   ],
+   "share_a_better": 0.9666666666666667
+  },
+  {
+   "scenario": "matched",
+   "a": "oracle_k4",
+   "b": "twin_k4",
+   "mean_diff": -0.03737035815549529,
+   "ci": [
+    -0.05214563893882957,
+    -0.022238987227453665
+   ],
+   "share_a_better": 0.63
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k6",
+   "b": "checkins_k6",
+   "mean_diff": -0.01544361741548615,
+   "ci": [
+    -0.02393783373478804,
+    -0.006907063136499512
+   ],
+   "share_a_better": 0.5766666666666667
+  },
+  {
+   "scenario": "matched",
+   "a": "noanchor_k6",
+   "b": "checkins_k6",
+   "mean_diff": 1.0873754223166936,
+   "ci": [
+    1.0020253984196648,
+    1.1759626904694456
+   ],
+   "share_a_better": 0.04
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k6",
+   "b": "noanchor_k6",
+   "mean_diff": -1.10281903973218,
+   "ci": [
+    -1.189415681798675,
+    -1.018428626740888
+   ],
+   "share_a_better": 0.9733333333333334
+  },
+  {
+   "scenario": "matched",
+   "a": "oracle_k6",
+   "b": "twin_k6",
+   "mean_diff": -0.019616281926166212,
+   "ci": [
+    -0.03112410569105186,
+    -0.008644286785974805
+   ],
+   "share_a_better": 0.5833333333333334
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k8",
+   "b": "checkins_k8",
+   "mean_diff": -0.01366395096277956,
+   "ci": [
+    -0.021795761665671966,
+    -0.004951517133724203
+   ],
+   "share_a_better": 0.5933333333333334
+  },
+  {
+   "scenario": "matched",
+   "a": "noanchor_k8",
+   "b": "checkins_k8",
+   "mean_diff": 1.0443111496540105,
+   "ci": [
+    0.9674119001249952,
+    1.1241601260821292
+   ],
+   "share_a_better": 0.013333333333333334
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k8",
+   "b": "noanchor_k8",
+   "mean_diff": -1.0579751006167897,
+   "ci": [
+    -1.1383182976033694,
+    -0.9815106690942675
+   ],
+   "share_a_better": 0.99
+  },
+  {
+   "scenario": "matched",
+   "a": "oracle_k8",
+   "b": "twin_k8",
+   "mean_diff": -0.0164014119944424,
+   "ci": [
+    -0.027936284582441732,
+    -0.005457782595886674
+   ],
+   "share_a_better": 0.58
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k0",
+   "b": "prior_k0",
+   "mean_diff": 0.050086029055841,
+   "ci": [
+    -0.009746978674395288,
+    0.10850214643874882
+   ],
+   "share_a_better": 0.45666666666666667
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k3",
+   "b": "prior_k0",
+   "mean_diff": -0.17688956152754348,
+   "ci": [
+    -0.22829510133987133,
+    -0.12501646179876097
+   ],
+   "share_a_better": 0.5966666666666667
+  },
+  {
+   "scenario": "misreport",
+   "a": "twin_k1",
+   "b": "checkins_k1",
+   "mean_diff": -0.0565888269098562,
+   "ci": [
+    -0.0852517130558241,
+    -0.02857371538100307
+   ],
+   "share_a_better": 0.6166666666666667
+  },
+  {
+   "scenario": "misreport",
+   "a": "noanchor_k1",
+   "b": "checkins_k1",
+   "mean_diff": 0.8997947349271878,
+   "ci": [
+    0.7991262283671552,
+    1.0012740605214903
+   ],
+   "share_a_better": 0.11333333333333333
+  },
+  {
+   "scenario": "misreport",
+   "a": "twin_k1",
+   "b": "noanchor_k1",
+   "mean_diff": -0.9563835618370443,
+   "ci": [
+    -1.0490962400591717,
+    -0.8680161342919833
+   ],
+   "share_a_better": 0.93
+  },
+  {
+   "scenario": "misreport",
+   "a": "oracle_k1",
+   "b": "twin_k1",
+   "mean_diff": -0.0796641183385077,
+   "ci": [
+    -0.10966852311370748,
+    -0.05182438387684115
+   ],
+   "share_a_better": 0.6
+  },
+  {
+   "scenario": "misreport",
+   "a": "twin_k3",
+   "b": "checkins_k3",
+   "mean_diff": -0.043946117002190914,
+   "ci": [
+    -0.05657576844330728,
+    -0.03049187618339289
+   ],
+   "share_a_better": 0.6833333333333333
+  },
+  {
+   "scenario": "misreport",
+   "a": "noanchor_k3",
+   "b": "checkins_k3",
+   "mean_diff": 0.9299373483660237,
+   "ci": [
+    0.8469277428599875,
+    1.0258502909169225
+   ],
+   "share_a_better": 0.06666666666666667
+  },
+  {
+   "scenario": "misreport",
+   "a": "twin_k3",
+   "b": "noanchor_k3",
+   "mean_diff": -0.9738834653682157,
+   "ci": [
+    -1.0645687549964757,
+    -0.894203856415842
+   ],
+   "share_a_better": 0.9633333333333334
+  },
+  {
+   "scenario": "misreport",
+   "a": "oracle_k3",
+   "b": "twin_k3",
+   "mean_diff": -0.04232481662940579,
+   "ci": [
+    -0.059771446393605945,
+    -0.024899940089317944
+   ],
+   "share_a_better": 0.5966666666666667
+  },
+  {
+   "scenario": "misreport",
+   "a": "twin_k8",
+   "b": "checkins_k8",
+   "mean_diff": -0.030526364832309374,
+   "ci": [
+    -0.039584024221325474,
+    -0.021202209400018546
+   ],
+   "share_a_better": 0.6766666666666666
+  },
+  {
+   "scenario": "misreport",
+   "a": "noanchor_k8",
+   "b": "checkins_k8",
+   "mean_diff": 0.9556328333162052,
+   "ci": [
+    0.8729609966654786,
+    1.0385995274874336
+   ],
+   "share_a_better": 0.056666666666666664
+  },
+  {
+   "scenario": "misreport",
+   "a": "twin_k8",
+   "b": "noanchor_k8",
+   "mean_diff": -0.9861591981485144,
+   "ci": [
+    -1.0670351719641709,
+    -0.9066745377633377
+   ],
+   "share_a_better": 0.9633333333333334
+  },
+  {
+   "scenario": "misreport",
+   "a": "oracle_k8",
+   "b": "twin_k8",
+   "mean_diff": -0.018339926290617297,
+   "ci": [
+    -0.0301646438736576,
+    -0.00708156339379161
+   ],
+   "share_a_better": 0.58
+  },
+  {
+   "scenario": "misreport",
+   "a": "twin_k0",
+   "b": "prior_k0",
+   "mean_diff": -0.0014281306085704893,
+   "ci": [
+    -0.060977666021833854,
+    0.05772198823452585
+   ],
+   "share_a_better": 0.49666666666666665
+  },
+  {
+   "scenario": "misreport",
+   "a": "twin_k3",
+   "b": "prior_k0",
+   "mean_diff": -0.2165644498594923,
+   "ci": [
+    -0.26951211926637175,
+    -0.16411382007236996
+   ],
+   "share_a_better": 0.62
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "twin_k1",
+   "b": "checkins_k1",
+   "mean_diff": -0.005206693094408801,
+   "ci": [
+    -0.037433383751845344,
+    0.028014186351201176
+   ],
+   "share_a_better": 0.5466666666666666
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "noanchor_k1",
+   "b": "checkins_k1",
+   "mean_diff": 1.061710109837073,
+   "ci": [
+    0.9648067673465931,
+    1.166531199849001
+   ],
+   "share_a_better": 0.07666666666666666
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "twin_k1",
+   "b": "noanchor_k1",
+   "mean_diff": -1.0669168029314817,
+   "ci": [
+    -1.1627120230915793,
+    -0.9788593471115251
+   ],
+   "share_a_better": 0.9466666666666667
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "oracle_k1",
+   "b": "twin_k1",
+   "mean_diff": -0.07318479744953688,
+   "ci": [
+    -0.10969472204504249,
+    -0.038280286229398684
+   ],
+   "share_a_better": 0.57
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "twin_k3",
+   "b": "checkins_k3",
+   "mean_diff": -0.026226994148986996,
+   "ci": [
+    -0.03900395502812154,
+    -0.013267910626822702
+   ],
+   "share_a_better": 0.6166666666666667
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "noanchor_k3",
+   "b": "checkins_k3",
+   "mean_diff": 1.0970969005186941,
+   "ci": [
+    1.013032687298737,
+    1.1862107636150905
+   ],
+   "share_a_better": 0.04
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "twin_k3",
+   "b": "noanchor_k3",
+   "mean_diff": -1.1233238946676798,
+   "ci": [
+    -1.2079280309913538,
+    -1.0404967794980047
+   ],
+   "share_a_better": 0.9766666666666667
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "oracle_k3",
+   "b": "twin_k3",
+   "mean_diff": -0.025738328294018363,
+   "ci": [
+    -0.04508135355331657,
+    -0.007442306813252101
+   ],
+   "share_a_better": 0.5733333333333334
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "twin_k8",
+   "b": "checkins_k8",
+   "mean_diff": -0.011621377618915999,
+   "ci": [
+    -0.021174616797823592,
+    -0.0021166717022336632
+   ],
+   "share_a_better": 0.5833333333333334
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "noanchor_k8",
+   "b": "checkins_k8",
+   "mean_diff": 1.1020845488613618,
+   "ci": [
+    1.0180425624008698,
+    1.1936216726002784
+   ],
+   "share_a_better": 0.023333333333333334
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "twin_k8",
+   "b": "noanchor_k8",
+   "mean_diff": -1.1137059264802769,
+   "ci": [
+    -1.2035960679435975,
+    -1.0299097906777457
+   ],
+   "share_a_better": 0.99
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "oracle_k8",
+   "b": "twin_k8",
+   "mean_diff": -0.010131551645918224,
+   "ci": [
+    -0.021900449570706606,
+    0.0014268192999581332
+   ],
+   "share_a_better": 0.5766666666666667
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "twin_k0",
+   "b": "prior_k0",
+   "mean_diff": 0.05327839392906179,
+   "ci": [
+    -0.00644174014476111,
+    0.10977958415618562
+   ],
+   "share_a_better": 0.42333333333333334
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "twin_k3",
+   "b": "prior_k0",
+   "mean_diff": -0.19428344710628098,
+   "ci": [
+    -0.2499482161780712,
+    -0.1430726003967107
+   ],
+   "share_a_better": 0.6166666666666667
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "twin_k1",
+   "b": "checkins_k1",
+   "mean_diff": -0.053341891065969496,
+   "ci": [
+    -0.08639443593822495,
+    -0.020421495338881202
+   ],
+   "share_a_better": 0.5733333333333334
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "noanchor_k1",
+   "b": "checkins_k1",
+   "mean_diff": 0.8208910099697422,
+   "ci": [
+    0.7114693028207536,
+    0.9321037946535504
+   ],
+   "share_a_better": 0.18
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "twin_k1",
+   "b": "noanchor_k1",
+   "mean_diff": -0.8742329010357113,
+   "ci": [
+    -0.973432715199923,
+    -0.7763926500997282
+   ],
+   "share_a_better": 0.8633333333333333
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "oracle_k1",
+   "b": "twin_k1",
+   "mean_diff": -0.18753333838185066,
+   "ci": [
+    -0.22916753759029188,
+    -0.14809217844658518
+   ],
+   "share_a_better": 0.69
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "twin_k3",
+   "b": "checkins_k3",
+   "mean_diff": -0.050756923913928116,
+   "ci": [
+    -0.06542681528139509,
+    -0.03508175124272094
+   ],
+   "share_a_better": 0.7
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "noanchor_k3",
+   "b": "checkins_k3",
+   "mean_diff": 0.7785496369004263,
+   "ci": [
+    0.6897956764170374,
+    0.8794343222219991
+   ],
+   "share_a_better": 0.13666666666666666
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "twin_k3",
+   "b": "noanchor_k3",
+   "mean_diff": -0.8293065608143548,
+   "ci": [
+    -0.9243552524518027,
+    -0.7457966233311201
+   ],
+   "share_a_better": 0.8933333333333333
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "oracle_k3",
+   "b": "twin_k3",
+   "mean_diff": -0.1622669896861674,
+   "ci": [
+    -0.19342479707408913,
+    -0.13239385869510506
+   ],
+   "share_a_better": 0.73
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "twin_k8",
+   "b": "checkins_k8",
+   "mean_diff": -0.028439835091513342,
+   "ci": [
+    -0.03880071113922026,
+    -0.017657392761072876
+   ],
+   "share_a_better": 0.6566666666666666
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "noanchor_k8",
+   "b": "checkins_k8",
+   "mean_diff": 0.7694232263897844,
+   "ci": [
+    0.6819702582552555,
+    0.8618486686206317
+   ],
+   "share_a_better": 0.13333333333333333
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "twin_k8",
+   "b": "noanchor_k8",
+   "mean_diff": -0.7978630614812975,
+   "ci": [
+    -0.8867666874743848,
+    -0.7147258884807121
+   ],
+   "share_a_better": 0.87
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "oracle_k8",
+   "b": "twin_k8",
+   "mean_diff": -0.11272742094122878,
+   "ci": [
+    -0.1323791810783738,
+    -0.09478706219612992
+   ],
+   "share_a_better": 0.7566666666666667
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "twin_k0",
+   "b": "prior_k0",
+   "mean_diff": 0.050086029055841,
+   "ci": [
+    -0.009746978674395288,
+    0.10850214643874882
+   ],
+   "share_a_better": 0.45666666666666667
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "twin_k3",
+   "b": "prior_k0",
+   "mean_diff": 0.043876058311487325,
+   "ci": [
+    -0.01836859148186151,
+    0.10713760777527938
+   ],
+   "share_a_better": 0.42333333333333334
+  },
+  {
+   "scenario": "autocorr",
+   "a": "twin_k1",
+   "b": "checkins_k1",
+   "mean_diff": 0.016708446180563892,
+   "ci": [
+    -0.011995922540136811,
+    0.04633343209718033
+   ],
+   "share_a_better": 0.5
+  },
+  {
+   "scenario": "autocorr",
+   "a": "noanchor_k1",
+   "b": "checkins_k1",
+   "mean_diff": 1.3268067196534026,
+   "ci": [
+    1.226247972389417,
+    1.4247246945164622
+   ],
+   "share_a_better": 0.03
+  },
+  {
+   "scenario": "autocorr",
+   "a": "twin_k1",
+   "b": "noanchor_k1",
+   "mean_diff": -1.3100982734728395,
+   "ci": [
+    -1.4004906878625698,
+    -1.2185382317169102
+   ],
+   "share_a_better": 0.9833333333333333
+  },
+  {
+   "scenario": "autocorr",
+   "a": "oracle_k1",
+   "b": "twin_k1",
+   "mean_diff": -0.019200257416417378,
+   "ci": [
+    -0.05603386758162647,
+    0.016979626913331297
+   ],
+   "share_a_better": 0.4766666666666667
+  },
+  {
+   "scenario": "autocorr",
+   "a": "twin_k3",
+   "b": "checkins_k3",
+   "mean_diff": -0.008376214483940768,
+   "ci": [
+    -0.022759847498497396,
+    0.0059663573041433
+   ],
+   "share_a_better": 0.5233333333333333
+  },
+  {
+   "scenario": "autocorr",
+   "a": "noanchor_k3",
+   "b": "checkins_k3",
+   "mean_diff": 1.2886223699452224,
+   "ci": [
+    1.2053336073766183,
+    1.3809666300001344
+   ],
+   "share_a_better": 0
+  },
+  {
+   "scenario": "autocorr",
+   "a": "twin_k3",
+   "b": "noanchor_k3",
+   "mean_diff": -1.2969985844291627,
+   "ci": [
+    -1.3835004988328365,
+    -1.2189771820246917
+   ],
+   "share_a_better": 0.9966666666666667
+  },
+  {
+   "scenario": "autocorr",
+   "a": "oracle_k3",
+   "b": "twin_k3",
+   "mean_diff": 0.01129474334211485,
+   "ci": [
+    -0.011645261688748512,
+    0.03332131306035888
+   ],
+   "share_a_better": 0.49666666666666665
+  },
+  {
+   "scenario": "autocorr",
+   "a": "twin_k8",
+   "b": "checkins_k8",
+   "mean_diff": 0.004630741775968528,
+   "ci": [
+    -0.0052639649961703,
+    0.014843434655155115
+   ],
+   "share_a_better": 0.5133333333333333
+  },
+  {
+   "scenario": "autocorr",
+   "a": "noanchor_k8",
+   "b": "checkins_k8",
+   "mean_diff": 1.3159308731896877,
+   "ci": [
+    1.2396942287284045,
+    1.396388216644521
+   ],
+   "share_a_better": 0.01
+  },
+  {
+   "scenario": "autocorr",
+   "a": "twin_k8",
+   "b": "noanchor_k8",
+   "mean_diff": -1.3113001314137183,
+   "ci": [
+    -1.3870504980959328,
+    -1.2343323312701242
+   ],
+   "share_a_better": 0.9933333333333333
+  },
+  {
+   "scenario": "autocorr",
+   "a": "oracle_k8",
+   "b": "twin_k8",
+   "mean_diff": 0.017420449601500066,
+   "ci": [
+    0.004108822368994429,
+    0.030612533680465025
+   ],
+   "share_a_better": 0.45666666666666667
+  },
+  {
+   "scenario": "autocorr",
+   "a": "twin_k0",
+   "b": "prior_k0",
+   "mean_diff": 0.11882609207559644,
+   "ci": [
+    0.055895719782746295,
+    0.18213925546967316
+   ],
+   "share_a_better": 0.4
+  },
+  {
+   "scenario": "autocorr",
+   "a": "twin_k3",
+   "b": "prior_k0",
+   "mean_diff": -0.1588816127823977,
+   "ci": [
+    -0.21022635322232283,
+    -0.10657652254214514
+   ],
+   "share_a_better": 0.58
+  }
+ ],
+ "runtime_s": 164.705
 }

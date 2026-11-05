@@ -35,10 +35,16 @@ export interface Nod {
   durationMs: number;
 }
 
+// Sign of a forward (downward) head movement in relative pitch. With MediaPipe's camera frame (y up, z towards
+// the viewer) a rotation of +theta about x turns the face down. Check on a device with the live readout:
+// nodding down should make pitch positive.
+export const PITCH_DOWN_SIGN = 1;
+
 export class HeadTracker {
   private samples: { t: number; p: Pose }[] = [];
   private nods: Nod[] = [];
   private nodStart: number | null = null;
+  private dropStart: number | null = null;
   private nodPeak = 0;
   private readonly nodDeg: number;
   private readonly maxNodMs: number;
@@ -55,6 +61,9 @@ export class HeadTracker {
     const rest = this.rest();
     const rel = { pitch: p.pitch - rest.pitch, yaw: p.yaw - rest.yaw, roll: p.roll - rest.roll };
     const dev = Math.abs(rel.pitch);
+    const down = rel.pitch * PITCH_DOWN_SIGN;
+    if (down >= this.nodDeg) this.dropStart ??= t;
+    else if (down < this.nodDeg / 2) this.dropStart = null;
     if (this.nodStart === null && dev >= this.nodDeg) {
       this.nodStart = t;
       this.nodPeak = dev;
@@ -70,9 +79,9 @@ export class HeadTracker {
     return rel;
   }
 
-  /** How long the head has been away from its resting pitch by at least `deg`, at time t. */
+  /** How long the head has been pitched forward (down) from its resting pose by at least the nod threshold. */
   droppedFor(t: number): number {
-    return this.nodStart === null ? 0 : t - this.nodStart;
+    return this.dropStart === null ? 0 : t - this.dropStart;
   }
 
   nodsIn(tEnd: number, lengthMs = 60_000): number {

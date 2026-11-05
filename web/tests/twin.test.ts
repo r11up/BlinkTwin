@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { blrInit, blrPredict, blrUpdate } from '../src/twin/blr.ts';
 import { alertness, priorKss, sAtWake, TPM_DEFAULTS } from '../src/twin/tpm.ts';
 import { DEFAULT_CONFIG, forecast, normalCdf, replay, type TwinConfig, type TwinEvent } from '../src/twin/twin.ts';
 import { BlinkMeter, percentile } from '../src/sensing/blink.ts';
@@ -35,19 +34,6 @@ describe('three-process model prior', () => {
   });
 });
 
-describe('Bayesian linear regression', () => {
-  it('moves from the population prior to a person\'s own slope', () => {
-    let m = blrInit([4, 1], [1, 1], 0.5);
-    for (let i = 0; i < 60; i++) {
-      const x = (i % 7) - 3;
-      m = blrUpdate(m, [1, x], 6 + 2.5 * x);
-    }
-    expect(m.mean[0]).toBeCloseTo(6, 1);
-    expect(m.mean[1]).toBeCloseTo(2.5, 1);
-    expect(blrPredict(m, [1, 0]).variance).toBeLessThan(0.3);
-  });
-});
-
 describe('twin replay', () => {
   const base: TwinEvent[] = [{ t: day + 6 * H, type: 'sleep', wake: sleep.wake, hours: 8 }];
 
@@ -76,10 +62,9 @@ describe('twin replay', () => {
       { t: day + 10.1 * H, type: 'kss', value: 6 },
       { t: day + 11 * H, type: 'cam', perclos: 0.08, blinkRate: 12, meanBlinkMs: 260, coverage: 0.95 },
     ];
-    const r = replay(ev, { ...UTC, personalise: true }, { until: day + 12 * H });
+    const r = replay(ev, UTC, { until: day + 12 * H });
     const sum = r.contributions.kss + r.contributions.pvt + r.contributions.cam;
     expect(sum).toBeCloseTo(r.now.offset, 9);
-    expect(r.calibration.pvt.n).toBe(1);
   });
 
   it('accumulates time on task and resets it after a long break', () => {
@@ -114,7 +99,9 @@ describe('forecast', () => {
   it('a night of sleep removes the predicted sleepiness', () => {
     const r = replay([{ t: day + 6 * H, type: 'sleep', wake: sleep.wake, hours: 8 }], UTC, { until: day + 20 * H });
     const f = forecast(r, UTC, { hours: 16, scenario: { sleepAt: day + 23 * H, sleepHours: 8 } });
-    expect(f.sleepyAt).toBeNull();
+    // after the first hour of sleep inertia, the next morning stays below KSS 7
+    const wake = day + 31 * H;
+    expect(f.points.filter((p) => !p.asleep && p.t >= wake + H).every((p) => p.kss < 7)).toBe(true);
     expect(f.points.some((p) => p.asleep)).toBe(true);
   });
 
@@ -235,14 +222,15 @@ describe('alerts', () => {
 
 describe('anchoring', () => {
   it('a passive channel that reads a person wrong is absorbed by its anchor, not the offset', () => {
-    // camera always says "very sleepy" while the person keeps reporting the rhythm-model level
-    const ev: TwinEvent[] = [{ t: day + 6 * H, type: 'sleep', wake: day + 7 * H, hours: 8 }];
-    for (let m = 0; m < 8 * 60; m++) ev.push({ t: day + 9 * H + m * 60_000, type: 'cam', perclos: 0.2, blinkRate: 15, meanBlinkMs: 400, coverage: 1 });
-    for (let h = 10; h <= 16; h += 2) ev.push({ t: day + h * H, type: 'kss', value: Math.round(priorKss(day + h * H, { wake: day + 7 * H, hours: 8 }, TPM_DEFAULTS, 0)) });
-    const cfg = { ...UTC, camRInflate: 4 };
-    const anchored = replay(ev, cfg, { until: day + 17 * H });
-    const naive = replay(ev, { ...cfg, biasPriorSd: 1e-4, biasDriftSdPerSqrtHour: 0 }, { until: day + 17 * H });
+    // eyes always look very sleepy while the person keeps reporting the rhythm-model level
+    const sl = { wake: day + 7 * H, hours: 8 };
+    const ev: TwinEvent[] = [{ t: day + 6 * H, type: 'sleep', wake: sl.wake, hours: 8 }];
+    for (let m = 0; m < 8 * 60; m++) ev.push({ t: day + 9 * H + m * 60_000, type: 'cam', perclos: 0.12, blinkRate: 15, meanBlinkMs: 300, coverage: 1 });
+    for (let h = 10; h <= 16; h += 2) ev.push({ t: day + h * H, type: 'kss', value: Math.round(priorKss(day + h * H, sl, TPM_DEFAULTS, 0)) });
+    const anchored = replay(ev, UTC, { until: day + 17 * H });
+    const naive = replay(ev, { ...UTC, useAnchors: false }, { until: day + 17 * H });
     expect(Math.abs(anchored.now.offset)).toBeLessThan(Math.abs(naive.now.offset));
-    expect(anchored.anchors.cam).toBeGreaterThan(0.5);
+    expect(anchored.anchors.perclos.mean).toBeGreaterThan(2);
+    expect(anchored.anchors.blink.mean).toBeGreaterThan(30);
   });
 });

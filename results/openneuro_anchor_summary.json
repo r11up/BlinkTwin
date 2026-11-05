@@ -1,0 +1,23 @@
+{
+ "dataset": "OpenNeuro ds004902 (Xiang et al., 2024, Sci Data 11:427)",
+ "n": 33,
+ "offset_ns_mean": 1.384103783840068,
+ "offset_ns_sd": 1.5560835238538289,
+ "offset_sd_mean": 0.4654067960398969,
+ "offset_sd_sd": 1.8257687289121778,
+ "pearson_r": 0.2945564039468343,
+ "pearson_ci95": [
+  -0.05424383236466267,
+  0.5792901534136023
+ ],
+ "spearman_rho": 0.3225267379679144,
+ "mae_predicting_sd_kss": {
+  "rhythm_model_only": 1.5284186037824556,
+  "rhythm_model_plus_group_offset": 1.450945210610131,
+  "anchor_full_ns_offset": 1.6256620813408758,
+  "anchor_shrunk_ns_offset": 1.5155591239433974,
+  "carry_ns_kss_forward": 2.3333333333333335
+ },
+ "shrinkage_factor": 0.7676959838391836,
+ "note": "KSS time = eyes-open EEG time; sleep assumed (normal: 7.5 h ending 07:00; deprivation: awake since 07:00 the previous day). Session order was counterbalanced."
+}

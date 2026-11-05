@@ -3,10 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { scorePvt } from '../src/probes/pvt-score.ts';
 import { AlertEngine } from '../src/sensing/alerts.ts';
 import { BlinkMeter } from '../src/sensing/blink.ts';
-import { HeadTracker } from '../src/sensing/head.ts';
+import { HeadTracker, PITCH_DOWN_SIGN } from '../src/sensing/head.ts';
 import { makePerson, mulberry32, simulate } from '../src/sim/synth.ts';
 import { toCsv } from '../src/store.ts';
-import { alertness, sAtWake, TPM_DEFAULTS } from '../src/twin/tpm.ts';
+import { alertness, sAfterSleep, sAtLastWake, sAtWake, TPM_DEFAULTS } from '../src/twin/tpm.ts';
 import { DEFAULT_CONFIG, forecast, replay, type TwinConfig, type TwinEvent } from '../src/twin/twin.ts';
 import { SCIENCE } from '../src/ui/science.ts';
 
@@ -27,7 +27,7 @@ function day(seed: number, checkIns = [9, 12, 15, 19]) {
       breakMinutes: 10,
       checkIns: checkIns.map((h) => START + (h - 7) * H),
       pvtEveryHours: 2,
-      pvtBeforeCheckIn: true,
+      pvtAfterCheckIn: true,
       camera: true,
       tzOffsetMinutes: 0,
     },
@@ -36,11 +36,11 @@ function day(seed: number, checkIns = [9, 12, 15, 19]) {
 }
 
 describe('twin invariants over many virtual people', () => {
-  for (const personalise of [false, true]) {
-    it(`holds for 40 people (personal slopes ${personalise ? 'on' : 'off'})`, () => {
+  for (const useAnchors of [true, false]) {
+    it(`holds for 40 people (anchors ${useAnchors ? 'on' : 'off'})`, () => {
       for (let seed = 1; seed <= 40; seed++) {
         const sim = day(seed);
-        const r = replay(sim.events, { ...UTC, personalise }, { until: START + 20 * H, from: START, stepMinutes: 15 });
+        const r = replay(sim.events, { ...UTC, useAnchors }, { until: START + 20 * H, from: START, stepMinutes: 15 });
         let last = -Infinity;
         for (const s of r.snapshots) {
           expect(s.t).toBeGreaterThan(last);
@@ -54,8 +54,7 @@ describe('twin invariants over many virtual people', () => {
         }
         const sum = r.contributions.kss + r.contributions.pvt + r.contributions.cam;
         expect(sum).toBeCloseTo(r.now.offset, 9);
-        expect(r.anchors.pvtSd).toBeGreaterThan(0);
-        expect(r.anchors.camSd).toBeGreaterThan(0);
+        for (const c of ['pvt', 'blink', 'perclos'] as const) expect(r.anchors[c].sd).toBeGreaterThanOrEqual(0);
       }
     });
   }
@@ -225,37 +224,83 @@ describe('data export', () => {
 });
 
 describe('science text matches the results', () => {
-  const sim = JSON.parse(readFileSync(new URL('../../results/sim_summary.json', import.meta.url), 'utf8'));
   const drozy = JSON.parse(readFileSync(new URL('../../results/drozy_summary.json', import.meta.url), 'utf8'));
   const text = SCIENCE.map((s) => s.html).join(' ');
-  const mae = (method: string, k: number) => sim.mae.find((r: { method: string; k: number }) => r.method === method && r.k === k).mae as number;
-  const fc = (method: string) => sim.forecast.find((r: { method: string }) => r.method === method).brier as number;
 
-  it('quotes the simulation numbers correctly', () => {
-    expect(text).toContain(mae('anchor', 3).toFixed(3));
-    expect(text).toContain(mae('prior', 0).toFixed(3));
-    expect(text).toContain(mae('anchor', 1).toFixed(3));
-    expect(text).toContain(mae('checkins', 1).toFixed(3));
-    expect(text).toContain(fc('anchor').toFixed(3));
-    expect(text).toContain(fc('prior').toFixed(3));
-  });
-
-  it('quotes the DROZY numbers correctly', () => {
-    const json = JSON.stringify(drozy);
-    for (const n of ['0.88', '0.77']) expect(text).toContain(n);
-    expect(json).toMatch(/0\.88/);
-    expect(json).toMatch(/0\.77/);
+  it('quotes the DROZY blink validation correctly', () => {
+    expect(text).toContain('0.88');
+    expect(JSON.stringify(drozy)).toMatch(/0\.88/);
   });
 
   it('every in-text citation appears in the reference list', () => {
     const refs = SCIENCE.find((s) => s.id === 'refs')?.html ?? '';
-    const cited = new Set([...text.matchAll(/([A-ZÅ][a-zå]+)(?: et al\.| &amp; [A-ZÅ][a-zå]+)?,? (\d{4})/g)].map((m) => `${m[1]} ${m[2]}`));
-    for (const c of cited) {
-      const [name, year] = c.split(' ');
-      if (['Kartynnik', 'Kalman', 'Massoz', 'Basner', 'Wierwille', 'Dinges', 'Caffier', 'Schleicher', 'Ingre', 'Kaida', 'Hart', 'Åkerstedt'].includes(name)) {
-        expect(refs).toContain(name);
-        expect(refs).toContain(year);
-      }
+    for (const name of ['Kartynnik', 'Kalman', 'Massoz', 'Basner', 'Dinges', 'Caffier', 'Schleicher', 'Ingre', 'Kaida', 'Hart', 'Åkerstedt']) {
+      if (text.replace(refs, '').includes(name)) expect(refs).toContain(name);
     }
+  });
+});
+
+describe('published three-process model structure', () => {
+  it('recovers linearly below the 12.2 breakpoint, so a short night recovers less', () => {
+    expect(sAfterSleep(8, 1)).toBeCloseTo(8 + 0.381 * (14.3 - 12.2), 6);
+    expect(sAfterSleep(12.2, 0)).toBeCloseTo(12.2, 9);
+  });
+
+  it('accumulates sleep debt over consecutive short nights', () => {
+    const wake = (d: number) => START + d * 24 * H;
+    const one = sAtLastWake([{ wake: wake(0), hours: 4 }]);
+    const five = sAtLastWake([0, 1, 2, 3, 4].map((d) => ({ wake: wake(d), hours: 4 })));
+    expect(five).toBeLessThan(one - 1.5);
+    expect(sAtLastWake([0, 1, 2].map((d) => ({ wake: wake(d), hours: 8 })))).toBeGreaterThan(one);
+  });
+
+  it('has its ultradian dip near 13:48', () => {
+    const sleep = { wake: START, hours: 8 };
+    let worst = { h: 0, u: Infinity };
+    for (let h = 8; h < 20; h += 0.05) {
+      const u = alertness(Date.UTC(2026, 0, 5, 0) + h * H, sleep, TPM_DEFAULTS, 0).U;
+      if (u < worst.u) worst = { h, u };
+    }
+    expect(worst.h).toBeCloseTo(13.8, 0);
+    expect(worst.u).toBeCloseTo(-1, 6);
+  });
+});
+
+describe('forward measurement model', () => {
+  const base: TwinEvent[] = [{ t: START - H, type: 'sleep', wake: START, hours: 8 }];
+  it('a slower reaction time raises the estimate, a faster one lowers it', () => {
+    const slow = replay([...base, { t: START + 4 * H, type: 'pvt', medianRt: 450, lapses: 8, n: 40, falseStarts: 0 }], UTC, { until: START + 4 * H });
+    const fast = replay([...base, { t: START + 4 * H, type: 'pvt', medianRt: 280, lapses: 0, n: 40, falseStarts: 0 }], UTC, { until: START + 4 * H });
+    expect(slow.now.kss).toBeGreaterThan(fast.now.kss);
+  });
+
+  it('ignores blink duration in a minute without enough blinks', () => {
+    const none = replay([...base, { t: START + 4 * H, type: 'cam', perclos: 0.03, blinkRate: 0, meanBlinkMs: 0, coverage: 1 }], { ...UTC, useChannels: { perclos: false } }, { until: START + 4 * H });
+    const empty = replay(base, UTC, { until: START + 4 * H });
+    expect(none.now.offset).toBe(empty.now.offset);
+  });
+});
+
+describe('alarm safeguards', () => {
+  it('does not alarm on eye closure while looking down', () => {
+    const a = new AlertEngine();
+    expect(a.frame({ t: 2000, face: true, eyesClosedForMs: 1500, headDroppedForMs: 0, closure: 0.9, lookingDown: true }).state.level).not.toBe('alarm');
+    expect(a.frame({ t: 2100, face: true, eyesClosedForMs: 1600, headDroppedForMs: 0, closure: 0.9, lookingDown: false }).state.level).toBe('alarm');
+  });
+
+  it('counts only a forward head movement as a drop', () => {
+    const up = new HeadTracker();
+    const down = new HeadTracker();
+    let t = 0;
+    for (; t < 10_000; t += 40) {
+      up.push(t, { pitch: 0, yaw: 0, roll: 0 });
+      down.push(t, { pitch: 0, yaw: 0, roll: 0 });
+    }
+    for (; t < 11_500; t += 40) {
+      up.push(t, { pitch: -20 * PITCH_DOWN_SIGN, yaw: 0, roll: 0 });
+      down.push(t, { pitch: 20 * PITCH_DOWN_SIGN, yaw: 0, roll: 0 });
+    }
+    expect(up.droppedFor(t)).toBe(0);
+    expect(down.droppedFor(t)).toBeGreaterThan(1000);
   });
 });

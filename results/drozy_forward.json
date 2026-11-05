@@ -1,0 +1,72 @@
+{
+  "dataset": "DROZY (Massoz et al., 2016), 14 subjects, 36 tests",
+  "pvt_median_rt_ms": {
+    "feature": "median_rt",
+    "level": "session",
+    "n_obs": 36,
+    "n_subjects": 14,
+    "at_kss3": 339.19239848914077,
+    "per_kss": 18.849150141643065,
+    "noise_sd": 36.4240549866066,
+    "bias_sd": 48.6890098684398,
+    "slope_sd_raw": 7.8650199676806745,
+    "n_subjects_slope": 8
+  },
+  "perclos_pct_session": {
+    "feature": "perclos_pct",
+    "level": "session",
+    "n_obs": 36,
+    "n_subjects": 14,
+    "at_kss3": 3.2381794819910965,
+    "per_kss": 0.6234943342776205,
+    "noise_sd": 2.346280424242851,
+    "bias_sd": 2.384765077488692,
+    "slope_sd_raw": 0.47290584431049426,
+    "n_subjects_slope": 8
+  },
+  "blink_ms_session": {
+    "feature": "mean_blink_ms",
+    "level": "session",
+    "n_obs": 36,
+    "n_subjects": 14,
+    "at_kss3": 189.70782409280991,
+    "per_kss": 10.893909348441927,
+    "noise_sd": 43.70945230400239,
+    "bias_sd": 22.886013207170883,
+    "slope_sd_raw": 14.258662149346769,
+    "n_subjects_slope": 8
+  },
+  "perclos_pct_minute": {
+    "feature": "perclos_pct",
+    "level": "minute",
+    "n_obs": 326,
+    "n_subjects": 14,
+    "at_kss3": 3.259693813480626,
+    "per_kss": 0.618055877777999,
+    "noise_sd": 3.3582267082090485,
+    "bias_sd": 2.738649234451515,
+    "slope_sd_raw": null,
+    "n_subjects_slope": 0
+  },
+  "blink_ms_minute": {
+    "feature": "mean_blink_ms",
+    "level": "minute",
+    "n_obs": 324,
+    "n_subjects": 14,
+    "at_kss3": 189.74943606378835,
+    "per_kss": 11.119014041363169,
+    "noise_sd": 50.15152270625321,
+    "bias_sd": 35.165837675488895,
+    "slope_sd_raw": null,
+    "n_subjects_slope": 0
+  },
+  "lag1_autocorrelation": {
+    "perclos_pct": 0.31809785672105595,
+    "blink_ms": 0.017774395198695687
+  },
+  "variance_inflation": {
+    "perclos_pct": 1.9329721569475473,
+    "blink_ms": 1.0361920827797833,
+    "note": "(1 + rho) / (1 - rho): variance of a mean of AR(1) samples relative to independent ones"
+  }
+}

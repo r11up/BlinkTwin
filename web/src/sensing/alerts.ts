@@ -1,7 +1,8 @@
 // Real-time drowsiness alerts. Pure state machine so the rules can be tested and reported exactly.
 //
-// Alarm (red, sound): eyes closed for >= microsleepMs, or head dropped from its resting pitch for
-//   >= headDropMs while the eyes are at least half closed. These are signs of a microsleep.
+// Alarm (red, sound): eyes closed for >= microsleepMs while not looking down, or head dropped forward from
+//   its resting pitch for >= headDropMs while the eyes are at least half closed. These are long eye-closure
+//   and head-drop events, behavioural signs of possible microsleep (not EEG-defined microsleeps).
 // Warning (amber): over the last minute PERCLOS >= perclosWarn, or >= longClosuresWarn closures longer
 //   than 1 s, or a mean blink duration >= blinkMsWarn (with at least 5 blinks), or the twin's KSS >= 7.
 // Notice: face not seen for faceLostMs.
@@ -38,6 +39,7 @@ export interface FrameInput {
   eyesClosedForMs: number; // continuous closure so far (0 if open)
   headDroppedForMs: number;
   closure: number; // normalised 0-1
+  lookingDown?: boolean; // eyelids lower when looking down (e.g. at a keyboard), which is not sleep
 }
 
 export interface MinuteInput {
@@ -79,7 +81,7 @@ export class AlertEngine {
     const r = this.rules;
     const prev = this.state.level;
     if (f.face) this.lastFace = f.t;
-    const microsleep = f.face && f.eyesClosedForMs >= r.microsleepMs;
+    const microsleep = f.face && !f.lookingDown && f.eyesClosedForMs >= r.microsleepMs;
     const headDrop = f.face && f.headDroppedForMs >= r.headDropMs && f.closure >= 0.5;
     if (microsleep || headDrop) {
       this.openSince = null;

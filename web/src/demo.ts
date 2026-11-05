@@ -22,7 +22,7 @@ export function demoDay(seed = 7): DemoState {
       breakMinutes: 10,
       checkIns: [9.5, 12.5, 15.5, 19].map((h) => wake + (h - 7) * H),
       pvtEveryHours: 0,
-      pvtBeforeCheckIn: true,
+      pvtAfterCheckIn: true,
       camera: true,
       tzOffsetMinutes: today.getTimezoneOffset(),
     },

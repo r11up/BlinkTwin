@@ -4,12 +4,12 @@
 //
 // Sleepiness (KSS units): s(t) = prior(t) + gamma * timeOnTask(t) + d(t)
 //   prior: Three-Process Model; d: the person's current offset from it (random walk, Kalman-filtered).
-//   Observations of d: KSS check-ins directly; reaction time and eye closure through per-person
-//   Bayesian regressions that map each feature onto that person's KSS ratings.
+//   Observations: KSS check-ins observe d directly. Each passive signal has a forward measurement model,
+//   feature = a + b * (s - 3) + anchor + noise, where the anchor is that person's own baseline for the
+//   signal (a random walk in the state). Check-ins set the level; passive signals track change.
 // Workload (NASA-TLX units, 0-100): mean-reverting towards the demand of the current context,
-//   observed through TLX check-ins and (weakly) blink rate.
+//   observed through TLX check-ins.
 
-import { blrInit, blrPredict, blrUpdate, type Blr } from './blr.ts';
 import { clampKss, priorKss, TPM_DEFAULTS, type SleepEpisode, type TpmParams } from './tpm.ts';
 
 export type ContextId = 'unset' | 'break' | 'reading' | 'focus' | 'meeting' | 'other';
@@ -24,11 +24,17 @@ export type TwinEvent =
   | { t: number; type: 'alert'; level: 'warning' | 'alarm'; reason: string };
 
 export type Source = 'kss' | 'pvt' | 'cam';
+export type ChannelId = 'pvt' | 'blink' | 'perclos';
 
-export interface RegressionPrior {
-  mean: number[];
-  priorSd: number[];
-  noiseSd: number;
+/** Forward measurement model of one passive signal, in the signal's own units. */
+export interface Channel {
+  at3: number; // population mean of the feature at KSS 3
+  perKss: number; // within-person change per KSS point
+  noiseSd: number; // noise of one observation around the person's own line
+  inflate: number; // variance inflation for serially correlated observations, (1 + rho) / (1 - rho)
+  biasSd: number; // between-person spread of the baseline: prior SD of the anchor
+  biasDriftSdPerSqrtHour: number; // slow drift of the anchor (session-to-session change)
+  slopeSd: number; // between-person spread of the slope, added to the measurement variance
 }
 
 export interface TwinConfig {
@@ -41,26 +47,24 @@ export interface TwinConfig {
   kssNoiseSd: number;
   offsetPriorSd: number;
   offsetDriftSdPerSqrtHour: number;
-  // Each passive channel carries its own bias: a person's reaction time or eyes can sit consistently above
-  // or below the population mapping. Check-ins anchor the level; passive signals mainly track change.
-  biasPriorSd: number;
-  biasDriftSdPerSqrtHour: number;
-  pvt: RegressionPrior; // KSS ~ a + b * (medianRt - 300) / 100
-  cam: RegressionPrior; // KSS ~ a + b1 * perclos% + b2 * (meanBlinkMs - 150) / 100
-  camRInflate: number; // camera windows are autocorrelated, so each counts for less
+  channels: Record<ChannelId, Channel>;
+  minBlinksForDuration: number; // a minute with fewer blinks says nothing about blink duration
   camMinCoverage: number;
-  pairWindowMinutes: { pvt: number; cam: number };
   usePassive: boolean; // false = prior + check-ins only (ablation)
-  personalise: boolean; // false = population regressions are never updated (ablation)
+  useChannels?: Partial<Record<ChannelId, boolean>>; // switch single passive channels off (ablation)
+  useAnchors: boolean; // false = passive signals use the population baseline (ablation)
   workload: {
     demand: Record<ContextId, number>;
     tlxNoiseSd: number;
     stationarySd: number; // spread of workload around the context's demand
     reversionMinutes: number;
-    blink: RegressionPrior; // TLX ~ a + b * (blinkRate - 15)
   };
 }
 
+// Forward models fitted on DROZY (14 adults, 36 tests under increasing sleep deprivation; within-person
+// slopes with subject fixed effects): analysis/drozy_forward.py -> results/drozy_forward.json. Slope SDs are the
+// raw spread of per-person slopes (three sessions each), a conservative upper bound: with three points per
+// person the spread due to estimation noise cannot be separated reliably.
 export const DEFAULT_CONFIG: TwinConfig = {
   tpm: TPM_DEFAULTS,
   defaultWakeHour: 7,
@@ -70,25 +74,20 @@ export const DEFAULT_CONFIG: TwinConfig = {
   kssNoiseSd: 0.75,
   offsetPriorSd: 1.2,
   offsetDriftSdPerSqrtHour: 0.3,
-  biasPriorSd: 1.2,
-  biasDriftSdPerSqrtHour: 0.05,
-  // Population mappings fitted on DROZY (14 adults, 3 sessions of increasing sleep deprivation; mixed
-  // models with a random intercept per person; see analysis/drozy_analysis.py and results/drozy_summary.json).
-  pvt: { mean: [3.494, 2.222], priorSd: [1.136, 0.672], noiseSd: 1.572 },
-  cam: { mean: [3.609, 0.187, 1.441], priorSd: [0.399, 0.274, 1.149], noiseSd: 1.896 },
-  camRInflate: 160, // chosen on a separate tuning cohort in the simulation study (scripts/simulate.ts)
+  channels: {
+    pvt: { at3: 339.2, perKss: 18.85, noiseSd: 36.4, inflate: 1, biasSd: 48.7, biasDriftSdPerSqrtHour: 2, slopeSd: 7.9 },
+    blink: { at3: 189.7, perKss: 11.1, noiseSd: 24.6, inflate: 1.04, biasSd: 22.9, biasDriftSdPerSqrtHour: 15, slopeSd: 14.3 },
+    perclos: { at3: 3.24, perKss: 0.62, noiseSd: 2.4, inflate: 1.93, biasSd: 2.38, biasDriftSdPerSqrtHour: 0.83, slopeSd: 0.47 },
+  },
+  minBlinksForDuration: 3,
   camMinCoverage: 0.6,
-  pairWindowMinutes: { pvt: 30, cam: 5 },
   usePassive: true,
-  // Learning each person's slopes from a handful of check-ins did not help in the simulation study or on
-  // DROZY, so by default only the per-channel anchors (biases) are personal.
-  personalise: false,
+  useAnchors: true,
   workload: {
     demand: { unset: 40, break: 15, reading: 40, focus: 65, meeting: 50, other: 40 },
     tlxNoiseSd: 8,
     stationarySd: 18,
     reversionMinutes: 20,
-    blink: { mean: [50, -1.0], priorSd: [15, 1.0], noiseSd: 18 },
   },
 };
 
@@ -109,9 +108,10 @@ export interface TwinResult {
   snapshots: Snapshot[];
   now: Snapshot;
   contributions: Record<Source, number>;
-  calibration: { pvt: Blr; cam: Blr; blink: Blr };
-  anchors: { pvt: number; pvtSd: number; cam: number; camSd: number };
+  /** Each passive signal's anchor: how far this person's baseline sits from the population, in the signal's units. */
+  anchors: Record<ChannelId, { mean: number; sd: number }>;
   sleep: SleepEpisode;
+  sleeps: SleepEpisode[]; // all recorded sleep episodes, oldest first (sleep debt carries across days)
   taskStart: number | null;
   context: ContextId;
   checkIns: number;
@@ -120,17 +120,7 @@ export interface TwinResult {
 const HOUR = 3_600_000;
 const MIN = 60_000;
 
-export function pvtFeatures(medianRt: number): number[] {
-  return [1, (medianRt - 300) / 100];
-}
-
-export function camFeatures(perclos: number, meanBlinkMs: number): number[] {
-  return [1, perclos * 100, (meanBlinkMs - 150) / 100];
-}
-
-export function blinkFeatures(blinkRate: number): number[] {
-  return [1, blinkRate - 15];
-}
+const CH: ChannelId[] = ['pvt', 'blink', 'perclos'];
 
 function defaultSleep(t: number, cfg: TwinConfig): SleepEpisode {
   const tz = cfg.tzOffsetMinutes ?? new Date(t).getTimezoneOffset();
@@ -157,26 +147,21 @@ export function replay(
   const step = (opts.stepMinutes ?? 5) * MIN;
 
   let sleep = defaultSleep(start, cfg);
+  const sleeps: SleepEpisode[] = [];
   let context: ContextId = 'unset';
   let taskStart: number | null = null;
   let breakStart: number | null = null;
   let frozenTot = 0;
-  // state x = [offset d, reaction-time bias, camera bias]; P its covariance
-  const x = [0, 0, 0];
-  const P = [
-    [cfg.offsetPriorSd ** 2, 0, 0],
-    [0, cfg.biasPriorSd ** 2, 0],
-    [0, 0, cfg.biasPriorSd ** 2],
-  ];
+  // state x = [offset d, anchor of reaction time, anchor of blink duration, anchor of PERCLOS]
+  const n = 1 + CH.length;
+  const x = new Array(n).fill(0);
+  const P = Array.from({ length: n }, (_, i) =>
+    Array.from({ length: n }, (_, j) => (i !== j ? 0 : i === 0 ? cfg.offsetPriorSd ** 2 : cfg.useAnchors ? cfg.channels[CH[i - 1]].biasSd ** 2 : 0)),
+  );
   let w = cfg.workload.demand.unset;
   let wVar = 20 ** 2;
   const tlxByContext: Record<string, number[]> = {};
-  let pvtModel = blrInit(cfg.pvt.mean, cfg.pvt.priorSd, cfg.pvt.noiseSd);
-  let camModel = blrInit(cfg.cam.mean, cfg.cam.priorSd, cfg.cam.noiseSd);
-  let blinkModel = blrInit(cfg.workload.blink.mean, cfg.workload.blink.priorSd, cfg.workload.blink.noiseSd);
   const contributions: Record<Source, number> = { kss: 0, pvt: 0, cam: 0 };
-  let lastPvt: Extract<TwinEvent, { type: 'pvt' }> | null = null;
-  let lastCam: Extract<TwinEvent, { type: 'cam' }> | null = null;
   let checkIns = 0;
   let clock = start;
   const snapshots: Snapshot[] = [];
@@ -196,8 +181,7 @@ export function replay(
     const dtH = Math.max(0, (to - clock) / HOUR);
     if (dtH === 0) return;
     P[0][0] += cfg.offsetDriftSdPerSqrtHour ** 2 * dtH;
-    P[1][1] += cfg.biasDriftSdPerSqrtHour ** 2 * dtH;
-    P[2][2] += cfg.biasDriftSdPerSqrtHour ** 2 * dtH;
+    if (cfg.useAnchors) CH.forEach((c, i) => (P[i + 1][i + 1] += cfg.channels[c].biasDriftSdPerSqrtHour ** 2 * dtH));
     const alpha = Math.exp((-dtH * 60) / cfg.workload.reversionMinutes);
     const mu = demand(context);
     w = mu + (w - mu) * alpha;
@@ -205,17 +189,29 @@ export function replay(
     wVar = wVar * alpha * alpha + cfg.workload.stationarySd ** 2 * (1 - alpha * alpha);
     clock = to;
   };
-  const prior = (t: number) => priorKss(t, sleep, cfg.tpm, cfg.tzOffsetMinutes);
-  /** Kalman update of the state with observation z = h . x + noise(r). Credits the change in d to `source`. */
-  const updateOffset = (z: number, r: number, source: Source) => {
-    const h = source === 'pvt' ? [1, 1, 0] : source === 'cam' ? [1, 0, 1] : [1, 0, 0];
-    const ph = P.map((row) => row[0] * h[0] + row[1] * h[1] + row[2] * h[2]);
-    const sVar = h[0] * ph[0] + h[1] * ph[1] + h[2] * ph[2] + r;
+  const prior = (t: number) => priorKss(t, sleep, cfg.tpm, cfg.tzOffsetMinutes, sleeps);
+  /** Kalman update with observation y = h . x + c + noise(r). Credits the change in d to `source`. */
+  const update = (y: number, h: number[], c: number, r: number, source: Source) => {
+    const ph = P.map((row) => row.reduce((acc, v, j) => acc + v * h[j], 0));
+    const sVar = h.reduce((acc, v, i) => acc + v * ph[i], 0) + r;
     const k = ph.map((v) => v / sVar);
-    const innov = z - (h[0] * x[0] + h[1] * x[1] + h[2] * x[2]);
-    for (let i = 0; i < 3; i++) x[i] += k[i] * innov;
-    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) P[i][j] -= k[i] * ph[j];
+    const innov = y - c - h.reduce((acc, v, i) => acc + v * x[i], 0);
+    for (let i = 0; i < n; i++) x[i] += k[i] * innov;
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) P[i][j] -= k[i] * ph[j];
     contributions[source] += k[0] * innov;
+  };
+  /** Passive reading of channel `c`: feature = at3 + perKss * (prior + tot + d - 3) + anchor + noise. */
+  const observe = (c: ChannelId, value: number, t: number, source: Source) => {
+    if (cfg.useChannels?.[c] === false) return;
+    const ch = cfg.channels[c];
+    const base = prior(t) + tot(t) * cfg.totPerHour;
+    const h = new Array(n).fill(0);
+    h[0] = ch.perKss;
+    h[1 + CH.indexOf(c)] = 1;
+    const sHat = base + x[0];
+    // without anchors, person-to-person baseline differences can only be treated as extra noise
+    const r = ch.noiseSd ** 2 * ch.inflate + (ch.slopeSd * (sHat - 3)) ** 2 + (cfg.useAnchors ? 0 : ch.biasSd ** 2);
+    update(value, h, ch.at3 + ch.perKss * (base - 3), r, source);
   };
   const snap = (t: number): Snapshot => {
     const p = prior(t);
@@ -246,9 +242,15 @@ export function replay(
   for (const e of sorted) {
     emitUntil(e.t);
     switch (e.type) {
-      case 'sleep':
-        sleep = { wake: e.wake, hours: e.hours };
+      case 'sleep': {
+        // a newer entry for the same night replaces the older one
+        const i = sleeps.findIndex((x2) => Math.abs(x2.wake - e.wake) < 6 * HOUR);
+        if (i >= 0) sleeps.splice(i, 1);
+        sleeps.push({ wake: e.wake, hours: e.hours });
+        sleeps.sort((a, b) => a.wake - b.wake);
+        sleep = sleeps.filter((x2) => x2.wake <= e.t + 1).at(-1) ?? sleeps[sleeps.length - 1];
         break;
+      }
       case 'context': {
         if (e.context === context) break;
         if (e.context === 'break') {
@@ -267,15 +269,9 @@ export function replay(
       case 'kss': {
         checkIns++;
         const base = prior(e.t) + tot(e.t) * cfg.totPerHour;
-        updateOffset(e.value - base, cfg.kssNoiseSd ** 2, 'kss');
-        if (cfg.personalise) {
-          if (lastPvt && e.t - lastPvt.t <= cfg.pairWindowMinutes.pvt * MIN) {
-            pvtModel = blrUpdate(pvtModel, pvtFeatures(lastPvt.medianRt), e.value);
-          }
-          if (lastCam && e.t - lastCam.t <= cfg.pairWindowMinutes.cam * MIN && lastCam.coverage >= cfg.camMinCoverage) {
-            camModel = blrUpdate(camModel, camFeatures(lastCam.perclos, lastCam.meanBlinkMs), e.value);
-          }
-        }
+        const h = new Array(n).fill(0);
+        h[0] = 1;
+        update(e.value, h, base, cfg.kssNoiseSd ** 2, 'kss');
         break;
       }
       case 'tlx': {
@@ -284,30 +280,16 @@ export function replay(
         const g = wVar / (wVar + r);
         w += g * (e.value - w);
         wVar *= 1 - g;
-        if (cfg.personalise && lastCam && e.t - lastCam.t <= cfg.pairWindowMinutes.cam * MIN) {
-          blinkModel = blrUpdate(blinkModel, blinkFeatures(lastCam.blinkRate), e.value);
-        }
         break;
       }
       case 'pvt': {
-        lastPvt = e;
-        if (!cfg.usePassive) break;
-        const pred = blrPredict(pvtModel, pvtFeatures(e.medianRt));
-        const base = prior(e.t) + tot(e.t) * cfg.totPerHour;
-        updateOffset(pred.mean - base, pred.variance, 'pvt');
+        if (cfg.usePassive && Number.isFinite(e.medianRt) && e.n > 0) observe('pvt', e.medianRt, e.t, 'pvt');
         break;
       }
       case 'cam': {
-        lastCam = e;
         if (!cfg.usePassive || e.coverage < cfg.camMinCoverage) break;
-        const pred = blrPredict(camModel, camFeatures(e.perclos, e.meanBlinkMs));
-        const base = prior(e.t) + tot(e.t) * cfg.totPerHour;
-        updateOffset(pred.mean - base, pred.variance * cfg.camRInflate, 'cam');
-        const wl = blrPredict(blinkModel, blinkFeatures(e.blinkRate));
-        const r = wl.variance * cfg.camRInflate;
-        const g = wVar / (wVar + r);
-        w += g * (wl.mean - w);
-        wVar *= 1 - g;
+        observe('perclos', e.perclos * 100, e.t, 'cam');
+        if (e.blinkRate >= cfg.minBlinksForDuration && e.meanBlinkMs > 0) observe('blink', e.meanBlinkMs, e.t, 'cam');
         break;
       }
     }
@@ -318,9 +300,9 @@ export function replay(
     snapshots,
     now: snap(opts.until),
     contributions,
-    calibration: { pvt: pvtModel, cam: camModel, blink: blinkModel },
-    anchors: { pvt: x[1], pvtSd: Math.sqrt(P[1][1]), cam: x[2], camSd: Math.sqrt(P[2][2]) },
+    anchors: Object.fromEntries(CH.map((c, i) => [c, { mean: x[i + 1], sd: Math.sqrt(P[i + 1][i + 1]) }])) as Record<ChannelId, { mean: number; sd: number }>,
     sleep,
+    sleeps,
     taskStart,
     context,
     checkIns,
@@ -363,7 +345,7 @@ export function forecast(
     const dtH = (t - r.now.t) / HOUR;
     const afterSleep = sleep !== r.sleep;
     const totH = afterSleep ? 0 : inTask ? tot0 + dtH : sc.breakNow ? 0 : tot0;
-    const mean = clampKss(priorKss(t, sleep, cfg.tpm, cfg.tzOffsetMinutes) + totH * cfg.totPerHour + r.now.offset);
+    const mean = clampKss(priorKss(t, sleep, cfg.tpm, cfg.tzOffsetMinutes, afterSleep ? [...r.sleeps, sleep] : r.sleeps) + totH * cfg.totPerHour + r.now.offset);
     const sd = Math.sqrt(r.now.offsetSd ** 2 + cfg.offsetDriftSdPerSqrtHour ** 2 * dtH);
     const pSleepy = 1 - normalCdf((7 - mean) / sd);
     points.push({ t, kss: mean, kssSd: sd, pSleepy, asleep: sleeping });

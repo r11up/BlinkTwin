@@ -49,6 +49,7 @@ export function openCheckIn(opts: { askTlx: boolean }): Promise<CheckIn | null> 
         <input type="range" name="${id}" min="0" max="100" step="5" value="50" aria-label="${name}">
         <div class="tlx-anchors"><span>${anchors.split('|')[0]}</span><span>${anchors.split('|')[1]}</span></div></div>`,
     ).join('');
+    // the backdrop hides the twin's own estimate so it cannot steer the rating
     const d = dialog(`<form method="dialog" class="checkin-form">
       <h2>Check in</h2>
       <p class="muted">How sleepy have you felt in the last 5 minutes? (Karolinska Sleepiness Scale)</p>
@@ -57,6 +58,7 @@ export function openCheckIn(opts: { askTlx: boolean }): Promise<CheckIn | null> 
         <label class="skip"><input type="checkbox" name="skipTlx" ${opts.askTlx ? '' : 'checked'}> Skip workload this time</label></details>
       <div class="actions"><button value="cancel" formnovalidate class="ghost">Cancel</button><button value="ok" class="primary">Save check-in</button></div>
     </form>`);
+    d.classList.add('checkin-dialog');
     d.addEventListener('close', () => {
       if (d.returnValue !== 'ok') return resolve(null);
       const fd = new FormData(d.querySelector('form') as HTMLFormElement);

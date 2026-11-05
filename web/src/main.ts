@@ -3,7 +3,7 @@ import { AlertEngine } from './sensing/alerts.ts';
 import { Camera, type LiveSummary } from './sensing/camera.ts';
 import { demoDay } from './demo.ts';
 import { Store, toCsv } from './store.ts';
-import { DEFAULT_CONFIG, forecast, replay, type ContextId, type Scenario, type TwinResult } from './twin/twin.ts';
+import { DEFAULT_CONFIG, forecast, replay, type ChannelId, type ContextId, type Scenario, type TwinEvent, type TwinResult } from './twin/twin.ts';
 import { kssChart, workloadChart, type Overlay } from './ui/charts.ts';
 import { KSS_LABELS, openCheckIn, runPvt } from './ui/dialogs.ts';
 import { openScience } from './ui/science.ts';
@@ -88,17 +88,31 @@ function render() {
 
   // personal calibration: the anchors learned from check-ins
   const certainty = 1 - r.now.offsetSd ** 2 / cfg.offsetPriorSd ** 2;
-  const anchorLearned = (sd: number) => Math.max(0, Math.round((1 - sd ** 2 / cfg.biasPriorSd ** 2) * 100));
+  const learned = (c: ChannelId) => Math.max(0, Math.round((1 - r.anchors[c].sd ** 2 / cfg.channels[c].biasSd ** 2) * 100));
   const signed = (v: number) => `${v >= 0 ? '+' : ''}${v.toFixed(2)}`;
+  const anchorText = (c: ChannelId, unit: string, word: [string, string]) => {
+    const a = r.anchors[c];
+    return `${Math.abs(a.mean).toFixed(c === 'perclos' ? 1 : 0)} ${unit} ${a.mean >= 0 ? word[0] : word[1]} than the population at the same sleepiness (± ${(1.645 * a.sd).toFixed(c === 'perclos' ? 1 : 0)})`;
+  };
+  const meter = (label: string, pct: number) => `<div class="calib-row"><span>${label}</span><div class="meter"><span style="width:${pct}%"></span></div><span>${pct}%</span></div>`;
   $('#calib').innerHTML = `
-    <div class="calib-row"><span>Offset learned</span><div class="meter"><span style="width:${Math.max(0, Math.round(certainty * 100))}%"></span></div><span>${Math.max(0, Math.round(certainty * 100))}%</span></div>
-    <div class="calib-row"><span>Reaction-test anchor</span><div class="meter"><span style="width:${anchorLearned(r.anchors.pvtSd)}%"></span></div><span>${anchorLearned(r.anchors.pvtSd)}%</span></div>
-    <div class="calib-row"><span>Webcam anchor</span><div class="meter"><span style="width:${anchorLearned(r.anchors.camSd)}%"></span></div><span>${anchorLearned(r.anchors.camSd)}%</span></div>
+    ${meter('Offset learned', Math.max(0, Math.round(certainty * 100)))}
+    ${meter('Reaction-time anchor', learned('pvt'))}
+    ${meter('Blink-duration anchor', learned('blink'))}
+    ${meter('Eye-closure anchor', learned('perclos'))}
     <dl class="calib-dl">
       <dt>You vs the daily rhythm model</dt><dd>${signed(r.now.offset)} KSS (± ${(1.645 * r.now.offsetSd).toFixed(2)}) from ${r.checkIns} check-in${r.checkIns === 1 ? '' : 's'}</dd>
-      <dt>Your reaction times vs the population</dt><dd>read ${Math.abs(r.anchors.pvt).toFixed(2)} KSS ${r.anchors.pvt > 0 ? 'sleepier' : 'more alert'} than you report (± ${(1.645 * r.anchors.pvtSd).toFixed(2)})</dd>
-      <dt>Your eyes vs the population</dt><dd>read ${Math.abs(r.anchors.cam).toFixed(2)} KSS ${r.anchors.cam > 0 ? 'sleepier' : 'more alert'} than you report (± ${(1.645 * r.anchors.camSd).toFixed(2)})</dd>
+      <dt>Your reaction time</dt><dd>${anchorText('pvt', 'ms', ['slower', 'faster'])}</dd>
+      <dt>Your blinks</dt><dd>${anchorText('blink', 'ms', ['longer', 'shorter'])}</dd>
+      <dt>Your eye closure</dt><dd>${anchorText('perclos', 'percentage points', ['higher', 'lower'])}</dd>
     </dl>`;
+
+  // objective check, not anchored to the person's own ratings: what the last reaction test says on the population scale
+  const lastPvt = [...store.all()].reverse().find((e): e is Extract<TwinEvent, { type: 'pvt' }> => e.type === 'pvt');
+  const ch = cfg.channels.pvt;
+  $('#objective').innerHTML = lastPvt
+    ? `Objective check (not adjusted to you): your last reaction test, median ${Math.round(lastPvt.medianRt)} ms, matches a typical person at <b>KSS ${Math.min(9, Math.max(1, 3 + (lastPvt.medianRt - ch.at3) / ch.perKss)).toFixed(1)}</b>. If that is well above how sleepy you feel, you may be underrating your impairment.`
+    : 'Run a reaction test for an objective check that does not depend on how sleepy you say you feel.';
 
   document.querySelectorAll<HTMLButtonElement>('[data-context]').forEach((b) => b.classList.toggle('on', b.dataset.context === r.context));
   const counts = store.all().reduce<Record<string, number>>((m, e) => ((m[e.type] = (m[e.type] ?? 0) + 1), m), {});
@@ -207,7 +221,7 @@ const camera = new Camera($<HTMLVideoElement>('#video'), $<HTMLCanvasElement>('#
       ? `<span>pitch <b>${fr.pose.pitch.toFixed(0)}°</b></span><span>yaw <b>${fr.pose.yaw.toFixed(0)}°</b></span><span>roll <b>${fr.pose.roll.toFixed(0)}°</b></span>` +
         (fr.gaze ? `<span>gaze <b>${fr.gaze.x > 0.15 ? 'left' : fr.gaze.x < -0.15 ? 'right' : 'centre'}${fr.gaze.y > 0.15 ? ', up' : fr.gaze.y < -0.15 ? ', down' : ''}</b></span>` : '')
       : '<span>No face</span>';
-    const { state, escalated } = alerts.frame({ t: fr.t, face: fr.face, eyesClosedForMs: fr.eyesClosedForMs, headDroppedForMs: fr.headDroppedForMs, closure: fr.closure ?? 0 });
+    const { state, escalated } = alerts.frame({ t: fr.t, face: fr.face, eyesClosedForMs: fr.eyesClosedForMs, headDroppedForMs: fr.headDroppedForMs, closure: fr.closure ?? 0, lookingDown: fr.lookingDown });
     if (state.since === fr.t) {
       showAlert(state.level, state.reason);
       if (escalated && (state.level === 'alarm' || state.level === 'warning') && !store.isDemo) {
@@ -303,12 +317,13 @@ async function checkIn() {
 $('#btn-checkin').addEventListener('click', checkIn);
 $('#btn-pvt').addEventListener('click', async () => {
   const quick = $<HTMLInputElement>('#pvt-quick').checked;
+  // rate first, then test: a rating given after seeing reaction times would be coloured by them
+  await checkIn();
   const res = await runPvt(quick ? 60_000 : 180_000);
   if (!res || !res.n) return;
   store.add({ t: store.now(), type: 'pvt', medianRt: res.medianRt, lapses: res.lapses, n: res.n, falseStarts: res.falseStarts });
   $('#pvt-last').textContent = `Last test: median ${Math.round(res.medianRt)} ms, ${res.lapses} lapses, ${res.falseStarts} false starts.`;
   render();
-  await checkIn();
 });
 
 document.querySelectorAll<HTMLButtonElement>('[data-scenario]').forEach((b) =>
