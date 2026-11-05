@@ -1,6 +1,6 @@
 # How BlinkTwin works, in plain language
 
-This document explains everything BlinkTwin does, from the camera to the numbers on the screen, in words a non-specialist can follow. It is written so that the author can answer any question about the system. Every rule, threshold and constant below is taken from the code, and the file is named next to each part. Worked examples were computed by running the real code (the script is reproduced in the appendix).
+This document explains everything BlinkTwin does, from the camera to the numbers on the screen, in words a non-specialist can follow. It is written so that the author can answer any question about the system. Every rule, threshold and constant below is taken from the code, and the file is named next to each part. Worked examples were computed by running the real code with the app's own settings (a short version of the script is in the appendix).
 
 Contents
 
@@ -13,11 +13,13 @@ Contents
 7. [How sleepiness is predicted, step by step](#7-how-sleepiness-is-predicted-step-by-step)
 8. [How cognitive load (workload) is calculated](#8-how-cognitive-load-workload-is-calculated)
 9. [Forecasts and what-ifs](#9-forecasts-and-what-ifs)
-10. [Where the numbers come from, and how the twin was tested](#10-where-the-numbers-come-from-and-how-the-twin-was-tested)
-11. [Privacy and data](#11-privacy-and-data)
-12. [Limits and open questions](#12-limits-and-open-questions)
-13. [Questions people ask](#13-questions-people-ask)
-14. [Glossary](#14-glossary)
+10. [The helper panels](#10-the-helper-panels)
+11. [Where the numbers come from, and how the twin was tested](#11-where-the-numbers-come-from-and-how-the-twin-was-tested)
+12. [Privacy and data](#12-privacy-and-data)
+13. [How fast it runs](#13-how-fast-it-runs)
+14. [Limits and open questions](#14-limits-and-open-questions)
+15. [Questions people ask](#15-questions-people-ask)
+16. [Glossary](#16-glossary)
 
 ---
 
@@ -28,7 +30,7 @@ BlinkTwin is a web page that keeps a running estimate of how sleepy you feel and
 What BlinkTwin is **not**:
 
 - It is **not a medical device**. It does not diagnose anything.
-- It estimates how sleepy you **feel**, on the scale you use when you rate yourself (subjective sleepiness). It does not measure brain activity, and how sleepy you feel is not the same as how impaired you are (Section 7h).
+- It estimates how sleepy you **feel**, on the scale you use when you rate yourself (subjective sleepiness). It does not measure brain activity, and how sleepy you feel is not the same as how impaired you are (Sections 7h and 10b).
 - It is **not a tool for deciding whether you are fit to drive** or to operate machinery. Its alerts have not been validated, and the absence of an alert does not mean you are alert.
 - It is a research prototype. Its predictions have been tested on public laboratory data and in computer simulations, but not yet in a study of real people using it in daily life.
 
@@ -39,8 +41,8 @@ What BlinkTwin is **not**:
 ```
  WEBCAM (up to 24 frames per second)                 REACTION TEST           CHECK-INS             CONTEXT AND SLEEP
    |                                                   (3-minute PVT-B)        (KSS 1-9,             (what you are doing,
-   v                                                        |                  NASA-TLX 0-100)       when you woke, hours slept)
- MediaPipe face model, inside the page                      |                       |                       |
+   v                                                        |                  NASA-TLX 0-100)       when you woke, hours slept,
+ MediaPipe face model, inside the page                      |                       |                "I did not sleep")
    |  eye-closure score, head angles, gaze                  |                       |                       |
    v                                                        |                       |                       |
  Blink meter and head tracker (every frame)                 |                       |                       |
@@ -57,13 +59,14 @@ What BlinkTwin is **not**:
                                                             |
                                                             v
              ON SCREEN: sleepiness and workload now with a 90% range, "why the twin thinks so",
-             forecast and time to KSS 7, what-if overlays, your personal model, an objective check
+             forecast and time to KSS 7, what-if lines, your personal model, the objective check,
+             check-in suggestions, sleep status, and "How well does the twin know you?"
 ```
 
 Two paths run side by side:
 
 - **The fast path** (Section 4) checks every camera frame for a long eye closure or a head drop and raises an alert at once. It does not use the twin.
-- **The slow path** (Sections 7 to 9) stores one summary per minute, plus every reaction test and check-in, in an event log. The twin's estimate is recalculated from the whole log whenever something new arrives and at least once a minute (`web/src/main.ts`, `render()` and the 60-second timer). Because the twin is rebuilt from the log each time, any number on screen can be reproduced exactly from the stored events.
+- **The slow path** (Sections 7 to 10) stores one summary per minute, plus every reaction test and check-in, in an event log. The twin's estimate is recalculated from the whole log whenever something new arrives and at least once a minute (`web/src/main.ts`, `render()` and the 60-second timer). Because the twin is rebuilt from the log each time, any number on screen can be reproduced exactly from the stored events.
 
 ---
 
@@ -73,13 +76,13 @@ Code: `web/src/sensing/camera.ts`, `web/src/sensing/blink.ts`, `web/src/sensing/
 
 ### Frames and the face model
 
-When you press "Start camera", the browser asks for permission and opens the webcam at about 640 by 480 pixels. Up to 24 times a second, the current frame is passed to **MediaPipe Face Landmarker**, a face-tracking model from Google that runs inside the page (on the graphics card if possible, otherwise on the processor). For each frame it returns:
+When you press "Start camera", the browser asks for permission and opens the webcam at about 640 by 480 pixels. Up to 24 times a second, the current frame is passed to **MediaPipe Face Landmarker**, a face-tracking model from Google that runs inside the page. For each frame it returns:
 
 - 478 points on the face (the "face mesh"), used here only to draw the eye outlines and irises over your video so you can see what is being tracked;
 - 52 **blendshapes**: numbers from 0 to 1 that describe facial movements, such as how closed each eye is (`eyeBlinkLeft`, `eyeBlinkRight`) and which way each eye is looking (`eyeLookDown...`, `eyeLookUp...`, `eyeLookIn...`, `eyeLookOut...`);
 - a transformation matrix that gives the angle of the head.
 
-The frame itself is then discarded. Only numbers derived from it are kept, and only for the summaries described below.
+The model can run on the graphics processor or on the main processor (CPU). The page first checks how the browser draws graphics: if it does so in software, because there is no usable graphics processor, the CPU mode is used, because on such machines the graphics mode is several times slower (Section 13). The frame itself is then discarded. Only numbers derived from it are kept, and only for the summaries described below.
 
 ### The eye-closure score, adapted to you
 
@@ -87,7 +90,7 @@ The raw **eye-closure score** for a frame is the average of the left and right `
 
 normalised closure = (score − baseline) / (1 − baseline), limited to the range 0 to 1.
 
-**Long closures do not reset the baseline.** If the eyes stayed shut for most of the 30-second window, the 20th percentile would creep up to the closed level and the meter would wrongly decide the eyes had reopened. To prevent this, once a closure has lasted 2 seconds the baseline is frozen at its value from just before the closure began, and it stays frozen until the eyes reopen. When the closure ends, its closed-eye samples are removed from the baseline window so they cannot distort it. As a safety valve, the freeze is released after 60 seconds, so that a lasting change of posture or lighting (for example, looking down at papers) can still be adapted to. Closures shorter than 2 seconds are processed exactly as before (`web/src/sensing/blink.ts`, options `freezeAfterMs` = 2000 ms and `releaseAfterMs` = 60 000 ms).
+**Long closures do not reset the baseline.** If the eyes stayed shut for most of the 30-second window, the 20th percentile would creep up to the closed level and the meter would wrongly decide the eyes had reopened. To prevent this, once a closure has lasted 2 seconds the baseline is frozen at its value from just before the closure began, and it stays frozen until the eyes reopen. When the closure ends, its closed-eye samples are removed from the baseline window so they cannot distort it. As a safety valve, the freeze is released after 60 seconds, so that a lasting change of posture or lighting can still be adapted to. Closures shorter than 2 seconds are processed exactly as before (`web/src/sensing/blink.ts`, options `freezeAfterMs` = 2000 ms and `releaseAfterMs` = 60 000 ms).
 
 ### Blinks, blink duration and long closures
 
@@ -117,24 +120,26 @@ Every second the meter summarises the last 60 seconds for the live display and t
 | long closures | number of closures longer than 1 second |
 | **PERCLOS** | the share of frames (with a face) in which the normalised closure was **0.8 or more**, that is, the eyes were at least 80% closed |
 | coverage | the share of frames in which a face was found |
-| peak closure | the median peak closure of the minute's ordinary blinks (only if there were at least 3 blinks) |
+| peak closure | the median peak closure of the minute's ordinary blinks (only stored if there were at least 3 blinks) |
 | nods | head nods in the minute (see below) |
 | head movement | how much the head moved over the last 10 seconds (spread of pitch and yaw angles, in degrees) |
 
 **PERCLOS** ("percentage of eye closure") is one of the oldest camera measures of drowsiness: sleepy people spend more time with their eyes nearly shut. **Blink duration** also grows with sleepiness: sleepy people close and reopen their eyes more slowly.
 
-**When PERCLOS cannot be measured.** PERCLOS only works if a full blink actually pushes the normalised closure above 0.8. On some cameras it does not. When we ran the website's own pipeline on the near-infrared videos of the DROZY dataset (Section 10), MediaPipe's raw closure score rarely went above about 0.7, so PERCLOS stayed below 0.5% in all 36 recordings, whatever the person's state (`results/drozy_mediapipe_summary.json`). A PERCLOS that is stuck near zero would wrongly tell the twin "no change". So the **peak closure** number is used as a check: if the median peak of the minute's blinks is **below 0.85**, PERCLOS is shown as "n/a" on screen and the twin ignores it for that minute (`web/src/twin/twin.ts`, `perclosMinPeakClosure`; `web/src/main.ts`, `perclosMeasurable`). Blink duration is still used.
+**When PERCLOS cannot be measured.** PERCLOS only works if a full blink actually pushes the normalised closure above 0.8. On some cameras it does not. When we ran the website's own pipeline on the near-infrared videos of the DROZY dataset (Section 11), MediaPipe's raw closure score rarely went above about 0.7, so PERCLOS stayed below 0.5% in all 36 recordings, whatever the person's state (`results/drozy_mediapipe_summary.json`). A PERCLOS that is stuck near zero would wrongly tell the twin "no change". So the **peak closure** number is used as a check: if the median peak of the minute's blinks is **below 0.85**, PERCLOS is shown as "n/a" on screen and the twin ignores it for that minute (`web/src/twin/twin.ts`, `perclosMinPeakClosure`; `web/src/main.ts`, `perclosMeasurable`). Blink duration is still used.
 
 ### Looking down
 
-When you look down at a keyboard, phone or papers, your upper eyelids lower and the closure score rises, even though you are wide awake. The page therefore also computes whether you are **looking down**: the average of the two `eyeLookDown` blendshapes above **0.45** (`web/src/sensing/camera.ts`). While you are looking down, a long eye closure does not raise the red alert (Section 4).
+When you look down at a keyboard, phone or papers, your upper eyelids lower and the closure score rises, even though you are wide awake. The page therefore also judges whether you are **looking down**, from the average of the two `eyeLookDown` blendshapes: above **0.45** counts as looking down (`web/src/sensing/head.ts`, `LookDownGate`; `web/src/sensing/camera.ts`).
+
+There is a catch: when the eyes simply close, these "looking down" numbers can rise too, so judging during a closure could mistake a genuine long closure for looking down. The gate therefore makes its decision **from the half second (500 ms) before a closure began**: if in more than half of the frames in that half second you were looking down, the whole closure counts as "looking down"; otherwise it does not, however the numbers move while the eyes are shut. Outside a closure, the current frame decides.
 
 ### Head pose, nods and gaze
 
 From the face's transformation matrix the page computes three head angles in degrees: **pitch** (nodding up and down), **yaw** (turning left and right) and **roll** (tilting towards a shoulder). These are expressed relative to your own resting position, which is the median of each angle over the last 20 seconds, so it does not matter how the camera is placed (`web/src/sensing/head.ts`).
 
 - A **nod** is a pitch change of at least **12°** from rest (in either direction) that comes back to within 6° in **2.5 seconds** or less.
-- A **head drop** is a **forward** (downward) pitch of at least 12° from rest. It ends when the forward pitch falls back below 6°. Only forward movement counts, because a sleepy head falls forward. (Which sign of pitch means "down" is set by a constant, `PITCH_DOWN_SIGN`, that still needs to be checked on a real device; see Section 12.)
+- A **head drop** is a **forward** (downward) pitch of at least 12° from rest. It ends when the forward pitch falls back below 6°. Only forward movement counts, because a sleepy head falls forward. (Which sign of pitch means "down" is set by a constant, `PITCH_DOWN_SIGN`, that still needs to be checked on a real device; see Section 14.)
 - **Gaze** is estimated from the `eyeLook` blendshapes and shown as left, right or centre and up or down when the value passes ±0.15.
 
 Nods and head movement are stored with each minute but are **not used by the twin**. The head drop is used only by the real-time alert.
@@ -142,7 +147,7 @@ Nods and head movement are stored with each minute but are **not used by the twi
 ### What is stored, and what is never stored
 
 - **Never stored:** video frames, images, face points, blendshapes or any frame-by-frame trace. Frames exist in memory only for the time it takes the face model to process them.
-- **Stored:** the one-minute summary numbers in the table above, in your browser's local storage on your own computer. Section 11 has the details.
+- **Stored:** the one-minute summary numbers in the table above, in your browser's local storage on your own computer. Section 12 has the details.
 
 ---
 
@@ -154,12 +159,13 @@ The alerts run on every camera frame and do not depend on the twin's estimate (e
 
 ### The red alert (alarm with sound)
 
-A red full-screen alert with a repeating beep is raised when **either**:
+A red full-screen alert with a repeating beep is raised when **any** of these holds:
 
-1. **Long eye-closure alert**: the eyes have been continuously closed (normalised closure has not fallen back to 0.3 since it passed 0.5) for **at least 1 second**, a face is visible, and you are **not looking down**; or
+1. **Long eye-closure alert**: the eyes have been continuously closed (normalised closure has not fallen back to 0.3 since it passed 0.5) for **at least 1 second**, a face is visible, and the closure is not one that began while you were looking down (Section 3).
 2. **Head-drop alert**: the head has been pitched **forward** by at least 12° from its resting position for **at least 1 second**, a face is visible, and the eyes are **at least half closed** (normalised closure 0.5 or more).
+3. **Face lost while eyes were closed**: the face disappears from view while a red alert is already on, or after the eyes had been closed for at least 1 second (not while looking down). Someone who falls asleep may slump out of the camera's view; losing the face then keeps the alert on rather than clearing it.
 
-The alert clears when neither condition has held for **1.5 seconds**. The "I'm awake" button silences it. Each alert is also written to the event log (not in demo mode).
+The alert clears only when a face is seen **with the eyes open** for **1.5 seconds** in a row. The "I'm awake" button silences the sound. Each alert is also written to the event log (not in demo mode).
 
 ### Amber warnings
 
@@ -172,11 +178,11 @@ An amber banner is shown when, over the last minute, **any** of these is true (c
 | Slow blinks | mean blink duration 300 ms or more, with at least 5 blinks |
 | Twin estimate | the twin's sleepiness estimate is KSS 7 or more |
 
-A new warning can appear at most once every **5 minutes**. If no face has been seen for **5 seconds**, a small "Face not visible" notice is shown instead.
+The last rule, the only one driven by the model, is switched off while today's night is an assumed default one, that is, when no sleep has been entered or the last entry is more than 30 hours old (Section 7a); a warning from the model would then be a warning about a default, not about you. Filled-in earlier nights do not switch it off, but the estimate is still flagged. A new warning can appear at most once every **5 minutes**. If no face has been seen for **5 seconds** (and no alert is on), a small "Face not visible" notice is shown.
 
 ### Why these rules, and what they are not
 
-- **Looking down is ignored** for the long eye-closure alert because at a laptop people look down all the time, and their eyelids lower when they do. Without this rule the alert would sound whenever you read your keyboard.
+- **Looking down is ignored** for the long eye-closure alert because at a laptop people look down all the time, and their eyelids lower when they do. Without this rule the alert would sound whenever you read your keyboard. The decision is taken from the half second before the eyes closed, so that closing the eyes cannot itself switch the alert off.
 - **The head drop is forward only** because when a sleepy person's neck muscles relax the head falls forward. Turning or tilting the head sideways is not a sign of sleep.
 - **These are not microsleep detectors.** A microsleep is a brief episode of sleep defined by brain activity (EEG). BlinkTwin cannot see brain activity. A 1-second eye closure or a dropping head is a behavioural sign that is often seen when people are very sleepy, but it can also happen when you rub your eyes, laugh or stretch.
 - **The thresholds are ad hoc defaults.** They were chosen to be reasonable, not fitted to data, and they have not been tested for how often they miss real episodes or raise false alarms.
@@ -186,13 +192,14 @@ A new warning can appear at most once every **5 minutes**. If no face has been s
 
 ## 5. The reaction test (PVT-B)
 
-Code: `web/src/ui/dialogs.ts` (`runPvt`), `web/src/probes/pvt-score.ts`.
+Code: `web/src/ui/dialogs.ts` (`runPvt`), `web/src/probes/pvt-score.ts`, `web/src/main.ts`.
 
 The **psychomotor vigilance test (PVT)** is the standard test of sustained attention used in sleep research. Sleep loss slows reactions and causes "lapses" of attention. BlinkTwin uses the brief 3-minute version, **PVT-B** (Basner and colleagues, 2011):
 
 - A red millisecond counter appears in a box after a random wait of **1 to 4 seconds** (drawn evenly from that range).
 - You respond as fast as you can with the **space bar, a click or a tap**. The counter stops and shows your reaction time for **600 ms**, then the next wait begins.
 - The test runs for **3 minutes**. Escape or "Stop" cancels it, and a cancelled test is not stored.
+- Pressing "Reaction test" first opens a check-in (Section 6). If you cancel the check-in, no test is run.
 
 Scoring:
 
@@ -204,9 +211,9 @@ Scoring:
 | median reaction time | the middle value of your valid reaction times |
 | mean response speed | the average of 1000 / reaction time |
 
-All of these are stored. **The twin uses only the median reaction time** (Section 7e). The median is used because it is less affected by a few very slow or very fast responses.
+All of these are stored, together with the test's length in seconds. **The twin uses only the median reaction time** (Section 7e). The median is used because it is less affected by a few very slow or very fast responses.
 
-**The 1-minute version.** A tick box offers a 1-minute test for convenience. It is marked as less reliable. At present its result is stored and used by the twin exactly like a 3-minute test (see Section 12).
+**The 1-minute version.** A tick box offers a 1-minute test for convenience. Its result is shown to you, but it is **not used by the model** and not by the objective check (Section 10b): the twin's reaction-time noise was estimated from full-length tests, and a 1-minute test is noisier. Only tests of at least 180 seconds are used (`pvtMinSeconds` in `web/src/twin/twin.ts`; the stored event carries `durationS`).
 
 **Timing in a browser.** A browser cannot time a screen and keyboard as precisely as dedicated laboratory equipment. The screen only redraws about 60 times a second, keyboards and mice have their own delays, and these differ between computers. Published studies of browser timing report lags of tens of milliseconds that vary by device. If the extra delay is the same for every test on your computer, the twin's reaction-time "anchor" (Section 7e) absorbs it once you have done a few check-ins. Results from different computers should not be compared.
 
@@ -214,9 +221,9 @@ All of these are stored. **The twin uses only the median reaction time** (Sectio
 
 ## 6. Check-ins: the questionnaires
 
-Code: `web/src/ui/dialogs.ts` (`openCheckIn`), `web/src/main.ts` (`checkIn`).
+Code: `web/src/ui/dialogs.ts` (`openCheckIn`, `tlxFromItems`), `web/src/main.ts` (`checkIn`).
 
-A check-in has two parts.
+A check-in has two parts: a sleepiness rating, which is required, and a workload rating, which is optional.
 
 ### The Karolinska Sleepiness Scale (KSS)
 
@@ -238,7 +245,7 @@ In research, ratings of 7 and above go with more attention lapses, longer blinks
 
 ### NASA-TLX (workload)
 
-The **NASA Task Load Index** (Hart and Staveland, 1988) measures how demanding a task felt. BlinkTwin asks the six standard questions about "what you were just doing", each on a slider from 0 to 100 in steps of 5:
+The **NASA Task Load Index** (Hart and Staveland, 1988) measures how demanding a task felt. In BlinkTwin it sits in a closed, optional section of the check-in ("Also rate the workload of what you were just doing"). It refers to the stretch of work you have just finished, not to the reaction test, because the check-in always comes before the test. It asks the six standard questions, each on a slider from 0 to 100 in steps of 5:
 
 | Scale | Question | Ends of the slider |
 |---|---|---|
@@ -249,11 +256,13 @@ The **NASA Task Load Index** (Hart and Staveland, 1988) measures how demanding a
 | Effort | How hard did you have to work to accomplish your level of performance? | Very low to Very high |
 | Frustration | How insecure, discouraged, irritated, stressed and annoyed were you? | Very low to Very high |
 
-The **raw TLX** is the plain average of the six numbers (0 to 100). The original method also weights the scales by asking 15 pairwise comparisons; the unweighted "raw" version is widely used and is what BlinkTwin stores. The workload part is optional and can be skipped with a tick box. Note that the sliders start at 50, so a check-in saved without moving them records a TLX of 50 (see Section 12).
+The **raw TLX** is the plain average of the six numbers (0 to 100). The original method also weights the scales by asking 15 pairwise comparisons; the unweighted "raw" version is widely used and is what BlinkTwin stores.
+
+**Workload is saved only when all six sliders have been moved.** Each slider shows "not rated" until you touch it, including one you would leave in the middle. If you move some but not all, the app asks you to rate the rest or to close the section to skip workload. This prevents the starting position of the sliders (50) from being stored as if it were a real rating.
 
 ### Why you rate before the test, and why the estimate is hidden
 
-- Pressing "Reaction test" first opens a check-in, then runs the test. **You rate before you test** because the test shows each reaction time on screen; a rating given after seeing slow reaction times would be coloured by them, and the rating would no longer be an independent measure of how you feel.
+- **You rate before you test** because the test shows each reaction time on screen; a rating given after seeing slow reaction times would be coloured by them, and the rating would no longer be an independent measure of how you feel.
 - The check-in window covers the whole page with a plain background, so **the twin's own estimate is hidden while you rate**. Otherwise you might simply copy the twin's number, and the twin would end up agreeing with itself.
 
 ---
@@ -277,15 +286,13 @@ A **prior** is what a model expects before it has seen any of your data. BlinkTw
 | **S**, sleep pressure (homeostatic) | alertness that runs down the longer you are awake and is restored by sleep | while awake, S falls exponentially towards 2.4; during sleep it rises towards 14.3 | lower limit 2.4, upper limit 14.3, fall rate 0.0353 per hour awake, recovery rate 0.381 per hour asleep |
 | **C**, body clock (circadian) | the 24-hour rhythm | a cosine wave peaking at 16:48 (16.8 h) and lowest 12 hours later, around 04:48 | amplitude 2.5 |
 | **U**, 12-hour rhythm (ultradian) | a smaller second rhythm that produces the early-afternoon dip | a 12-hour cosine with its lowest points at 13:48 and 01:48 | amplitude 0.5, average −0.5 (so U ranges from −1.0 to 0) |
-| **W**, sleep inertia | grogginess right after waking | starts at −5.72 at the moment of waking and fades exponentially | decay rate 1.51 per hour (about half gone in 28 minutes) |
+| **W**, sleep inertia | grogginess right after waking | starts at −5.72 at the moment of waking and fades exponentially; absent after a night without sleep | decay rate 1.51 per hour (about half gone in 28 minutes) |
 
 **How sleep restores S.** Recovery is not the same at all levels. Below a "breakpoint" of **12.2**, S recovers in a straight line at a fixed speed (0.381 × (14.3 − 12.2) = 0.80 units per hour); above it, recovery slows down as S approaches 14.3. This means a short night restores less than a simple exponential would suggest.
 
 **Sleep debt is carried across days.** S at waking depends on the whole recent history, not just last night. If you enter your sleep each day, the twin follows S through every night you entered. Nights before the first one you entered are assumed to be habitual nights of **7.5 hours**, starting ten days earlier. So a run of short nights builds up sleep debt.
 
 **Conversion to KSS.** Alertness is converted to the sleepiness scale with **KSS = 10.6 − 0.6 × A**, limited to 1 to 9.
-
-**If you enter no sleep**, the twin assumes you woke at **07:00** after **7.5 hours** of sleep (`web/src/twin/twin.ts`, `defaultWakeHour`, `defaultSleepHours`). Clock time is your computer's local time.
 
 **Worked example 1 (computed with `alertness()` in `web/src/twin/tpm.ts`).** A person wakes at 07:00 after 8 hours of sleep, following habitual nights, and stays awake into the next morning:
 
@@ -305,11 +312,22 @@ Reading the table: right after waking the prior is high (KSS 7.0) because of sle
 
 **Sleep debt, same example.** S at waking is 13.80 after 8 hours, 13.66 after 7.5 hours, 12.16 after 5 hours and 11.16 after 4 hours (each after habitual nights). After **five** consecutive 5-hour nights it is 10.69. At 10:00 on the fifth day, the prior is **KSS 4.42** if only the last night was entered, and **5.21** if all five nights were entered. Entering your sleep every day therefore matters.
 
+**When sleep is not entered** (`fillMissingNights` and `filledSleep()` in `web/src/twin/twin.ts`; the app switches this on). People forget. The app fills gaps in a way that errs towards ordinary nights, and tells you when it has done so:
+
+- **No sleep entered at all:** the twin assumes you woke at **07:00** after **7.5 hours**.
+- **Your last entry is more than 30 hours old:** the twin does not assume you have been awake since then. It uses today's default night (woke 07:00 after 7.5 hours), with habitual 7.5-hour nights in between.
+- **A gap of more than 30 hours between two entries:** the missing nights are filled with habitual 7.5-hour nights, waking at 07:00.
+- **A real night without sleep** must be entered with **"I did not sleep last night"**. It is stored as a night of 0 hours, so no habitual night is filled in, and there is no sleep inertia that morning because you did not wake up.
+
+Example (computed with `replay()`): with a single entry three days old, at 10:00 today the app's prior is **3.61**, using today's default night and two filled nights. Without filling, the model would treat the person as awake for three days and give 9.0. With "I did not sleep last night" after a 7.5-hour night ending at 07:00 the day before, the prior is **7.46** at 07:30 and **7.05** at 10:00 (the body clock's morning rise lowers it a little).
+
+Whenever the estimate rests on a default or filled night, a note under the estimate says so, with a button to enter your sleep, and the model-driven warning is switched off while today's night is assumed (Section 4). The research analyses (DROZY replay and simulation) switch filling off, because their participants genuinely stayed awake all night.
+
 ### 7b. Time on task
 
-Long stretches of continuous work make people sleepier. The twin adds **0.4 KSS points per hour** of continuous task (`totPerHour`). The clock for "time on task" starts when you mark an activity (focused work, reading, meeting or other task). During a break it is frozen; once a break has lasted **10 minutes**, it is reset to zero when you go back to work. If you never mark what you are doing, time on task is zero.
+Long stretches of continuous work make people sleepier. The twin adds **0.4 KSS points per hour** of continuous task (`totPerHour`). The clock for "time on task" starts when you mark an activity (focused work, reading, meeting or other task). During a break it is frozen. If the break lasts **10 minutes** or more, it is reset to zero; after a shorter break it **continues from where it was frozen**, so the break's own minutes are not counted as work. If you never mark what you are doing, time on task is zero.
 
-Example (computed with `replay()`): working from 09:00, the term is +0.40 at 10:00 and +0.80 at 11:00. A 15-minute break from 11:00 resets it: it is 0 at 11:10 and +0.30 at 12:00 after resuming at 11:15.
+Example (computed with `replay()`): working from 09:00, the term is +0.40 at 10:00 and +0.80 at 11:00. A 5-minute break from 11:00 keeps it at 0.80; work resumes from there, reaching +1.17 at 12:00. A 15-minute break from 11:00 instead resets it: it is 0 at 11:10 and +0.30 at 12:00 after resuming at 11:15.
 
 The value 0.4 KSS per hour is an assumption of this project, not a published constant, and has not been validated.
 
@@ -344,21 +362,21 @@ The offset then carries forward. With no new information, at 13:00 the estimate 
 
 ### 7e. How the reaction test and camera are read: forward models and anchors
 
-The passive signals (median reaction time, blink duration, PERCLOS) are **not** converted into a KSS number. Instead, for each signal the twin has a **forward model**: a simple formula that says what value of the signal to expect from a person at a given sleepiness. Each formula was fitted on the DROZY laboratory dataset (Section 10), comparing each person with themselves across three sessions of increasing sleep deprivation:
+The passive signals (median reaction time, blink duration, PERCLOS) are **not** converted into a KSS number. Instead, for each signal the twin has a **forward model**: a simple formula that says what value of the signal to expect from a person at a given sleepiness. Each formula was fitted on the DROZY laboratory dataset (Section 11), comparing each person with themselves across three sessions of increasing sleep deprivation:
 
 **expected signal = (population value at KSS 3) + (change per KSS point) × (sleepiness − 3) + your anchor**
 
 | Signal | Population value at KSS 3 | Change per KSS point | Noise of one reading | Spread of people's baselines |
 |---|---|---|---|---|
-| Median reaction time (one test) | 339.2 ms | +18.85 ms | 36.4 ms | 48.7 ms |
+| Median reaction time (one full test) | 339.2 ms | +18.85 ms | 36.4 ms | 48.7 ms |
 | Mean blink duration (one minute) | 189.7 ms | +11.1 ms | 24.6 ms | 22.9 ms |
 | PERCLOS (one minute) | 3.24 percentage points | +0.62 | 2.4 | 2.38 |
 
-(Values from `DEFAULT_CONFIG` in `web/src/twin/twin.ts`; the fitting is in `analysis/drozy_forward.py` and `results/drozy_forward.json`.)
+(Values from `DEFAULT_CONFIG` in `web/src/twin/twin.ts`; the fitting is in `analysis/drozy_forward.py` and `results/drozy_forward.json`. A comment in `twin.ts` shows how each constant follows from that file.)
 
 **What an anchor is, and why it exists.** People differ in their baselines. Suppose your reaction times are always about 40 ms slower than average, because of your age, your mouse or your computer. A formula that only knows the average person would read you as about 2 KSS points sleepier than you are, all the time. The **anchor** is a number the twin keeps for each signal that says how far *your* baseline sits from the population's. Each signal has its own anchor, so a camera that reads you wrongly moves the camera's anchor, not your sleepiness estimate.
 
-The anchors are part of the Kalman filter's state, next to the offset. Each anchor starts at 0 with an uncertainty equal to the spread of people's baselines in the table above, and it can drift slowly (reaction time 2 ms, blink duration 15 ms and PERCLOS 0.83 points per square root of an hour), because lighting, posture and devices change.
+The anchors are part of the Kalman filter's state, next to the offset. Each anchor starts at 0 with an uncertainty equal to the spread of people's baselines in the table above, and it can drift slowly (reaction time 2 ms, blink duration 15 ms and PERCLOS 0.83 points per square root of an hour), because lighting, posture and devices change. The blink-duration and PERCLOS drift rates come from how much people's baselines wandered between DROZY sessions; the reaction-time drift is an assumption.
 
 **How one reading is shared out.** When a reading differs from what the twin expected, the surprise is split between "you are sleepier or less sleepy than I thought" (the offset) and "this signal reads you differently" (the anchor), in proportion to how uncertain each one currently is. The filter also allows for the reading's own noise and for the fact that people differ in how steeply their signals change with sleepiness. Minute-by-minute camera noise is partly correlated from one minute to the next, so successive minutes are not fully independent pieces of evidence. To allow for this, the noise variance of a PERCLOS minute is counted 1.93 times larger than it would otherwise be (from the measured correlation of 0.32 between successive minutes in DROZY, using the factor (1 + 0.32) / (1 − 0.32)); for blink duration the factor is 1.04.
 
@@ -374,7 +392,7 @@ The anchors are part of the Kalman filter's state, next to the offset. Each anch
 
 ### 7f. Uncertainty and the 90% range
 
-Every estimate on screen comes with a **90% range** (the "±" number and the shaded band). It is 1.645 times the standard deviation of the offset, which is the twin's uncertainty about where you are relative to the body-clock model. If the twin's assumptions held, the true value would fall inside this range 9 times out of 10. The range shrinks after each check-in and widens again over time. It covers the uncertainty of the offset only; it does not include the noise in your own next rating.
+Every estimate on screen comes with a **90% range** (the "±" number and the shaded band). It is 1.645 times the standard deviation of the offset, which is the twin's uncertainty about where you are relative to the body-clock model. If the twin's assumptions held, the true value would fall inside this range 9 times out of 10. The range shrinks after each check-in and widens again over time. It covers the uncertainty of the offset only; it does not include the noise in your own next rating (the "How well does the twin know you?" panel adds that noise when it checks your ratings against the range; Section 10d).
 
 ### 7g. "Why the twin thinks so" (attribution)
 
@@ -382,13 +400,9 @@ The panel splits the current estimate into parts: the **daily rhythm model** (bo
 
 The "Your personal model" panel shows what has been learned: how far your offset is from the body-clock model, and each anchor (for example "23 ms slower than the population at the same sleepiness"), with a bar showing how much of the starting uncertainty has been removed.
 
-### 7h. The objective check
+### 7h. The objective check, in one line
 
-Because the twin is anchored to your own ratings, it estimates how sleepy you **feel**. But people who are sleep deprived for days often keep rating themselves as only moderately sleepy while their reaction times keep getting worse. So the "Now" panel also shows an **objective check** that ignores your ratings: it takes your last reaction test and asks what KSS the *average* person would have at that median reaction time, using the forward model in reverse:
-
-**objective KSS = 3 + (your median reaction time − 339.2 ms) / 18.85 ms**, limited to 1 to 9 (`web/src/main.ts`).
-
-For example, a median of 400 ms corresponds to KSS 6.2 for an average person. If this is well above how sleepy you feel, the page says you may be underrating your impairment. This check is crude (it cannot know if you are naturally slow or your computer is slow), which is exactly why the main estimate uses anchors instead.
+Because the twin is anchored to your own ratings, it estimates how sleepy you **feel**. The "Now" panel therefore also reads your last full reaction test on the population scale, ignoring your ratings: **objective KSS = 3 + (your median reaction time − 339.2 ms) / 18.85 ms**, limited to 1 to 9 (`objectiveKss()` in `web/src/insights/divergence.ts`). For example, a median of 400 ms corresponds to KSS 6.2 for an average person. Section 10b explains how the app compares this with your ratings.
 
 ---
 
@@ -427,11 +441,11 @@ Between ratings, the workload estimate moves smoothly towards the typical demand
 
 ### Step 4: a TLX rating updates the estimate
 
-A TLX rating is treated as a measurement with a noise of ±8 TLX points. It updates the estimate with the same Kalman rule as a KSS check-in: the gain is (current variance) / (current variance + 8²).
+A TLX rating is treated as a measurement with a noise of ±8 TLX points. It updates the estimate with the same Kalman rule as a KSS check-in: the gain is (current variance) / (current variance + 8²). A TLX is stored only when all six sliders were rated (Section 6).
 
 **Worked example 4 (computed with `replay()`).** Someone marks "Focused work" at 09:00. The estimate starts at 40 (the "not set" level) and moves towards 65: 49.8 after 10 minutes, 55.8 after 20, 59.4 after 30 and 63.8 after an hour, with a 90% range of ±29.6 throughout. At 10:00 they give a TLX of **80**. The gain is about 0.84, so the estimate jumps to **77.3** with a range of ±12.0. Their focused-work demand is now 70, so the estimate drifts back towards 70 (71.6 at 10:30, 70.4 at 11:00) and its range widens again to about ±29. If they then take a break at 11:00, the estimate falls towards 15 and is 27.4 by 11:30.
 
-The words under the number are: below 30 "Light", 30 to 54 "Moderate", 55 to 74 "High", 75 and above "Very high".
+The words under the number are: below 30 "Light", 30 to under 55 "Moderate", 55 to under 75 "High", 75 and above "Very high".
 
 **Honest limitation.** The workload part has **not been validated**. The context defaults are guesses, the information from a TLX rating fades within about an hour, and NASA-TLX was designed to rate a whole task after it is done, not a moment.
 
@@ -443,12 +457,12 @@ Code: `forecast()` in `web/src/twin/twin.ts`; buttons in `web/src/main.ts`.
 
 ### The forecast
 
-To look ahead, the twin takes the body-clock model forward in time, keeps your current offset, and lets its uncertainty grow at the same drift rate as before (0.3 KSS per square root of an hour). If you are in an activity, time on task keeps growing at 0.4 KSS per hour for the whole forecast; if you are on a break or have not marked an activity, it stays where it is. The page forecasts 8 hours ahead.
+To look ahead, the twin takes the body-clock model forward in time, keeps your current offset, and lets its uncertainty grow at the same drift rate as before (0.3 KSS per square root of an hour). For time on task, the main forecast assumes **your usual rhythm: 50-minute work blocks with 10-minute breaks**. If you are working now, it lets you finish the current 50-minute block, then takes a 10-minute break (which resets time on task), and repeats. If you have not marked any activity, time on task stays at zero. The page forecasts 8 hours ahead, and the chart legend says "forecast (with usual breaks)".
 
-- **Probability of KSS 7 or more** at a future time is computed from the forecast and its uncertainty, assuming a bell-shaped (normal) error.
+- **Probability of KSS 7 or more** at a future time is computed from the forecast and its uncertainty, assuming a bell-shaped (normal) error. The page shows it for one hour from now.
 - **"You will reach KSS 7 around ..."** is the first future time at which the middle of the forecast reaches 7.
 
-**Worked example 2, continued.** After the rating of 6 at 10:00, the forecast made at 16:00 is:
+**Worked example 2, continued.** After the rating of 6 at 10:00 (no activity marked, so no time on task), the forecast made at 16:00 is:
 
 | Time | Forecast KSS | Uncertainty (SD) | Probability of KSS ≥ 7 |
 |---|---|---|---|
@@ -462,31 +476,106 @@ The predicted time of reaching KSS 7 is **22:20**. Without the check-in (offset 
 
 ### What-if scenarios
 
-The what-if buttons re-run the forecast with one input changed and draw it as an extra line:
+The what-if buttons re-run the forecast with one assumption changed and draw it as an extra line, next to the main forecast with your usual breaks:
 
 | Button | What changes | What it assumes |
 |---|---|---|
-| I take a 15-minute break | time on task is set to zero | that you do not resume continuous work for the rest of the forecast |
-| I go to bed at 23:00 | a sleep of 7.5 hours from 23:00 is added; after waking, the body-clock model restarts from that sleep (with sleep debt carried over) and time on task is zero | your offset of today carries into tomorrow, with growing uncertainty |
-| I keep going | nothing; this is the normal forecast | if you are in an activity, continuous work with no breaks |
+| I take a 15-minute break | a 15-minute break now (which resets time on task), then the usual 50/10 rhythm | that you return to your usual rhythm afterwards |
+| I go to bed at 23:00 (or in 30 minutes if 23:00 has passed) | a sleep of 7.5 hours is added; after waking, the body-clock model restarts from that sleep (with sleep debt carried over) and time on task is zero; before bedtime, the usual rhythm | your offset of today carries into tomorrow, with growing uncertainty |
+| I keep working without breaks | time on task keeps growing at 0.4 KSS per hour for the whole 8 hours | continuous work with no break at all |
 
-**Worked example 5.** The same person has been doing focused work since 15:00. At 16:00 the estimate is 5.40 (body clock 3.20 + time on task 0.40 + offset 1.80). The predicted time of reaching KSS 7 is **19:10** if nothing changes, and **22:20** with a break now (the 0.4 KSS per hour from time on task stops building up). With bed at 23:00 for 7.5 hours, the forecast for the next morning is KSS 7.20 at 07:00 (sleep inertia), 5.89 at 08:00 and 5.48 at 10:00.
+**Worked example 5 (computed with `replay()` and `forecast()`).** The same person has been doing focused work since 15:00. At 16:00 the estimate is 5.40 (body clock 3.20 + time on task 0.40 + offset 1.80). The predicted time of reaching KSS 7 is:
+
+- **21:50** with the usual breaks (the main forecast);
+- **22:00** with a 15-minute break now and then the usual breaks;
+- **19:10** if they keep working without breaks;
+- with bed at 23:00 for 7.5 hours, 21:50 (they reach KSS 7 before bedtime), and the next morning the forecast is KSS 7.20 at 07:00 (sleep inertia), 5.89 at 08:00 and 5.48 at 10:00.
 
 ---
 
-## 10. Where the numbers come from, and how the twin was tested
+## 10. The helper panels
+
+Four panels help you use the twin well. All their thresholds are ad hoc defaults chosen to be sensible; none has been validated.
+
+### 10a. Check-in suggestions ("Why does it ask me to check in now?")
+
+Code: `web/src/insights/suggest.ts`.
+
+Check-ins carry most of the information about how sleepy you feel, but each one costs a moment of attention. So the app suggests a check-in only when a rating is worth the most. It considers five reasons, in this order of importance, and shows only the most important one that applies:
+
+| Priority | Reason | Rule |
+|---|---|---|
+| 1 | First of the day | no rating since you woke, and at least 30 minutes since waking (during the first half hour a rating would mostly measure sleep inertia) |
+| 2 | Twin is unsure | the offset's uncertainty (standard deviation) is above 0.9 KSS, that is, the 90% range is wider than about ±1.5 |
+| 3 | Sleepy soon | the forecast reaches KSS 7 within 2 hours and you are not there yet |
+| 4 | Signals disagree | your last full reaction test reads at least 1.5 KSS points away from the twin's estimate, in either direction |
+| 5 | Long gap | you are working and have not rated for more than 3 hours |
+
+Two limits stop it from nagging: it never suggests more often than once every **45 minutes**, and never within **30 minutes** after a check-in. A suggestion stays on screen until you check in or press "Not now"; "Not now" counts as a suggestion for the 45-minute limit.
+
+### 10b. The objective check and "reactions slower than your ratings"
+
+Code: `web/src/insights/divergence.ts`.
+
+The main estimate follows your ratings. That is right for how sleepy you feel, but it can hide the warning sign that matters most for safety: people who have slept too little for several days often keep rating themselves as only moderately sleepy while their reaction times keep getting worse (Van Dongen and colleagues, 2003). In the twin, that pattern shows up as a **growing reaction-time anchor**: your ratings stay flat while your reactions slow, so the twin keeps explaining the slowing as "this is just how this person responds". The objective check brings this into the open.
+
+It shows two things:
+
+1. **Your last full test on the population scale** (Section 7h), and the gap between it and the twin's estimate just before that test, drawn as a bar (limited to ±3 points for display). This answers "today, do my reactions match my rating?". A person who is always a slow responder will read high here every time, so on its own this is weak evidence.
+2. **The trend of your reaction-time anchor**, converted into KSS points (anchor in ms / 18.85 ms), over the last 7 days, or over the last 24 hours if there is no anchor from 7 days ago yet. This answers "are my reactions drifting away from my ratings?", and it removes your constant level.
+
+The verdict:
+
+| Verdict | Rule | What it says |
+|---|---|---|
+| Not enough data | fewer than 2 full 3-minute tests, or no check-in yet | how many tests and check-ins are still needed |
+| **Reactions slower than your ratings** | the anchor has grown by **1.0 KSS point or more** over the window; or, if not, the last test reads **1.5 points or more** sleepier than your estimate | that you may be more impaired than you feel, and that this pattern is common after several short nights; the panel turns red |
+| Reactions quicker than your ratings | the last test reads 1.5 points or more more alert than your estimate | that your reactions are quicker than your ratings suggest |
+| Agree | none of the above | that your reaction times agree with your ratings within the usual noise |
+
+Only full 3-minute tests are used.
+
+### 10c. Sleep status
+
+Code: `web/src/insights/sleep.ts`; the "I did not sleep last night" box and one-tap buttons in `web/src/main.ts` and `web/index.html`.
+
+Because the body-clock model carries sleep debt across days, the app checks your last **7 nights** (seven 24-hour windows ending now) and says, in one short message under the sleep form:
+
+- if no sleep has been entered at all, that the estimate assumes waking at 07:00 after 7.5 hours;
+- if your last entry is more than 30 hours old, that today's night is assumed, and how to fix it (enter last night, or tick "I did not sleep last night");
+- how many of the last 7 nights have no entry and were filled with habitual 7.5-hour nights;
+- if the night the twin is using ended more than 24 hours ago, that it assumes you have been awake since then unless you enter a newer night;
+- how much your recorded sleep changes today's estimate compared with habitual 7.5-hour nights (shown when the effect is at least 0.3 KSS points), and how much of that comes from nights before last night.
+
+For up to three missing nights it offers one-tap buttons such as "Last night: about 7.5 h", so a forgotten entry takes one click. The message is highlighted when something is assumed.
+
+### 10d. "How well does the twin know you?"
+
+Code: `web/src/insights/trackrecord.ts`.
+
+This panel answers the most important question for any user: is the twin any good **for me**? For each of your check-ins (the most recent 30), the app replays the twin on everything that happened **before** that check-in, so the rating has not been seen, and compares its prediction with your rating. It does the same for the body-clock model alone, with the same sleep history but nothing personal. It then reports:
+
+- the average error of the twin and of the body-clock model alone, in KSS points (lower is better);
+- how many of your ratings fell inside the twin's 90% range for a **rating**. Because a rating is a noisy whole number, this range adds the rating noise to the twin's uncertainty and half a scale step for rounding: ±(1.645 × √(offset SD² + 0.75²) + 0.5);
+- a chart of each prediction against your rating.
+
+The verdict waits for at least **5 check-ins**, because with fewer any difference is mostly chance. After that it says that learning from your check-ins has helped if the twin's average error is more than **0.1** points lower than the body-clock model's, that the body-clock model alone has done better if it is more than 0.1 points higher, and that they are about equal otherwise. With 10 or more check-ins and fewer than 75% of ratings inside the range, it adds that the ranges have been too narrow for you. Below 20 check-ins it reminds you that the sample is small. The panel is computed only when you open it.
+
+---
+
+## 11. Where the numbers come from, and how the twin was tested
 
 ### Published models and scales
 
 - The body-clock prior and all its constants: the Three-Process Model (Åkerstedt and Folkard, 1997; Åkerstedt, Folkard and Portin, 2004; Åkerstedt and colleagues, 2008, for the breakpoint; Ingre and colleagues, 2014, for the parameter list and the 12-hour component). The constants were checked one by one against these sources during the first internal review (`paper/reviews/round1-reviewer-B.md`).
 - KSS (Åkerstedt and Gillberg, 1990), NASA-TLX (Hart and Staveland, 1988), PVT-B (Basner, Mollicone and Dinges, 2011), PERCLOS (Wierwille and colleagues, 1994, and Dinges and colleagues, 1998).
-- Choices made for this project without a published source: time on task (0.4 KSS per hour, reset after a 10-minute break), the offset's starting uncertainty (1.2) and drift (0.3 per square root of an hour), the noise of a KSS rating (0.75), the workload defaults, and all alert thresholds.
+- Choices made for this project without a published source: time on task (0.4 KSS per hour, reset after a 10-minute break), the offset's starting uncertainty (1.2) and drift (0.3 per square root of an hour), the noise of a KSS rating (0.75), the reaction-time anchor drift, the 30-hour rule for missing nights, the workload defaults, the 50/10 work rhythm of the forecast, and all alert, suggestion and verdict thresholds.
 
 ### DROZY: the source of the forward models
 
 **DROZY** (Massoz and colleagues, 2016) is a public laboratory dataset from the University of Liège: 14 adults each did three 10-minute PVTs over a period of increasing sleep deprivation (roughly 10:00 on day one, around 03:40 the next night and around 12:00 the next day, without sleep), rated their KSS each time, and were filmed with a near-infrared camera while electrodes recorded their eye movements (the **electro-oculogram, EOG**, the reference standard for blinks). Thirty-six tests are usable.
 
-- **Forward models** (`analysis/drozy_forward.py`, `results/drozy_forward.json`): for each signal, the change per KSS point was estimated *within* each person (comparing each person with themselves), and the spread of people's baselines and the noise were estimated separately. The values are in the table in Section 7e. The minute-level noise of blink duration (24.6 ms) and PERCLOS (2.4 points) and the anchor drift rates correspond to splitting the minute-level noise in `drozy_forward.json` into a part that changes from minute to minute and a part that changes between sessions; this derivation is not yet written out in the code.
+- **Forward models** (`analysis/drozy_forward.py`, `results/drozy_forward.json`): for each signal, the change per KSS point was estimated *within* each person (comparing each person with themselves), and the spread of people's baselines and the noise were estimated separately. The values are in the table in Section 7e.
 - **Blink counting** (`results/drozy_summary.json`): the website's blink-counting logic, run on DROZY's face landmarks, agreed with EOG blink rates across the 36 tests (Spearman correlation 0.88), counting about 5.4 fewer blinks per minute on average.
 - **The website's actual camera pipeline** (`results/drozy_mediapipe_summary.json`): MediaPipe was run on DROZY's videos with the website's unchanged blink meter. A face was found in 99.9% of frames. Blink rate agreed less well with EOG (Spearman 0.71; about 13 fewer blinks per minute), because on these near-infrared videos MediaPipe's closure score rarely reached high values. For the same reason PERCLOS stayed below 0.5% in all 36 tests and did not track sleepiness. Blink duration did track sleepiness within each person (correlation 0.58), and so did the number of long closures (0.51). This finding led to the PERCLOS check described in Section 3.
 - **Replaying the released twin on real people** (`web/scripts/drozy_twin.ts`, `results/drozy_twin_summary.json`): each person was left out in turn, the forward models were refitted on the other 13, and the twin predicted each later KSS rating before seeing it. Mean absolute error (MAE, the average size of the error in KSS points), assuming waking at 07:00:
@@ -508,47 +597,74 @@ The full twin had the lowest error of the model-based versions, and the result h
 
 ### Simulation
 
-A simulation with virtual people, whose true sleepiness is known, tests what each source of information adds and how the twin behaves when its assumptions are wrong (`web/scripts/simulate.ts`, `web/src/sim/synth.ts`). The current results are in `results/sim_summary.json` and summarised in the README. They are not quoted here because the simulation is being re-run.
+A simulation with virtual people, whose true sleepiness is known, tests what each source of information adds and how the twin behaves when its assumptions are wrong (`web/scripts/simulate.ts`, `web/src/sim/synth.ts`, `results/sim_summary.json`). Each scenario has **300** virtual people who wake at 07:00 and stay awake for 24 hours (16 hours in the "ordinary workday" scenario), working in 50-minute blocks with 10-minute breaks, with a webcam summary every minute, a reaction test every 2 hours and after each check-in, and k check-ins spread over the day. The twin uses its released settings; nothing was tuned on the virtual people. The error is the MAE between the twin's estimate and the true sleepiness, every 10 minutes.
 
-### Unit tests
+Five versions are compared. "Rhythm model only" is the body-clock model with time on task. "Check-ins only" adds your ratings. "BlinkTwin" adds reaction tests and the webcam with anchors. "No anchors" adds them without anchors (the population formula taken as exact for everyone). "Oracle" is a version that is told each virtual person's true signal parameters, which shows the most the passive signals could add.
 
-The code has automated tests (`web/tests/`, run with `cd web && npm test`) that check, among other things, the Three-Process Model's structure (the breakpoint, sleep debt, the 13:48 dip), the Kalman updates, the blink meter, the alert rules and that the in-app science text matches the result files.
+MAE in the scenario that matches the twin's assumptions (95% ranges from resampling people):
+
+| Version | 0 check-ins | 1 check-in | 3 check-ins | 8 check-ins |
+|---|---|---|---|---|
+| Rhythm model only | 0.819 (0.770 to 0.869) | | | |
+| Check-ins only | | 0.744 | 0.659 | 0.571 |
+| **BlinkTwin** | 0.861 (passive signals only) | **0.731** | **0.629** (0.608 to 0.650) | **0.557** |
+| No anchors | | 1.782 | 1.741 | 1.655 |
+| Oracle | 0.724 | 0.639 | 0.586 | 0.536 |
+
+What this shows, in plain words:
+
+- **Check-ins carry most of the information.** Three check-ins cut the error from 0.819 to 0.659.
+- **Passive signals help a little, but only with anchors.** With anchors, BlinkTwin's error at three check-ins was 0.030 KSS points lower than check-ins alone (95% range 0.016 to 0.042 lower). Without anchors, adding the same signals made the error more than twice as large, because the population formula misreads many individuals.
+- **Passive signals alone did not beat the body-clock model** (0.861 against 0.819; the difference is within chance).
+- **Coverage.** At three check-ins, 90% ranges contained the truth 90.1% of the time for BlinkTwin and 90.6% for check-ins only.
+
+When the virtual world breaks the twin's assumptions on purpose, the gain of BlinkTwin over check-ins alone at three check-ins stayed small but in the same direction: lower error by 0.013 points when the webcam noise is far more correlated than assumed (95% range from 0.027 lower to 0.001 higher, so not clearly different), and by 0.021 to 0.055 points in the other scenarios (body clock off and sleep misreported; non-linear signals with heavy-tailed noise; people who rate themselves with a personal bias; person-specific body-clock parameters; unrecorded sleep debt; an ordinary 16-hour day; ratings that level off at high sleepiness). The forecast results of the simulation are being re-run and are not quoted here.
+
+### Unit tests and checks
+
+The code has automated tests (`web/tests/`, run with `cd web && npm test`) that check, among other things, the Three-Process Model's structure (the breakpoint, sleep debt, the 13:48 dip), the Kalman updates, the blink meter (including long closures), the look-down rule, the alert rules (including a lost face), the missing-night rules, the helper panels, and that the in-app science text matches the result files. Two automated browser checks measure network traffic and speed (Sections 12 and 13).
 
 ---
 
-## 11. Privacy and data
+## 12. Privacy and data
 
-Code: `web/src/store.ts`, `web/src/main.ts`, `web/src/sensing/camera.ts`.
+Code: `web/src/store.ts`, `web/src/main.ts`, `web/src/sensing/camera.ts`, `web/index.html`; check in `web/scripts/privacy_check.mjs` and `results/privacy_check.json`.
 
-- **Where data live.** Every event (sleep entries, activity changes, check-ins, TLX ratings, reaction-test summaries, one-minute camera summaries and alerts) is saved in your browser's local storage on your own computer, under the key `blinktwin.events.v1`. There is no server that receives them and no account.
-- **Network.** The page loads its own files, and on first use it downloads the MediaPipe face model file (from the local server if present, otherwise from Google's model storage). No personal data are sent.
+- **Where data live.** Every event (sleep entries, activity changes, check-ins, TLX ratings, reaction-test summaries, one-minute camera summaries and alerts) is saved in your browser's local storage on your own computer, under the key `blinktwin.events.v1`. The time of the last check-in suggestion is kept under `blinktwin.lastSuggestedAt`. There is no server that receives your data and no account.
 - **Video.** Frames are processed in memory and discarded. You can hide the video preview and keep tracking.
+- **What the page may connect to.** A Content-Security-Policy in `web/index.html` tells the browser that the page may only connect to the site itself and to Google's model storage (`storage.googleapis.com`), from which the face model file is downloaded on first use if the site does not serve it. Any other connection is blocked by the browser.
+- **The traffic check.** An automated check (`web/scripts/privacy_check.mjs`) loads the built app in a browser, turns the camera on, does a check-in and a reaction test, and records every network request and what is stored. It found that the MediaPipe library had been sending small usage-statistics requests (timing data, no images) to a Google logging address (`odml.pa.googleapis.com`) about every 60 seconds. The policy now blocks these: in the latest check (`results/privacy_check.json`) the page made **zero** network requests after loading, the blocked attempt is listed as blocked rather than sent, and the stored data contained only the expected numbers.
 - **Export.** "Export CSV" and "Export JSON" download all your events as a file.
 - **Delete.** "Delete my data" (click twice to confirm) erases all stored events.
 - **Demo mode.** "Demo day" loads one simulated person's day (woke at 07:00 after 6.5 hours, four check-ins at 09:30, 12:30, 15:30 and 19:00, each followed by a reaction test, alternating 50-minute work blocks and 10-minute breaks, and one webcam summary per minute; `web/src/demo.ts`, `web/src/sim/synth.ts`). Demo data are kept under a separate key and never mixed with your own; a banner shows when demo mode is on.
 
 ---
 
-## 12. Limits and open questions
+## 13. How fast it runs
 
-- **Not tested on real users in daily life.** The evidence is a small laboratory dataset (14 people), one dataset with two sessions per person, and simulation. A prospective study is planned.
-- **Subjective, not objective.** The main estimate follows your own ratings. If your ratings understate your impairment, so will the estimate; the objective check is a partial guard.
-- **Camera differences.** The forward models were fitted on near-infrared laboratory video. Ordinary webcams, lighting, glasses, camera angle and screen glare all change the eye measures. Anchors absorb constant differences but not every effect. On the DROZY videos, PERCLOS from MediaPipe did not work at all.
-- **Body clock is fixed to local clock time.** After travel across time zones, during shift work, or for strong morning or evening types, the body-clock model will be wrong in a way that changes through the day, which a single offset cannot fully correct. Naps and caffeine are not modelled.
-- **Defaults when nothing is entered.** Without a sleep entry the twin assumes waking at 07:00 after 7.5 hours.
-- **Workload** is unvalidated and only reflects your activity and TLX ratings.
-- **Alerts** are unvalidated defaults. The direction of "head down" (`PITCH_DOWN_SIGN` in `web/src/sensing/head.ts`) still needs to be checked on a real device: nodding down should make the displayed pitch positive.
-- **Known rough edges in the current code** (found while writing this document):
-  - The 1-minute reaction test is used by the twin with the same noise as the 3-minute test.
-  - TLX sliders start at 50, so an unchanged TLX section records 50 as if it were a rating.
-  - The "I keep going" what-if is identical to the normal forecast.
-  - The normal forecast assumes continuous work with no breaks for the whole 8 hours when you are in an activity.
-  - If the face disappears from view (for example if someone slumps sideways), the blink meter ends the closure without counting it, so a red alert clears after 1.5 seconds and only a "Face not visible" notice remains.
-  - It has not been checked whether MediaPipe's `eyeLookDown` blendshapes rise when the eyes simply close; if they do, the looking-down rule could suppress some genuine long-closure alerts.
+Measured by `web/scripts/benchmark.mjs` (`results/benchmark.json`) on a **4-core cloud server** with no graphics processor and a headless browser with a test camera. **A cloud server is not a typical laptop**: a laptop with a graphics processor should run the face model faster, so these numbers are a cautious reference, not a laptop result.
+
+- **Camera:** about **20 frames per second** (the app's cap is 24), with about **26 ms** per face-model call on the CPU (95% of calls within 47 ms).
+- **Graphics fallback:** on this server the browser draws graphics in software. Forcing the face model's graphics mode there gave only 9.2 frames per second and about 106 ms per call, which is why the app uses the CPU when graphics are software-rendered (Section 3).
+- **The twin:** a 10-day event log (9,760 events, including 9,310 webcam minutes and 40 check-ins) replays in about **84 ms**. A full dashboard refresh on that log takes about 147 ms, the once-a-minute helper panels about 0.3 s, and the "How well does the twin know you?" panel about 1.3 s, which is why it is computed only when opened.
 
 ---
 
-## 13. Questions people ask
+## 14. Limits and open questions
+
+- **Not tested on real users in daily life.** The evidence is a small laboratory dataset (14 people), one dataset with two sessions per person, and simulation. A prospective study is planned.
+- **Subjective, not objective.** The main estimate follows your own ratings. If your ratings understate your impairment, so will the estimate; the objective check (Section 10b) is a partial guard.
+- **Camera differences.** The forward models were fitted on near-infrared laboratory video. Ordinary webcams, lighting, glasses, camera angle and screen glare all change the eye measures. Anchors absorb constant differences but not every effect. On the DROZY videos, PERCLOS from MediaPipe did not work at all.
+- **Body clock is fixed to local clock time.** After travel across time zones, during shift work, or for strong morning or evening types, the body-clock model will be wrong in a way that changes through the day, which a single offset cannot fully correct. Naps and caffeine are not modelled.
+- **Assumed nights.** Missing nights are filled with habitual 7.5-hour nights. If you actually slept much less, the estimate will be too low until you enter it.
+- **Workload** is unvalidated and only reflects your activity and TLX ratings. A TLX rating is used both to update the estimate and to shape the typical demand it drifts back to, so it counts twice.
+- **The forecast's work rhythm** (50 minutes on, 10 off) is an assumption; your real breaks will differ.
+- **Uncertainty.** The 90% range on the main estimate covers the offset only, not the noise of your next rating.
+- **Alerts** are unvalidated defaults. The direction of "head down" (`PITCH_DOWN_SIGN` in `web/src/sensing/head.ts`) still needs to be checked on a real device: nodding down should make the displayed pitch positive.
+
+---
+
+## 15. Questions people ask
 
 **How does it know I am sleepy if I never fill in a check-in?**
 It starts from the body-clock model, which uses your sleep and the time of day, plus time on task. Reaction tests and the camera then move the estimate a little, but without a check-in the twin cannot tell whether a slow reaction time means you are sleepy or just a slow person, so it moves cautiously and shows a wide range (about ±2 KSS points).
@@ -557,13 +673,22 @@ It starts from the body-clock model, which uses your sleep and the time of day, 
 Because the twin's job is to estimate how sleepy you feel, and your rating is the most direct measure of that. Cameras and reaction times read different people differently (glasses, lighting, eye shape, age, computer), so each passive signal gets its own anchor. A signal that reads you wrongly moves its anchor, not your estimate. The twin does not copy your rating, though: one rating is treated as noisy (±0.75 points), so it moves the estimate about three quarters of the way.
 
 **What happens if I lie on the check-in?**
-The twin will believe you, up to the noise it allows. It will learn anchors that make your reaction times and blinks consistent with what you said. The objective check on the Now panel does not use your ratings, so a large gap between it and your ratings is visible.
+The twin will believe you, up to the noise it allows. It will learn anchors that make your reaction times and blinks consistent with what you said. The objective check does not use your ratings, and if your reactions keep drifting away from your ratings it says so (Section 10b).
 
 **How accurate is it?**
-On the DROZY laboratory data, the full twin with one check-in predicted later KSS ratings with an average error of 1.38 points (the body-clock model alone: 1.73), but with only 14 people the difference is uncertain, and knowing the average rating of other people at each test did about as well. In daily life it has not been tested yet. Simulation results are in the README.
+On the DROZY laboratory data, the full twin with one check-in predicted later KSS ratings with an average error of 1.38 points (the body-clock model alone: 1.73), but with only 14 people the difference is uncertain, and knowing the average rating of other people at each test did about as well. In simulation, with three check-ins a day the average error was 0.63 points against 0.82 for the body-clock model alone. In daily life it has not been tested yet; the "How well does the twin know you?" panel tells you how it is doing for you.
+
+**How do I know if the twin is any good for me?**
+Open "How well does the twin know you?". After at least 5 check-ins it shows how far its predictions, made just before each of your ratings, were from your ratings, compared with the body-clock model alone, and how many of your ratings fell inside its range. If the twin's error is clearly lower, learning from you has helped; if the body-clock model alone does better, the panel says so (Section 10d).
 
 **How is cognitive load calculated?**
 From your activity and your NASA-TLX ratings only. Each activity has a typical demand (focused work 65, meeting 50, reading 40, other 40, break 15) that moves towards your own ratings in that activity. Between ratings the estimate drifts towards the typical demand of what you are doing, with a 20-minute time constant. A TLX rating pulls it strongly towards the rating. The camera is not used. See Section 8.
+
+**Why does it ask me to check in now?**
+Because a rating is worth the most right now, for one of five reasons: it is your first of the day; the twin has become unsure about you; you are forecast to reach KSS 7 within two hours; your last reaction test disagrees with the estimate by 1.5 points or more; or you have worked for more than 3 hours without rating. It never asks more than once every 45 minutes or within 30 minutes of a check-in, and "Not now" dismisses it (Section 10a).
+
+**What does "reactions slower than your ratings" mean?**
+Your reaction times say you are sleepier than you report. Either your reaction-time anchor has grown by at least one KSS point over the last week (or day), meaning your reactions have been slowing while your ratings stayed the same, or your last full test read at least 1.5 points sleepier than your own estimate. This pattern is common after several short nights, when people get used to feeling tired and under-rate how impaired they are. It is a reason to take care, not a diagnosis; if you have always been a slow responder, the second form of the message may just reflect that (Section 10b).
 
 **Why not machine learning?**
 There are very few labelled examples for any one person (a handful of ratings a day), and the largest suitable public dataset has 14 people. A model with many parameters could not be trained or checked reliably. The Kalman filter is a form of learning that works with very little data, says how uncertain it is, can be explained number by number, and runs instantly in a browser. Its structure comes from published sleep science.
@@ -571,8 +696,14 @@ There are very few labelled examples for any one person (a handful of ratings a 
 **What is a "digital twin" here?**
 A small personal model kept in step with your data: a published body-clock model plus your personal offset and three anchors, updated with every measurement, that can be asked about now, the future and "what if" choices. It is a modest twin: most of its behaviour comes from population-level science, and only four numbers are personal.
 
+**What if I forget to enter my sleep?**
+The app assumes ordinary nights and tells you. With nothing entered it assumes waking at 07:00 after 7.5 hours. If your last entry is more than 30 hours old it uses today's default night rather than assuming you stayed awake, and it fills missing nights between entries with 7.5-hour nights. A note under the estimate and the sleep status message say when this happens, with one-tap buttons to add the missing nights, and the twin's own KSS warning is switched off while today's night is assumed. If you really did not sleep, tick "I did not sleep last night" (Sections 7a and 10c).
+
 **What happens if I enter the wrong sleep time?**
 The body-clock prediction will be shifted. Your check-ins correct the level through the offset, but an error in timing changes the shape of the day's curve, which a single offset cannot fully fix. Entering every night also matters for sleep debt: after five 5-hour nights the morning prediction is about 0.8 KSS points higher when all nights are entered than when only the last one is (Section 7a).
+
+**Does anything get sent to Google or anyone else?**
+No personal data. The page's security policy allows connections only to the site itself and to Google's model storage, from which the face model file is downloaded on first use if the site does not provide it. The MediaPipe library itself tried to send small usage statistics (timing data, no images) to a Google logging address about once a minute; the policy blocks this, and an automated traffic check found zero requests after loading (Section 12).
 
 **Can my employer see my data?**
 No. There is no server and no account. Data stay in your browser unless you export them yourself. Webcam monitoring at work raises real surveillance concerns, and BlinkTwin is designed for self-monitoring only.
@@ -581,16 +712,19 @@ No. There is no server and no account. Data stay in your browser unless you expo
 It needs to see your face. In the dark, or if the face is not found in at least 60% of a minute's frames, that minute is not used. Glasses can cause reflections that change the eye-closure score; the anchors absorb constant differences, but this has not been tested. If your camera's closure score does not reach full closure during blinks, PERCLOS is switched off automatically.
 
 **Can it detect microsleeps?**
-No. Microsleeps are defined by brain activity, which a camera cannot see. BlinkTwin detects long eye closures (1 second or more) and forward head drops, which are behavioural signs that often accompany severe sleepiness.
+No. Microsleeps are defined by brain activity, which a camera cannot see. BlinkTwin detects long eye closures (1 second or more), forward head drops, and the face disappearing while the eyes were closed, which are behavioural signs that often accompany severe sleepiness.
 
 **Why does it say I am sleepy right after I wake up?**
-Sleep inertia. The body-clock model includes the grogginess just after waking; at the moment of waking it adds enough to put the prediction around KSS 7, and this fades within an hour or two.
+Sleep inertia. The body-clock model includes the grogginess just after waking; at the moment of waking it adds enough to put the prediction around KSS 7, and this fades within an hour or two. After a night without sleep there is no such effect, because you did not wake up.
 
 **Why did my slow reaction test barely change the estimate?**
-One 3-minute test is noisy: its median varies by about ±36 ms from test to test, which is about two KSS points. After a check-in, the twin also attributes a constant difference to your personal anchor. A single slow test therefore moves the estimate by a fraction of a point; several consistent tests move it more (Section 7e).
+One 3-minute test is noisy: its median varies by about ±36 ms from test to test, which is about two KSS points. After a check-in, the twin also attributes a constant difference to your personal anchor. A single slow test therefore moves the estimate by a fraction of a point; several consistent tests move it more (Section 7e). The 1-minute test is not used at all.
 
 **Why is the workload range so wide?**
 Without a recent TLX rating, the twin only knows your activity, and people's workload within an activity varies a lot. The range is about ±30 TLX points until you rate, about ±12 just after a rating, and it widens again within the hour.
+
+**Why is my TLX not saved?**
+Workload is saved only when all six sliders have been moved, so that an untouched slider (which starts at 50) is never stored as a rating. Move every slider, or close the workload section to skip it.
 
 **Does it account for caffeine, naps, alcohol or medication?**
 No. These change sleepiness but are not modelled. Check-ins will partly correct for them through the offset.
@@ -604,18 +738,24 @@ KSS 7 is "Sleepy, but no effort to keep awake". In studies, ratings of 7 and abo
 **What does the 90% range mean?**
 If the twin's assumptions are right, the true value lies inside the range 9 times out of 10. It reflects the twin's uncertainty about your personal offset, which shrinks after a check-in and grows with time.
 
+**Why does the forecast assume breaks?**
+Because most people take breaks, and continuous work adds 0.4 KSS per hour in the model. The main forecast assumes 50-minute work blocks with 10-minute breaks; the "I keep working without breaks" button shows what happens without them.
+
 **Why rate before the reaction test?**
 So that seeing your reaction times does not influence your rating. The twin's own estimate is also hidden while you rate.
 
 **What do the camera numbers on screen mean?**
 Blinks per minute, average blink duration in ms, PERCLOS (share of the last minute with eyes at least 80% closed, or "n/a" if your camera cannot measure it), long closures (over 1 second), nods per minute and the share of frames in which your face was seen.
 
+**Is it fast enough for an ordinary laptop?**
+On a 4-core cloud server without a graphics processor, which is slower for this than a typical laptop, the camera ran at about 20 frames per second and a 10-day history was recalculated in about 84 ms (Section 13).
+
 **Is any of this validated?**
-Partly. The blink-counting logic agreed with eye-movement recordings in DROZY; the twin was replayed on DROZY and on OpenNeuro data; and a simulation tested it under its own and broken assumptions. The alerts, the workload model and use in daily life have not been validated.
+Partly. The blink-counting logic agreed with eye-movement recordings in DROZY; the twin was replayed on DROZY and on OpenNeuro data; and a simulation tested it under its own and broken assumptions. The alerts, the workload model, the helper panels' thresholds and use in daily life have not been validated.
 
 ---
 
-## 14. Glossary
+## 16. Glossary
 
 | Term | Meaning |
 |---|---|
@@ -625,7 +765,8 @@ Partly. The blink-counting logic agreed with eye-movement recordings in DROZY; t
 | **Blink duration** | How long one blink lasts, from closing past the 0.5 level to reopening past the 0.3 level, in ms. Longer blinks are a sign of sleepiness. |
 | **Brier score** | A score for probability forecasts: the average squared difference between the forecast probability and what happened (1 or 0). Lower is better; 0 is perfect. |
 | **Check-in** | A KSS rating, optionally with a NASA-TLX rating, entered by you. |
-| **Coverage** | The share of frames in a minute in which a face was found. |
+| **Content-Security-Policy** | A rule in a web page that tells the browser which addresses the page may connect to; anything else is blocked. |
+| **Coverage** | The share of frames in a minute in which a face was found. In the simulation, also the share of times the truth fell inside the 90% range. |
 | **DROZY** | A public laboratory dataset of 14 adults under increasing sleep deprivation, with video, eye-movement recordings, reaction tests and KSS ratings. |
 | **EOG (electro-oculogram)** | A recording of eye movements and blinks with electrodes near the eyes; the reference standard for blinks. |
 | **Forward model** | A formula giving the expected value of a signal for a person at a given sleepiness, plus their anchor. |
@@ -637,14 +778,17 @@ Partly. The blink-counting logic agreed with eye-movement recordings in DROZY; t
 | **MediaPipe Face Landmarker** | A face-tracking model from Google that runs in the browser and gives face points, blendshapes and head angles for each frame. |
 | **NASA-TLX** | NASA Task Load Index: six 0 to 100 ratings of how demanding a task was. The raw TLX is their average. |
 | **Normalised closure** | The eye-closure score rescaled between your own open-eye level (0) and fully closed (1). |
+| **Objective check** | Your last full reaction test read on the population scale, ignoring your ratings, and compared with them. |
 | **Offset** | How far your sleepiness sits above or below the body-clock model's prediction, in KSS points. |
+| **Oracle** | In the simulation, a version of the twin told each virtual person's true signal parameters; it shows the most the passive signals could add. |
 | **Peak closure** | The highest normalised closure a blink reaches; its median over a minute's blinks is used to check whether PERCLOS can be measured. |
 | **PERCLOS** | Percentage of eye closure: the share of time the eyes are at least 80% closed. |
 | **Prior** | What the model expects before seeing your data; here, the body-clock model's prediction. |
 | **PVT / PVT-B** | Psychomotor vigilance test: a reaction-time test of sustained attention. PVT-B is the 3-minute version. |
+| **Sleep debt** | The build-up of sleep pressure over several short nights, carried from day to day by the body-clock model. |
 | **Sleep inertia** | Grogginess just after waking. |
 | **Three-Process Model** | A published model of alertness made of sleep pressure (S), the body clock (C), a 12-hour rhythm (U) and sleep inertia (W). |
-| **Time on task** | Hours of continuous work since the last break of 10 minutes or more. |
+| **Time on task** | Hours of continuous work since the last break of 10 minutes or more (short breaks pause it). |
 | **Twin** | BlinkTwin's personal model: the body-clock prior plus your offset and three anchors, updated from your data. |
 | **Uncertainty / 90% range** | How unsure the twin is. The 90% range is the interval that should contain the true value 9 times out of 10 if the model's assumptions hold. |
 | **Workload** | How demanding your current work feels, on the NASA-TLX scale of 0 to 100. Shown as "Cognitive load" in the app. |
@@ -653,7 +797,7 @@ Partly. The blink-counting logic agreed with eye-movement recordings in DROZY; t
 
 ## Appendix: how the worked examples were computed
 
-The numbers in worked examples 1 to 5 were produced by calling the twin's own functions (`alertness`, `sAtWake`, `sAtLastWake` from `web/src/twin/tpm.ts`; `replay` and `forecast` from `web/src/twin/twin.ts`) with `DEFAULT_CONFIG` and a fixed time zone (UTC). A minimal version, runnable from `web/` with Node 22.6 or later:
+The numbers in the worked examples were produced by calling the twin's own functions (`alertness`, `sAtWake`, `sAtLastWake` from `web/src/twin/tpm.ts`; `replay` and `forecast` from `web/src/twin/twin.ts`) with the app's settings (`DEFAULT_CONFIG` with `fillMissingNights: true`) and a fixed time zone (UTC). A minimal version, runnable from `web/` with Node 22.6 or later:
 
 ```ts
 import { alertness } from './src/twin/tpm.ts';
@@ -662,10 +806,11 @@ import { DEFAULT_CONFIG, replay, forecast, type TwinEvent } from './src/twin/twi
 const H = 3_600_000;
 const day = Date.UTC(2026, 0, 6);
 const at = (h: number) => day + h * H;
-const cfg = { ...DEFAULT_CONFIG, tzOffsetMinutes: 0 };
+const cfg = { ...DEFAULT_CONFIG, tzOffsetMinutes: 0, fillMissingNights: true };
+const usualBreaks = { breaksEveryMinutes: 50, breakMinutes: 10 };
 
 // Example 1: the body-clock prior at 16:00 after waking at 07:00 from 8 h of sleep
-console.log(alertness(at(16), { wake: at(7), hours: 8 }, cfg.tpm, 0)); // KSS 3.14
+console.log(alertness(at(16), { wake: at(7), hours: 8 }, cfg.tpm, 0).kss); // 3.14
 
 // Example 2: a KSS 6 check-in at 10:00, then the estimate and the forecast at 16:00
 const events: TwinEvent[] = [
@@ -673,5 +818,5 @@ const events: TwinEvent[] = [
   { t: at(10), type: 'kss', value: 6 },
 ];
 const now = replay(events, cfg, { until: at(16), from: at(7) });
-console.log(now.now.kss, forecast(now, cfg, { hours: 12 }).sleepyAt); // 5.00, 22:20
+console.log(now.now.kss, forecast(now, cfg, { hours: 12, scenario: usualBreaks }).sleepyAt); // 5.00, 22:20
 ```
