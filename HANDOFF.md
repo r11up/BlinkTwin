@@ -13,22 +13,31 @@ Start here in the next session. `docs/PROJECT_NOTES.md` stays the standing brief
 
 ## 2. Make your local copy identical to GitHub
 
+**The history on GitHub was rewritten on 5 November 2026** (before the repository was made public): every commit ID changed. Old commits held a notes file and a paper statement that are no longer wanted, and DROZY results by participant, which the dataset's licence does not allow to be published. Your local clone still has the old history, so reset it instead of pulling, and do not push any old branch, or the old commits come back.
+
 If your local clone has nothing you want to keep:
 
 ```bash
-git fetch origin --tags
+git fetch origin
 git switch main
 git reset --hard origin/main
+git branch -D revision-round1 2>/dev/null; git branch --track revision-round1 origin/revision-round1
 ```
 
-If you have local work to keep, stash it first, update, then bring it back:
+If you have uncommitted local work, stash it first and bring it back after the reset:
 
 ```bash
 git stash push -u -m "local work"
-git fetch origin --tags
+git fetch origin
 git switch main
-git pull --ff-only origin main
+git reset --hard origin/main
 git stash pop
+```
+
+Local commits that were never pushed must be moved onto the new history, for example with `git rebase --onto origin/main <old main commit> <your branch>`. When everything is in place, drop the old commits from your clone:
+
+```bash
+git reflog expire --expire=now --all && git gc --prune=now
 ```
 
 Then create the release tag the paper cites, on the commit that is now `main`:
@@ -45,11 +54,11 @@ cd web && npm install && npx tsc --noEmit && npx vitest run
 cd ../paper && latexmk -pdf main.tex && bash make_arxiv.sh
 ```
 
-Git-ignored local data (`data/`, `results/drozy_*.csv`, `analysis/.venv`, `paper/arxiv/`) are not touched. If `npm install` changes `web/package-lock.json` only by removing `libc` fields, discard that change.
+Git-ignored local data (`data/`, `results/drozy_*.csv`, `analysis/.venv`, `paper/arxiv/`) are not touched. The DROZY analysis now writes its per-participant figure to `data/derived/fig_drozy_per_subject.pdf`, which stays local. If `npm install` changes `web/package-lock.json` only by removing `libc` fields, discard that change.
 
 ## 3. Posting to arXiv
 
-1. Make the GitHub repository public first, so the link in the paper works, and check that the tag `v1.0-arxiv` is visible (Section 2).
+1. Make the GitHub repository public first (Settings, General, Danger Zone, Change visibility), so the link in the paper works, and check that the tag `v1.0-arxiv` is visible (Section 2).
 2. Upload `paper/blinktwin-arxiv.tar.gz` as the source. arXiv will compile `main.tex`; the bibliography (`main.bbl`) and all figures are inside.
 3. Suggested categories: primary cs.HC (Human-Computer Interaction), cross-lists eess.SP (Signal Processing) and q-bio.QM (Quantitative Methods). A first submission to a category may need an endorsement.
 4. Choose the arXiv licence for the paper text (for example CC BY 4.0); the code licence (MIT) is separate.
