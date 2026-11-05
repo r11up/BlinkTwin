@@ -108,8 +108,9 @@ export function kssChart(opts: {
     parts.push(`<text class="tick" x="${f.left - 6}" y="${sy(f, k) + 4}" text-anchor="end">${k}</text>`);
   }
   parts.push(`<text class="axis-title" x="${f.left - 6}" y="${f.top - 9}" text-anchor="end">KSS</text>`);
-  parts.push(`<text class="zone-label" x="${f.left + 6}" y="${sy(f, 9) + 13}">sleepy (KSS ≥ 7)</text>`);
   parts.push(hourTicks(f));
+  // after the hour lines, so no grid line runs through the label
+  parts.push(`<text class="zone-label" x="${f.left + 6}" y="${sy(f, 9) + 13}">sleepy (KSS ≥ 7)</text>`);
   // asleep periods of a what-if scenario
   for (const o of opts.overlays) {
     const asleep = o.points.filter((p) => p.asleep && p.t <= f.t1);

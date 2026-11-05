@@ -52,9 +52,10 @@ Git-ignored local data (`data/`, `results/drozy_*.csv`, `analysis/.venv`, `paper
 
 - Title changed; "submitted for review" header replaced by a preprint header; code link and release tag in the first-page footnote and the Data and Code Availability section.
 - The supplement is merged into the paper as appendices (one PDF for arXiv); `paper/supplement.tex` is gone.
-- DROZY results are aggregate-only, as its licence and the project's data rule require: the per-subject figure is replaced by a table of means by test, and the per-subject panel of the MediaPipe figure is removed (in the paper and in `docs/img/mediapipe_drozy.png`).
+- DROZY results are aggregate-only, as its licence and the project's data rule require: the per-subject figure is replaced by a table of means by test, and the per-subject panel of the MediaPipe figure is removed (in the paper and in the README's `docs/img/mediapipe_drozy.svg`).
 - New simulation results: channel ablation (`web/scripts/ablation.ts`, `results/sim_ablation.*`), coverage, width and Monte Carlo standard errors at every number of check-ins, and per-person quantiles (`analysis/sim_tables.py`, `results/sim_table_*`).
-- App screenshot figure in the System section (`paper/figures/app_overview.png`).
+- App screenshot figure in the System section (`paper/figures/app_now.png`, `app_timeline.png`), made by `web/scripts/screenshots.mjs` at twice the screen resolution.
+- README figures replaced: charts are now SVG made from the paper's vector PDFs (`scripts/readme_figures.sh`), so they stay sharp at any zoom, and the dashboard screenshot is a 2x capture of the demo day.
 - App fixes from the end-to-end check, including the reaction-test timing logic (a double press during feedback could schedule two stimuli; now in `web/src/probes/pvt-run.ts` with tests).
 - Writing pass over the paper, README and docs for plain, specific prose.
 

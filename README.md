@@ -6,7 +6,7 @@
 
 BlinkTwin is a research prototype. It has been tested on public datasets and in simulation, not yet in a prospective study with its own users, and it must not be used to decide whether someone is fit to drive or work.
 
-![BlinkTwin dashboard with a simulated day](docs/img/dashboard.png)
+![BlinkTwin's main screen on the built-in demo day: current sleepiness and workload with 90% ranges, the forecast, what moved the estimate, and the day's timeline](docs/img/dashboard.png)
 
 ## What BlinkTwin does, and how it compares
 
@@ -24,16 +24,16 @@ BlinkTwin is a research prototype. It has been tested on public datasets and in 
 1. **Questionnaire-anchored state-space model.** The Karolinska Sleepiness Scale (KSS) and NASA-TLX enter a Kalman filter as calibration observations, not as training labels. Check-ins set your level; reaction times and the eyes track change from it.
 2. **A forward measurement model for every passive signal.** Each signal is modelled as a population baseline, plus a change per KSS point fitted within people on DROZY, plus your own anchor, plus noise. The anchors are filter states, so a signal that reads you wrong moves its anchor, not your estimate. Without anchors, adding the same signals made the estimate much worse in simulation.
 3. **The published Three-Process Model as the prior.** Homeostatic pressure with the 12.2 breakpoint in sleep recovery, the 24-h and 12-h rhythms, sleep inertia, and sleep debt carried across days (Åkerstedt et al. 2004, 2008; Ingre et al. 2014). The filter adds your offset, a 90% range, a forecast of when you reach KSS 7, and what-if scenarios such as a break or an earlier bedtime.
-4. **Subjective estimate plus an objective check.** Because check-ins set the level, the main estimate is how sleepy you *feel*. The Now card also shows what your last reaction test says on the population scale, not adjusted to you, because people who are short of sleep often underrate their impairment.
+4. **Subjective estimate plus an objective check.** Because check-ins set the level, the main estimate is how sleepy you *feel*. People who are short of sleep often underrate their impairment, so the app also compares your reaction tests with your ratings. It flags a possible gap only when your own reaction times slow over a day or a week while your ratings do not; one test is not compared with a rating, because people's usual reaction times differ too much. This check is experimental.
 5. **Real-time alerts with live eye and head tracking.** A long eye closure (1 s or more, not while looking down) or a forward head drop with closing eyes raises an alert. These thresholds are ad hoc defaults and have not been validated. Gaze, head pitch, yaw and roll, nods, blink rate, blink duration and PERCLOS update live.
 6. **Explains itself.** The estimate is split into the rhythm model, time on task, and what each source contributed, and every number links to the science behind it ([docs/SCIENCE.md](docs/SCIENCE.md)).
 7. **Private by design, and checked.** The face model runs in the page. Only one-minute numeric summaries are stored, in your own browser, and you can export or delete them. An automated traffic check (`web/scripts/privacy_check.mjs`) found that the face-tracking library sent small usage-statistics requests (timing data, no images) to a Google logging service every minute; a content security policy now blocks them, and the check records no request at all after the page has loaded (`results/privacy_check.json`).
 8. **Learns how well it knows you.** A "How well does the twin know you?" panel scores every past prediction against the rating you then gave; the app suggests a check-in when the estimate is uncertain, the forecast nears KSS 7 or your reaction test disagrees with your ratings; it flags when your reactions are slower than your ratings suggest; and it asks for nights you did not enter instead of assuming you stayed awake.
-9. **One codebase, tested and reproducible.** The same TypeScript runs the website, 105 unit tests, the replay of the released twin on real data, and the simulation study.
+9. **One codebase, tested and reproducible.** The same TypeScript runs the website, 126 unit tests, the replay of the released twin on real data, and the simulation study.
 
 ## How it works
 
-![Architecture](docs/img/architecture.png)
+![BlinkTwin architecture: webcam, reaction test, check-ins and sleep feed an event log, which is replayed through the Kalman filter to give the current state, forecast and attribution; per-frame alerts run separately](docs/img/architecture.svg)
 
 | Signal | How it is measured | What it feeds |
 |---|---|---|
@@ -51,11 +51,11 @@ All numbers below are in `results/`. The DROZY analyses use 14 adults and 36 tes
 
 **The webcam pipeline, run on DROZY's videos.** We ran the website's exact pipeline (the same MediaPipe model file and blink code) on all 36 DROZY tests. A face was found in 99.9% of frames. Blink rate agreed moderately with electro-oculography (EOG), the reference for blinks (Spearman ρ = 0.71; within a person r = 0.65), with about 13 blinks per minute missed. Within a person, longer blinks (r = 0.58) and more long eye closures (r = 0.51) went with higher sleepiness ratings. PERCLOS failed on this near-infrared video: MediaPipe's closure score rarely came near full closure, so PERCLOS stayed below 0.5% in every test. This is why the twin now ignores PERCLOS in that situation. DROZY is not an ordinary webcam; webcam validation is still needed.
 
-![The website's pipeline on DROZY videos](docs/img/mediapipe_drozy.png)
+![The website's pipeline on DROZY videos: blink rate against EOG (A) and PERCLOS by test (B)](docs/img/mediapipe_drozy.svg)
 
 **The blink logic agrees with EOG on landmark data.** On DROZY's 68-point face landmarks (eye aspect ratio), the same blink code agreed with EOG blink rates (Spearman ρ = 0.88, n = 36 tests).
 
-![Landmark blink rate against EOG](docs/img/blink_validation.png)
+<img src="docs/img/blink_validation.svg" width="440" alt="Landmark blink rate against EOG blink rate in 36 DROZY tests">
 
 **The signals track sleepiness within a person.** In DROZY (landmark features), slower median reaction time (r = 0.77), more lapses (r = 0.73), more eye closure (PERCLOS, r = 0.53) and longer blinks (r = 0.51) went with higher sleepiness ratings within each person. Blink rate did not (r = 0.35, not significant). Within a person, median reaction time rose 18.8 ms per KSS point; people's baselines differed by about 49 ms. These forward models are BlinkTwin's population defaults.
 
@@ -69,6 +69,8 @@ All numbers below are in `results/`. The DROZY analyses use 14 adults and 36 tes
 | Check-in at the first test only | 1.51 [0.97, 2.26] | 20 |
 | **BlinkTwin: check-in at the first test + reaction test + eyes** | **1.38 [0.93, 2.04]** | 20 |
 | Benchmark: the test's average rating in the other people | 1.39 [0.97, 1.87] | 24 |
+
+<img src="docs/img/drozy_replay.svg" width="520" alt="Error of each variant of the twin in the DROZY replay, with 95% confidence intervals">
 
 The ordering matches the design, but the intervals overlap widely and BlinkTwin did not beat the simple benchmark. DROZY does not record wake times; assuming 06:00 or 08:00 instead of 07:00 gave BlinkTwin MAEs of 1.39 and 1.37.
 
@@ -107,7 +109,7 @@ The same comparison with three check-ins when the virtual people break the twin'
 
 Forecasting KSS ≥ 7 one hour ahead (matched scenario, three check-ins, 5400 forecasts, base rate 0.27): Brier score 0.063 for BlinkTwin, 0.066 for check-ins only and 0.086 for the rhythm model alone (difference from check-ins only −0.0028, 95% CI −0.0052 to −0.0001); AUROC 0.969, 0.966 and 0.945. Most of the discrimination comes from the time of day and time awake.
 
-![Simulation results](docs/img/simulation.png)
+![Simulation: error by number of check-ins (A) and the paired difference between BlinkTwin and check-ins only in each scenario (B)](docs/img/simulation.svg)
 
 **What the evidence does not show yet.** That personal calibration helps real people: in DROZY the twin did not beat a simple benchmark, and in ds004902 offsets carried over only weakly. Gains from the passive signals over check-ins are small in simulation (hundredths of a KSS point), and they come from estimating each signal's personal bias: a filter that only allows for the bias without estimating it (consider-covariance) was no better than check-ins alone. In a simulated version of the planned 10-day study, where the target is people's actual (noisy, whole-number) ratings on ordinary workdays and the whole log is replayed as one, BlinkTwin was slightly better than check-ins alone (mean difference −0.010 KSS points, SD 0.036), and more so with a mean-reverting offset (−0.028 to −0.047); replaying each day on its own reversed the sign (+0.019), so the benefit depends on carrying the anchors across days. The webcam pipeline has not been validated on ordinary webcams, the alert thresholds have not been validated at all, and the workload estimate has not been evaluated. A prospective study with real users is planned.
 
@@ -171,6 +173,10 @@ analysis/.venv/bin/python -I analysis/drozy_twin_figure.py results
 (cd web && node scripts/simulate.ts 300 ../results > ../results/sim_log.txt)
 (cd web && node scripts/power.ts)
 analysis/.venv/bin/python -I analysis/sim_figures.py results
+
+# Figures and screenshots in this README (SVG from the paper's PDFs; demo-day screenshots at 2x)
+bash scripts/readme_figures.sh
+(cd web && node scripts/screenshots.mjs)
 
 # Privacy traffic check and compute benchmark (headless Chromium with a fake camera)
 (cd web && node scripts/privacy_check.mjs && node scripts/benchmark.mjs)

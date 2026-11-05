@@ -1,7 +1,8 @@
 """Figures for the simulation study (reads results/sim_*.csv and sim_summary.json written by web/scripts/simulate.ts).
 
-Writes results/fig_sim_mae.pdf (two columns), results/fig_sim_reliability.pdf (one column) and
-docs/img/simulation.png. Sized for an IEEE two-column paper (column 3.5 in, page 7.16 in), 8-pt text.
+Writes results/fig_sim_mae.pdf (two columns) and results/fig_sim_reliability.pdf (one column). Sized for an
+IEEE two-column paper (column 3.5 in, page 7.16 in), 8-pt text. The README's copy (docs/img/simulation.svg)
+is made from the PDF by scripts/readme_figures.sh.
 
 Usage (from the repository root): analysis/.venv/bin/python -I analysis/sim_figures.py results
 """
@@ -17,7 +18,6 @@ import numpy as np
 import pandas as pd
 
 res = Path(sys.argv[1])
-docs_img = res.parent / "docs" / "img"
 mae = pd.read_csv(res / "sim_mae.csv")
 rel = pd.read_csv(res / "sim_reliability.csv")
 summary = json.loads((res / "sim_summary.json").read_text())
@@ -90,9 +90,7 @@ b.set_title("B  Paired difference by scenario", loc="left", fontsize=8)
 
 fig.tight_layout(w_pad=1.2)
 fig.savefig(res / "fig_sim_mae.pdf")
-docs_img.mkdir(parents=True, exist_ok=True)
-fig.savefig(docs_img / "simulation.png", dpi=200)
-print("wrote", res / "fig_sim_mae.pdf", "and", docs_img / "simulation.png")
+print("wrote", res / "fig_sim_mae.pdf")
 
 # Reliability of the one-hour forecast of KSS >= 7 (matched scenario, k = 3)
 fig, a = plt.subplots(figsize=(3.5, 3.0))

@@ -47,7 +47,7 @@
 \node[outbox, right=9mm of kf, yshift=6mm] (now) {\textbf{Current state}\\ subjective KSS and TLX\\ with 90\% intervals};
 \node[outbox, below=of now] (fc) {\textbf{Forecast and what-if}\\ time to KSS 7, $P(\mathrm{KSS}{\geq}7)$;\\ break, bedtime};
 \node[outbox, below=of fc] (why) {\textbf{Attribution}\\ updates of $d$ split by source};
-\node[objbox, below=17mm of why] (obj) {\textbf{Objective check}\\ last reaction test on the\\ population scale (not anchored)};
+\node[objbox, below=17mm of why] (obj) {\textbf{Objective check} (experimental)\\ change in the reaction-time\\ anchor over 24\,h and 7 days};
 
 % arrows
 \draw[arr] (cam) -- (mp);
@@ -62,7 +62,7 @@
 \draw[arr] (twin.east |- now.west) -- (now.west);
 \draw[arr] (now) -- (fc);
 \draw[arr] (fc) -- (why);
-\draw[arr] (log.south) |- (obj.west);
+\draw[arr] (twin.south) |- (obj.west);
 % real-time alert path (per frame, independent of the twin's minute-level state)
 \node[alarmbox, anchor=north east] at (cam.north -| now.east) (alarm) {\textbf{Real-time alerts} (per frame)\\ long eye closure: eyes shut $\geq$\,1\,s, not looking down\\ head drop: head forward $\geq$\,1\,s, eyes half shut\\ warnings from the last minute};
 \draw[arr, draw=red!60!black] (mp.east) -- node[below, font=\scriptsize] {eye closure and head pitch, every frame} ([xshift=-6mm]mp.east -| alarm.west) |- (alarm.west);

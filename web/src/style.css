@@ -148,7 +148,7 @@ svg .grid.minor { stroke-dasharray: 2 4; }
 svg .tick { fill: var(--muted); font-size: 11px; }
 svg .axis-title { fill: var(--muted); font-size: 10.5px; font-weight: 600; }
 svg .zone-sleepy { fill: var(--sleepy); }
-svg .zone-label { fill: var(--danger); font-size: 11px; }
+svg .zone-label { fill: var(--danger); font-size: 11px; paint-order: stroke; stroke: var(--card); stroke-width: 3px; stroke-linejoin: round; }
 svg .future { fill: var(--future); }
 svg .future-label { fill: var(--muted); font-size: 11px; }
 svg .asleep-zone { fill: var(--asleep); }
@@ -236,7 +236,8 @@ kbd { border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5p
   .privacy { flex-basis: 100%; }
   .grid { padding: 0 0.75rem 1.5rem; gap: 0.75rem; }
   .card { padding: 0.9rem 0.85rem; }
-  .why-row { grid-template-columns: 1fr 84px 50px; }
+  .why-row { grid-template-columns: 1fr 96px 46px; }
+  .why-axis { gap: 0.3rem; font-size: 0.62rem; letter-spacing: -0.01em; }
   .banner { margin: 0 0.75rem 0.6rem; padding: 0.5rem 0.8rem; }
 }
 /* touch screens: targets of at least 44 px */
