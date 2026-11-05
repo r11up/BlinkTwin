@@ -1,0 +1,53 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage[numbers,square,sort&compress]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+
+% Results that are not in yet. Every red bracket must be replaced from results/ before submission.
+\newcommand{\RESULT}[1]{\textcolor{red}{[#1]}}
+% Items to check before submission.
+\newcommand{\TODO}[1]{\par\smallskip\noindent\fcolorbox{orange}{orange!10}{\parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{\small\textbf{To check before submission:} #1}}\par\smallskip}
+% Include a figure if it exists, otherwise show a framed placeholder so the draft always compiles.
+\newcommand{\figureorplaceholder}[2]{%
+  \IfFileExists{#1}{\includegraphics[width=#2]{#1}}{\fbox{\parbox[c][4.5cm][c]{\dimexpr#2-2\fboxsep-2\fboxrule\relax}{\centering\small Figure to come:\\ \texttt{\detokenize{#1}}}}}}
+
+\newcommand{\KSS}{\mathrm{KSS}}
+\newcommand{\TLX}{\mathrm{TLX}}
+\newcommand{\RT}{\mathrm{RT}}
+
+\title{BlinkTwin: a browser-based personal digital twin of sleepiness and cognitive load, calibrated with validated questionnaires}
+\author{Utsav Poudel\\[2pt]
+  \small Independent researcher, Kathmandu, Nepal\\
+  \small\href{mailto:utsav.poudel@outlook.com.au}{utsav.poudel@outlook.com.au}}
+\date{Working draft, \today}
+
+\begin{document}
+\maketitle
+
+\input{sections/00-abstract}
+\input{sections/01-introduction}
+\input{sections/02-related}
+\input{sections/03-system}
+\input{sections/04-model}
+\input{sections/05-grounding}
+\input{sections/06-simulation}
+\input{sections/07-website}
+\input{sections/08-protocol}
+\input{sections/09-discussion}
+\input{sections/10-statements}
+
+\bibliographystyle{unsrtnat}
+\bibliography{refs}
+
+\end{document}

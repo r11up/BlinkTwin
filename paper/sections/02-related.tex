@@ -1,0 +1,35 @@
+\section{Related work}
+\label{sec:related}
+
+\paragraph{Subjective scales.} The KSS asks people to rate their sleepiness over the last few minutes on a 9-point scale from ``extremely alert'' to ``very sleepy, great effort to keep awake, fighting sleep'' \citep{akerstedt1990subjective}. KSS ratings rise with time awake and at night and are associated with slower reaction times and EEG markers of sleepiness \citep{kaida2006validation}. The Stanford Sleepiness Scale (SSS) is an older 7-point alternative \citep{hoddes1973quantification}. For workload, NASA-TLX rates mental, physical and temporal demand, performance, effort and frustration on 0--100 scales; the unweighted mean (raw TLX) is widely used \citep{hart1988development,hart2006nasa}. Subjective ratings are one of several ways to measure cognitive load, alongside performance and physiological measures \citep{paas2003cognitive}.
+
+\paragraph{Psychomotor vigilance.} The psychomotor vigilance test (PVT) measures simple reaction time to a stimulus that appears at random intervals \citep{dinges1985microcomputer}. It is sensitive to sleep loss, and lapses and response speed are its most sensitive outcomes \citep{basner2011maximizing}. The 3-minute PVT-B uses inter-stimulus intervals of 1--4~s and a lapse threshold of 355~ms, and it detects total and partial sleep deprivation \citep{basner2011validity}.
+
+\paragraph{Eyelid and blink measures.} PERCLOS, the proportion of time the eyelids are at least 80\% closed, was found to track PVT lapses and was recommended for drowsiness monitoring \citep{wierwille1994evaluation,dinges1998perclos}. Blink duration and the lid-closing and reopening times increase with sleepiness \citep{caffier2003experimental,schleicher2008blinks}, and blink rate has been studied as a fatigue marker \citep{stern1994blink}. The size of these effects differs between people \citep{ingre2006subjective}.
+
+\paragraph{Blink detection from video.} The eye aspect ratio (EAR), computed from six landmarks around each eye, detects blinks in ordinary video \citep{soukupova2016real}. MediaPipe provides real-time face meshes on consumer devices \citep{kartynnik2019real,lugaresi2019mediapipe}; its Face Landmarker also returns blendshape coefficients, including one for the closure of each eye. Public drowsiness datasets include DROZY \citep{massoz2016ulg} and the UTA Real-Life Drowsiness Dataset \citep{ghoddoosian2019realistic}.
+
+\paragraph{Biomathematical models and individualisation.} The two-process model combines a homeostatic sleep pressure that builds during waking with a circadian rhythm \citep{borbely1982two}. The Three-Process Model of alertness adds sleep inertia and maps the result onto the KSS \citep{akerstedt1997three,akerstedt2004predictions}. Bayesian individualisation of the two-process model from repeated PVT data improves performance prediction during sleep deprivation \citep{rajaraman2008individualized}, and a mobile application brings this to real-time use \citep{reifman2019twobalert}. BlinkTwin differs in three ways: it targets the person's own subjective sleepiness and workload rather than PVT performance; it adds passive webcam signals between tests; and it models a separate bias for each passive channel so that the person's ratings stay the reference.
+
+\paragraph{Digital twins of people.} The digital twin idea came from engineering \citep{grieves2017digital} and has been proposed for precision medicine, for example in cardiology \citep{corralacero2020digital}. A twin of a person's moment-to-moment state is a smaller target: it needs a model of how the state evolves, measurements that update it, and a way to ask what would happen under a different choice.
+
+\begin{table}[t]
+  \centering
+  \caption{BlinkTwin compared with categories of prior work. Entries describe what is typical of each category in the cited work; individual systems vary. $\checkmark$: yes; $\times$: no; $\sim$: partly or varies.}
+  \label{tab:comparison}
+  \small
+  \begin{tabular}{@{}L{6.2cm}ccccc@{}}
+    \toprule
+    & Live & Personal & Forecast, & Uncer- & On-device, \\
+    Category & sensing & calibration & what-if & tainty & open \\
+    \midrule
+    Biomathematical models (two-process, Three-Process, SAFTE) \citep{borbely1982two,akerstedt1997three,hursh2004fatigue} & $\times$ & $\times$ & $\checkmark$ & $\times$ & $\sim$ \\
+    Individualised models from repeated PVTs (2B-Alert) \citep{rajaraman2008individualized,reifman2019twobalert} & $\sim$ & $\checkmark$ & $\checkmark$ & $\sim$ & $\sim$ \\
+    Camera drowsiness detectors (PERCLOS, blinks) \citep{dinges1998perclos,soukupova2016real} & $\checkmark$ & $\times$ & $\times$ & $\times$ & $\sim$ \\
+    PVT tests and apps \citep{dinges1985microcomputer,basner2011validity} & $\sim$ & $\times$ & $\times$ & $\times$ & $\sim$ \\
+    Questionnaires (KSS, NASA-TLX) \citep{akerstedt1990subjective,hart1988development} & $\times$ & $\times$ & $\times$ & $\times$ & $\checkmark$ \\
+    \midrule
+    \textbf{BlinkTwin} (this work) & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
