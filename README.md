@@ -85,9 +85,10 @@ The ordering matches the design, but the intervals overlap widely and BlinkTwin 
 | Check-ins only |  | 0.744 | 0.659 | 0.571 | 0.91 | 2.84 |
 | Check-ins + passive signals, no anchors |  | 1.782 | 1.741 | 1.655 | 0.24 | 1.33 |
 | **BlinkTwin (anchored)** | **0.861** | **0.731** | **0.629** | **0.557** | 0.90 | 2.64 |
-| Oracle: knows each person's true signal parameters | 0.724 | 0.639 | 0.586 | 0.536 | 0.87 | 2.30 |
+| Check-ins + passive, consider-covariance (bias allowed for, not estimated) | 1.032 | 0.791 | 0.673 | 0.579 | 0.90 | 2.78 |
+| Known-parameter filter (true signal parameters, same noise model; a reference, not a bound) | 0.724 | 0.639 | 0.586 | 0.536 | 0.87 | 2.30 |
 
-k is the number of KSS check-ins in the first 16 h. With no check-ins (k = 0), BlinkTwin and the oracle use the reaction test and eyes only, and BlinkTwin was then slightly worse than the rhythm model alone (0.861 vs 0.819), because the population baselines it must start from are off for most people. With three check-ins, BlinkTwin was better than check-ins alone for 64% of virtual people (difference −0.030, 95% CI −0.042 to −0.016); per-person differences ranged from −0.207 to 0.161 (5th to 95th percentile), so the gain is small and not universal.
+k is the number of KSS check-ins in the first 16 h. With no check-ins (k = 0), BlinkTwin and the known-parameter filter use the reaction test and eyes only, and BlinkTwin was then slightly worse than the rhythm model alone (0.861 vs 0.819), because the population baselines it must start from are off for most people. With three check-ins, BlinkTwin was better than check-ins alone for 64% of virtual people (difference −0.030, 95% CI −0.042 to −0.016); per-person differences ranged from −0.207 to 0.161 (5th to 95th percentile), so the gain is small and not universal.
 
 The same comparison with three check-ins when the virtual people break the twin's assumptions on purpose (difference BlinkTwin minus check-ins only, 95% CI):
 
@@ -107,7 +108,7 @@ Forecasting KSS ≥ 7 one hour ahead (matched scenario, three check-ins, 5400 fo
 
 ![Simulation results](docs/img/simulation.png)
 
-**What the evidence does not show yet.** That personal calibration helps real people: in DROZY the twin did not beat a simple benchmark, and in ds004902 offsets carried over only weakly. Gains from the passive signals over check-ins are small in simulation (hundredths of a KSS point), and in a simulated version of the planned 10-day study, where the target is people's actual (noisy, whole-number) ratings on ordinary workdays, BlinkTwin was no better than check-ins alone (mean difference +0.019 KSS points, SD 0.10 across virtual people). The webcam pipeline has not been validated on ordinary webcams, the alert thresholds have not been validated at all, and the workload estimate has not been evaluated. A prospective study with real users is planned.
+**What the evidence does not show yet.** That personal calibration helps real people: in DROZY the twin did not beat a simple benchmark, and in ds004902 offsets carried over only weakly. Gains from the passive signals over check-ins are small in simulation (hundredths of a KSS point), and they come from estimating each signal's personal bias: a filter that only allows for the bias without estimating it (consider-covariance) was no better than check-ins alone. In a simulated version of the planned 10-day study, where the target is people's actual (noisy, whole-number) ratings on ordinary workdays and the whole log is replayed as one, BlinkTwin was slightly better than check-ins alone (mean difference −0.010 KSS points, SD 0.036), and more so with a mean-reverting offset (−0.028 to −0.047); replaying each day on its own reversed the sign (+0.019), so the benefit depends on carrying the anchors across days. The webcam pipeline has not been validated on ordinary webcams, the alert thresholds have not been validated at all, and the workload estimate has not been evaluated. A prospective study with real users is planned.
 
 ## Documentation
 

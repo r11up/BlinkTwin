@@ -121,7 +121,7 @@ export function divergence(events: TwinEvent[], now: number, cfg: TwinConfig = D
     return {
       ...base,
       verdict: 'slower',
-      message: `Your reaction times have become slower than your ratings suggest, by about ${f1(growth)} KSS points more than at the start of ${window}. People often under-rate how impaired they are after several short nights; take this seriously.`,
+      message: `Your reaction times have become slower than your ratings suggest, by about ${f1(growth)} KSS points more than at the start of ${window}. People often under-rate how impaired they are after several short nights. This check is experimental and has not been validated.`,
     };
   }
   if (growth <= -rules.growthKss) {

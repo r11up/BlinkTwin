@@ -508,7 +508,7 @@ Check-ins carry most of the information about how sleepy you feel, but each one 
 | 1 | First of the day | no rating since you woke, and at least 30 minutes since waking (during the first half hour a rating would mostly measure sleep inertia) |
 | 2 | Twin is unsure | the offset's uncertainty (standard deviation) is above 0.9 KSS, that is, the 90% range is wider than about ±1.5 |
 | 3 | Sleepy soon | the forecast reaches KSS 7 within 2 hours and you are not there yet |
-| 4 | Signals disagree | your last full reaction test reads at least 1.5 KSS points away from the twin's estimate, in either direction |
+| 4 | Signals disagree | your last full reaction test (within the last 3 hours) is at least 1.5 KSS points away from what the twin expected for **you**, given your own reaction-time anchor, in either direction |
 | 5 | Long gap | you are working and have not rated for more than 3 hours |
 
 Two limits stop it from nagging: it never suggests more often than once every **45 minutes**, and never within **30 minutes** after a check-in. A suggestion stays on screen until you check in or press "Not now"; "Not now" counts as a suggestion for the 45-minute limit.
@@ -529,8 +529,8 @@ The verdict:
 | Verdict | Rule | What it says |
 |---|---|---|
 | Not enough data | fewer than 2 full 3-minute tests, or no check-in yet | how many tests and check-ins are still needed |
-| **Reactions slower than your ratings** | the anchor has grown by **1.0 KSS point or more** over the window; or, if not, the last test reads **1.5 points or more** sleepier than your estimate | that you may be more impaired than you feel, and that this pattern is common after several short nights; the panel turns red |
-| Reactions quicker than your ratings | the last test reads 1.5 points or more more alert than your estimate | that your reactions are quicker than your ratings suggest |
+| **Reactions slower than your ratings** | your reaction-time anchor has grown by **1.0 KSS point or more** over the last 24 hours or 7 days, so your own reactions have slowed while your ratings have not | that your reactions have slowed more than your ratings suggest, that this pattern is common after several short nights, and that the check is experimental; the panel turns red |
+| Reactions quicker than your ratings | your anchor has shrunk by 1.0 KSS point or more over the window | that your reactions have become quicker than your ratings suggest |
 | Agree | none of the above | that your reaction times agree with your ratings within the usual noise |
 
 Only full 3-minute tests are used.
@@ -599,7 +599,7 @@ The full twin had the lowest error of the model-based versions, and the result h
 
 A simulation with virtual people, whose true sleepiness is known, tests what each source of information adds and how the twin behaves when its assumptions are wrong (`web/scripts/simulate.ts`, `web/src/sim/synth.ts`, `results/sim_summary.json`). Each scenario has **300** virtual people who wake at 07:00 and stay awake for 24 hours (16 hours in the "ordinary workday" scenario), working in 50-minute blocks with 10-minute breaks, with a webcam summary every minute, a reaction test every 2 hours and after each check-in, and k check-ins spread over the day. The twin uses its released settings; nothing was tuned on the virtual people. The error is the MAE between the twin's estimate and the true sleepiness, every 10 minutes.
 
-Five versions are compared. "Rhythm model only" is the body-clock model with time on task. "Check-ins only" adds your ratings. "BlinkTwin" adds reaction tests and the webcam with anchors. "No anchors" adds them without anchors (the population formula taken as exact for everyone). "Oracle" is a version that is told each virtual person's true signal parameters, which shows the most the passive signals could add.
+Six versions are compared. "Rhythm model only" is the body-clock model with time on task. "Check-ins only" adds your ratings. "BlinkTwin" adds reaction tests and the webcam with anchors. "No anchors" adds them without anchors (the population formula taken as exact for everyone). "Consider-covariance" uses the reaction tests and webcam while allowing for each person's bias without estimating it, the fair test of whether learning the anchors matters. "Known-parameter filter" is a version that is told each virtual person's true signal parameters, which shows the most the passive signals could add.
 
 MAE in the scenario that matches the twin's assumptions (95% ranges from resampling people):
 
@@ -609,7 +609,8 @@ MAE in the scenario that matches the twin's assumptions (95% ranges from resampl
 | Check-ins only | | 0.744 | 0.659 | 0.571 |
 | **BlinkTwin** | 0.861 (passive signals only) | **0.731** | **0.629** (0.608 to 0.650) | **0.557** |
 | No anchors | | 1.782 | 1.741 | 1.655 |
-| Oracle | 0.724 | 0.639 | 0.586 | 0.536 |
+| Consider-covariance (bias allowed for, not estimated) | 1.032 | 0.791 | 0.673 | 0.579 |
+| Known-parameter filter | 0.724 | 0.639 | 0.586 | 0.536 |
 
 What this shows, in plain words:
 
@@ -685,10 +686,10 @@ Open "How well does the twin know you?". After at least 5 check-ins it shows how
 From your activity and your NASA-TLX ratings only. Each activity has a typical demand (focused work 65, meeting 50, reading 40, other 40, break 15) that moves towards your own ratings in that activity. Between ratings the estimate drifts towards the typical demand of what you are doing, with a 20-minute time constant. A TLX rating pulls it strongly towards the rating. The camera is not used. See Section 8.
 
 **Why does it ask me to check in now?**
-Because a rating is worth the most right now, for one of five reasons: it is your first of the day; the twin has become unsure about you; you are forecast to reach KSS 7 within two hours; your last reaction test disagrees with the estimate by 1.5 points or more; or you have worked for more than 3 hours without rating. It never asks more than once every 45 minutes or within 30 minutes of a check-in, and "Not now" dismisses it (Section 10a).
+Because a rating is worth the most right now, for one of five reasons: it is your first of the day; the twin has become unsure about you; you are forecast to reach KSS 7 within two hours; your last reaction test differs from what the twin expected for you by 1.5 points or more; or you have worked for more than 3 hours without rating. It never asks more than once every 45 minutes or within 30 minutes of a check-in, and "Not now" dismisses it (Section 10a).
 
 **What does "reactions slower than your ratings" mean?**
-Your reaction times say you are sleepier than you report. Either your reaction-time anchor has grown by at least one KSS point over the last week (or day), meaning your reactions have been slowing while your ratings stayed the same, or your last full test read at least 1.5 points sleepier than your own estimate. This pattern is common after several short nights, when people get used to feeling tired and under-rate how impaired they are. It is a reason to take care, not a diagnosis; if you have always been a slow responder, the second form of the message may just reflect that (Section 10b).
+Your reaction times have slowed more than your ratings suggest: your reaction-time anchor has grown by at least one KSS point over the last week (or day), meaning your reactions have been slowing while your ratings stayed the same. A single test is never judged on its own, because people's usual reaction times differ by about 2.6 KSS points and devices add their own delay. This pattern is common after several short nights, when people under-rate their impairment (Van Dongen et al., 2003). The check is experimental and has not been validated, so treat it as a prompt to think about your sleep, not as a measurement.
 
 **Why not machine learning?**
 There are very few labelled examples for any one person (a handful of ratings a day), and the largest suitable public dataset has 14 people. A model with many parameters could not be trained or checked reliably. The Kalman filter is a form of learning that works with very little data, says how uncertain it is, can be explained number by number, and runs instantly in a browser. Its structure comes from published sleep science.
@@ -778,9 +779,11 @@ Partly. The blink-counting logic agreed with eye-movement recordings in DROZY; t
 | **MediaPipe Face Landmarker** | A face-tracking model from Google that runs in the browser and gives face points, blendshapes and head angles for each frame. |
 | **NASA-TLX** | NASA Task Load Index: six 0 to 100 ratings of how demanding a task was. The raw TLX is their average. |
 | **Normalised closure** | The eye-closure score rescaled between your own open-eye level (0) and fully closed (1). |
-| **Objective check** | Your last full reaction test read on the population scale, ignoring your ratings, and compared with them. |
+| **Objective check** | Your last full reaction test read on the population scale, ignoring your ratings. It is shown as context; a possible gap with your ratings is flagged only from change in your own reaction times over a day or a week. Experimental. |
 | **Offset** | How far your sleepiness sits above or below the body-clock model's prediction, in KSS points. |
-| **Oracle** | In the simulation, a version of the twin told each virtual person's true signal parameters; it shows the most the passive signals could add. |
+| **Known-parameter filter** | In the simulation, a version of the twin told each virtual person's true signal parameters but using the twin's own noise model; a reference, not a strict upper bound. |
+| **Consider-covariance filter** | A comparison filter that allows for each signal's personal bias in its uncertainty but never estimates it; it was no better than check-ins alone. |
+| **Study mode** | A setting for research use (`?study=1`) that hides every estimate, forecast and suggestion while still recording, so that what people see cannot change their ratings. |
 | **Peak closure** | The highest normalised closure a blink reaches; its median over a minute's blinks is used to check whether PERCLOS can be measured. |
 | **PERCLOS** | Percentage of eye closure: the share of time the eyes are at least 80% closed. |
 | **Prior** | What the model expects before seeing your data; here, the body-clock model's prediction. |

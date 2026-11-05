@@ -5,10 +5,9 @@ This file is the starting point for the next working session on a local machine.
 ## 1. Where things stand
 
 - **Branch:** all work of this revision is on the remote branch `revision-round1` (starts from `main` at 0edd763). `main` is unchanged.
-- **Paper:** IEEE two-column manuscript `paper/main.tex` (13 pages) and `paper/supplement.tex` (3 pages); both build without warnings. Response to round 1: `paper/reviews/round1-response.md`.
-- **Round-2 referee reports are in:** `paper/reviews/round2-reviewer-A.md` (methods; **major revision**) and `paper/reviews/round2-reviewer-B.md` (sleep science; **reject and resubmit** for IEEE J-BHI, but supportive of a methods or protocol article now). They have **not been answered yet**; Section 4 lists what they ask for, in order.
-- **Tests:** 105 unit tests pass (`cd web && npx vitest run`); `npx tsc --noEmit` passes.
-- **Not finished in the cloud session:** a batch of round-2 code changes (Section 5) was started but is not on the branch. Treat Section 5 as a to-do list.
+- **Paper:** IEEE two-column manuscript `paper/main.tex` (14 pages) and `paper/supplement.tex`; both build without warnings. New title: "BlinkTwin: A Browser-Based State-Space Model of Subjective Sleepiness Combining the Three-Process Model, Self-Ratings and Passive Signals".
+- **Reviews:** round 1 answered (`paper/reviews/round1-response.md`); round-2 reports (`round2-reviewer-A.md`: major revision; `round2-reviewer-B.md`: reject and resubmit for J-BHI, supportive of a methods or protocol article now) answered in `paper/reviews/round2-response.md`, which marks every item Done, Partly or Not done. The remaining items mostly need DROZY or new data (Section 4C-D).
+- **Tests:** 120 unit tests pass (`cd web && npx vitest run`); `npx tsc --noEmit` passes.
 
 ## 2. Merge this revision into your local copy
 
@@ -32,7 +31,7 @@ After merging you can delete the remote branch (`git push origin --delete revisi
 ### App and model (`web/src/`)
 - Forward measurement models with one anchor per passive signal; the published Three-Process Model (breakpoint 12.2, ultradian component, sleep debt across days). Channel constants and their derivation are commented in `twin.ts`.
 - Blink meter keeps its open-eye baseline during closures of 2 s or more (released after 60 s); closures under 2 s are processed exactly as before.
-- PERCLOS guard: PERCLOS is ignored when the minute's blinks do not reach full closure (`peakClosure` < 0.85). **Known defect, not yet fixed:** in a minute with fewer than 3 blinks the field is dropped and PERCLOS is used (Section 5, item 1).
+- PERCLOS guard: PERCLOS is ignored when the camera's blinks do not reach full closure (`peakClosure` < 0.85), judged per camera from the last known blink peak (Section 5).
 - Alerts: "long eye-closure alert" and "head-drop alert"; looking down judged from the 500 ms before a closure; head drop forward only; a face lost during a closure keeps the alert on.
 - 1-minute reaction test shown but not used by the model; workload saved only when all six sliders are set; time on task after short breaks corrected; forecasts assume the usual 50/10 work rhythm; what-ifs relabelled.
 - Missing nights: the app fills nights that were not entered with habitual sleep and flags the estimate (`fillMissingNights`, app only); "I did not sleep last night" can be entered. Research scripts do not fill nights.
@@ -43,14 +42,14 @@ After merging you can delete the remote branch (`git push origin --delete revisi
 ### Analyses (`web/scripts/`, `analysis/`, `results/`)
 - `openneuro_prior_check.ts`: sleep diary did not improve the prior; the Ingre et al. (2014) KSS mapping (9.68 - 0.46 A) lowered its MAE from 1.69 to 1.46 on 28 people (`results/openneuro_prior_summary.json`).
 - `simulate.ts`: common random numbers, 9 scenarios, sensitivity, reliability, rhythm-aware forecasts (`results/sim_*`).
-- `power.ts`: power by simulating the protocol's primary outcome (`results/power_summary.json`). Days are replayed separately; referees want this changed (Section 5, item 4).
+- `power.ts`: power by simulating the protocol's outcome with each person's 10 days replayed as one log (`results/power_summary.json`).
 - `drozy_eyes.ts` reproduces the released DROZY eye results by default; `--fixed-baseline` uses the new blink-meter fix. `drozy_mediapipe_blinks.ts` has an "adaptive" variant ready to be run.
 - `analysis/drozy_twin_figure.py`: figure of the DROZY replay.
 
 ### Documentation
 - `docs/HOW_IT_WORKS.md` (plain-language guide with worked examples and FAQ), `docs/LITERATURE_COMPARISON.md` (peer-reviewed comparison with verification grades), `docs/PUBLICATION_PLAN.md`, `docs/SCIENCE.md`, `README.md`.
 
-## 4. What the round-2 referees ask for (priority order)
+## 4. What the round-2 referees asked for (priority order; status per item in `paper/reviews/round2-response.md`)
 
 Both referees credit the revision as thorough, honest and reproducible. Their shared verdict: the real-data support for learning a personal offset is weak, the passive signals' benefit (0.03 KSS points) exists only in simulation, the webcam half has never been tested on RGB webcam video, and the planned study cannot detect the passive signals' benefit.
 
@@ -71,7 +70,7 @@ Both referees credit the revision as thorough, honest and reproducible. Their sh
 - Report the group-mean offset result on ds004902 (MAE 1.45, better than the personal offset 1.52).
 - One value for the landmark blink-duration autocorrelation (0.02 in Sec. V-A, 0.05 in V-B; they come from two scripts); label n = 28 vs 33 where used; "lapses" in Sec. V-A are > 500 ms.
 - Report the 30-fps-only DROZY results: MediaPipe blink duration vs KSS r = 0.46 (p = 0.25, 5 subjects), long closures r = 0.33.
-- Report the power finding plainly: on observed ratings, BlinkTwin minus check-ins = +0.019 (about six standard errors above zero over 1000 virtual people).
+- Report the power finding plainly (done: with one continuous 10-day log BlinkTwin minus check-ins is -0.010; with each day replayed separately it was +0.019).
 - Call the protocol "proposed", not "pre-specified", until registered.
 - Supplement S2: remove "checked by an independent reviewer".
 - Add references: Ahlstrom et al., Transp Res Part C 2013;26:20-32 (confirm the DOI); Schmidt 1966 (consider states); Bryson and Henrikson 1968 (correlated measurement noise, doi 10.2514/3.29327); Piaggio et al., JAMA 2012 (CONSORT non-inferiority, doi 10.1001/jama.2012.87802); Carroll et al. 2006 (measurement error); Asparouhov, Hamaker and Muthen 2018 (dynamic models of intensive self-report, doi 10.1080/10705511.2017.1406803).
@@ -93,24 +92,16 @@ Both referees credit the revision as thorough, honest and reproducible. Their sh
 3. Other public data: UTA-RLDD (consumer RGB webcams, 60 people) for the MediaPipe pipeline; the Liege multi-timescale dataset (29 people, PVT) for eye measures against PVT.
 4. The prospective study, redesigned as in A5, registered with ethics approval.
 
-## 5. Round-2 code changes: status at handoff
+## 5. Round-2 code changes (done in this revision)
 
-Pushed as work in progress (typecheck and all 105 tests pass), but the simulation has **not** been re-run with them, so `results/` still holds the previous run:
-- `web/src/twin/twin.ts`: `anchorMode` ('estimate' default, 'consider' = consider-covariance with Joseph-form update, 'none'); `offsetReversionHours` (mean-reverting offset, off by default); the PERCLOS guard now remembers the camera's last known blink peak and skips PERCLOS while none is known, for events that carry the `peakClosure` key (events without the key behave as before).
-- `web/scripts/simulate.ts`: new 'consider' method and comparisons; oracle relabelled "Known-parameter filter (true signal parameters, same noise model)"; mean-reverting offset rows (24 h, 72 h) in the sensitivity analysis.
+- PERCLOS guard judged per camera: the app always stores `peakClosure` (null when unknown); the model remembers the last known blink peak and skips PERCLOS while none is known. Events without the field (DROZY replay, simulation) behave as before.
+- `anchorMode: 'estimate' | 'consider' | 'none'` in `TwinConfig` (consider-covariance filter with Joseph-form update) and `offsetReversionHours` (mean-reverting offset, off by default).
+- Simulation: consider-covariance method, known-parameter filter label, mean-reverting offset rows; full re-run (earlier rows unchanged).
+- `power.ts`: one continuous 10-day log per person, margins 0.03/0.05/0.10, n up to 150, the per-day analysis kept as a sensitivity block.
+- Objective check: verdict from within-person anchor change only; suggestions use the personal innovation of the latest test; unvalidated wording removed.
+- Study mode (`?study=1`) hides estimates, forecasts, checks, track record and suggestions; keeps safety alerts, camera, check-in prompts and export.
 
-Still to do (re-run `node scripts/simulate.ts 300 ../results > ../results/sim_log.txt` and `analysis/sim_figures.py` after the code items):
-
-Original list, for reference (they match Section 4A):
-1. PERCLOS guard: always store `peakClosure` (null when unknown); in the twin remember the last non-null value and, for events that have the key, use PERCLOS only if the last known peak is >= 0.85 (unknown: skip). Events without the key (DROZY replay, simulation) keep the old behaviour. Add tests.
-2. `anchorMode?: 'estimate' | 'consider' | 'none'` in `TwinConfig` (Joseph-form covariance update for 'consider'); add a 'consider' method to `simulate.ts` and re-run.
-3. Rename the oracle label to "Known-parameter filter (true signal parameters, same noise model)".
-4. `power.ts`: one continuous 10-day event log per person, predictions from the snapshot at each grid-aligned check-in time; margins 0.03, 0.05 and 0.10; n up to 150; keep the per-day analysis as a sensitivity.
-5. `offsetReversionHours?: number` (Ornstein-Uhlenbeck offset, stationary SD = offsetPriorSd), evaluated in the power simulation (24 h and 72 h) and as a sensitivity row.
-6. `divergence.ts`: verdict from the within-person anchor trend only; `suggest.ts`: use the personal innovation of the latest full PVT instead of the population-scale gap.
-7. Study mode (`?study=1`) that hides all estimates, forecasts, checks and suggestions.
-
-Done so far: the model side of item 1 (the app side, always storing `peakClosure` as null in `main.ts`, and its tests are still to do), items 2 and 3 in code (not yet run), and the option in item 5 (not yet evaluated). Not started: items 4, 6 and 7. Add unit tests for `anchorMode` and `offsetReversionHours`.
+Still to do in code: store the camera frame rate with each minute; suppress only prior-driven (not check-in-driven) warnings when the night is assumed; replace the clock-time "you will reach KSS 7 at" with a window or probability; channel ablation in the simulation; power for the probe-rating and PVT co-primary outcomes; day-to-day offset variation in the generator.
 
 ## 6. Key results (from the committed result files)
 
@@ -120,9 +111,9 @@ Done so far: the model side of item 1 (the app side, always storing `peakClosure
 | MediaPipe pipeline on DROZY near-infrared video | blink rate vs EOG rho 0.71 (undercount 13/min); blink duration vs KSS within person r 0.58 (all tests), 0.46 at 30 fps only; PERCLOS < 0.5% in all 36 tests | `results/drozy_mediapipe_summary.json` |
 | ds004902 offset persistence | r 0.29 (95% CI -0.05 to 0.58), n 33; group-mean offset MAE 1.45 vs personal shrunk offset 1.52 vs prior 1.53 | `results/openneuro_anchor_summary.json` |
 | ds004902 prior (28 people with a diary) | default mapping MAE 1.69 (36% within 1 point); Ingre mapping 1.46 (45%); diary sleep 1.74 | `results/openneuro_prior_summary.json` |
-| Simulation, matched, 3 check-ins | BlinkTwin 0.629, check-ins 0.659, prior 0.819, known-parameter filter 0.586, no anchors 1.741; passive alone 0.861 | `results/sim_summary.json`, `results/sim_log.txt` |
+| Simulation, matched, 3 check-ins | BlinkTwin 0.629, check-ins 0.659, consider-covariance 0.673, prior 0.819, known-parameter filter 0.586, no anchors 1.741; passive alone 0.861; mean-reverting offset (24 h) 0.605 | `results/sim_summary.json`, `results/sim_log.txt` |
 | One-hour forecast of KSS >= 7 (matched) | Brier: prior 0.086, check-ins 0.066, BlinkTwin 0.063; AUROC 0.945, 0.966, 0.969; time to KSS 7 off by about 80 min for every method | same |
-| Power (days replayed separately) | rating MAE: prior 1.005, check-ins 0.886, BlinkTwin 0.905; BlinkTwin minus check-ins +0.019 (SD 0.10) | `results/power_summary.json` |
+| Power (10 days as one log) | rating MAE: prior 1.007, check-ins 0.847, BlinkTwin 0.837, consider 0.850, mean-reverting 24 h 0.819, 72 h 0.799; BlinkTwin minus check-ins -0.010 (SD 0.036); superiority over check-ins power 0.68 at 80, 0.93 at 150; per-day replay gives +0.019 | `results/power_summary.json` |
 
 ## 7. Things to verify by hand
 

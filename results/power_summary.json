@@ -1,62 +1,169 @@
 {
- "design": "Pool of virtual people (POPULATION, as the workday scenario), 10 independent workdays each (new seed per day; wake 07:00 after 7.5 h; check-ins 09:30, 12:00, 14:30, 17:00, each followed by a PVT-B 4 min later; webcam from 07:30). Outcome per person: MAE of predicting each observed (noisy, rounded) KSS rating from that day's earlier events (replay to t - 1 ms, clipped estimate).",
- "note": "Each day is replayed separately, so anchors and offsets do not carry across days; conservative for BlinkTwin (E).",
+ "design": "Pool of virtual people (POPULATION, as the workday scenario). Each person: 10 workdays as ONE continuous event log (sleep entry each morning, wake 07:00 after 7.5 h; same person parameters, new seed per day; check-ins 09:30, 12:00, 14:30, 17:00, each followed by a PVT-B 4 min later; webcam from 07:30). Outcome per person: MAE of predicting each observed (noisy, rounded) KSS rating from all earlier events across days (single replay per person and method; snapshot at the check-in time, which uses only earlier events).",
+ "methods": {
+  "A": "rhythm model alone",
+  "B": "check-ins only",
+  "E": "BlinkTwin",
+  "C": "consider-covariance (anchors not estimated)",
+  "E24": "BlinkTwin, mean-reverting offset (tau 24 h)",
+  "E72": "BlinkTwin, mean-reverting offset (tau 72 h)"
+ },
  "pool_size": 1000,
  "ratings_per_person": 40,
+ "grid_check_max_abs_difference": 0,
  "mae_mean": {
-  "A_rhythm_model": 1.0049902422213484,
-  "B_checkins": 0.8863737036298727,
-  "E_blinktwin": 0.905225844014565
+  "A": 1.0065235738593135,
+  "B": 0.8466811744278617,
+  "E": 0.8367133162205829,
+  "C": 0.8503945053516929,
+  "E24": 0.8185591899538123,
+  "E72": 0.7994665320835683
+ },
+ "checkin_benefit_A_minus_B": {
+  "mean": 0.15984239943145379,
+  "sd": 0.33491971525516817,
+  "se": 0.01059109133501373,
+  "dz": 0.4772558680508649
  },
  "diff_E_minus_B": {
-  "mean": 0.01885214038469324,
-  "sd": 0.10107157426988159,
-  "dz": 0.186522674855684
+  "mean": -0.009967858207277792,
+  "sd": 0.0362777742021276,
+  "se": 0.0011472039492002085,
+  "dz": -0.27476487812455713
  },
  "diff_E_minus_A": {
-  "mean": -0.09976439820678255,
-  "sd": 0.30529833619939273,
-  "dz": -0.3267767504033355
+  "mean": -0.16981025763873153,
+  "sd": 0.33994977809443644,
+  "se": 0.010750155888472343,
+  "dz": -0.49951571844109
  },
+ "diff_C_minus_B": {
+  "mean": 0.0037133309238318074,
+  "sd": 0.024637832595053047,
+  "se": 0.0007791166761030458,
+  "dz": 0.15071662288091833
+ },
+ "diff_E_minus_C": {
+  "mean": -0.01368118913110961,
+  "sd": 0.030515204600347897,
+  "se": 0.0009649754980314752,
+  "dz": -0.44834007539158477
+ },
+ "diff_E24_minus_B": {
+  "mean": -0.028121984474049937,
+  "sd": 0.06143265438267754,
+  "se": 0.0019426711055918627,
+  "dz": -0.4577693208382614
+ },
+ "diff_E72_minus_B": {
+  "mean": -0.0472146423442936,
+  "sd": 0.03837723397083544,
+  "se": 0.0012135946964502795,
+  "dz": -1.2302773665286586
+ },
+ "diff_E24_minus_E": {
+  "mean": -0.018154126266772146,
+  "sd": 0.05418233009856642,
+  "se": 0.0017133957204656537,
+  "dz": -0.3350562117529249
+ },
+ "diff_E72_minus_E": {
+  "mean": -0.03724678413701588,
+  "sd": 0.03221700723451184,
+  "se": 0.0010187912225517986,
+  "dz": -1.1561217920054347
+ },
+ "margins": [
+  {
+   "margin": 0.03,
+   "share_of_checkin_benefit_that_may_be_lost": 0.1876848702641322
+  },
+  {
+   "margin": 0.05,
+   "share_of_checkin_benefit_that_may_be_lost": 0.312808117106887
+  },
+  {
+   "margin": 0.1,
+   "share_of_checkin_benefit_that_may_be_lost": 0.625616234213774
+  }
+ ],
  "studies_per_n": 5000,
- "margin": 0.1,
- "tests": "(i) non-inferiority of E vs B: one-sided 97.5% t upper bound of mean(E - B) < 0.10; (ii) superiority of E vs B and (iii) of E vs A: two-sided 95% t-interval entirely below 0",
+ "tests": "non-inferiority of E vs B: one-sided 97.5% t upper bound of mean(E - B) below the margin; superiority of E vs A and of E vs B: two-sided 95% t-interval entirely below 0",
  "power": [
   {
    "n": 20,
    "t_0975": 2.0930240544083176,
-   "noninferiority_E_vs_B_margin_0_10": 0.9176,
-   "superiority_E_vs_B": 0.0032,
-   "superiority_E_vs_A": 0.1994
-  },
-  {
-   "n": 30,
-   "t_0975": 2.0452296421328233,
-   "noninferiority_E_vs_B_margin_0_10": 0.986,
-   "superiority_E_vs_B": 0.0012,
-   "superiority_E_vs_A": 0.3736
+   "noninferiority_E_vs_B_margin_0_03": 0.9956,
+   "noninferiority_E_vs_B_margin_0_05": 1,
+   "noninferiority_E_vs_B_margin_0_10": 1,
+   "superiority_E_vs_A": 0.5898,
+   "superiority_E_vs_B": 0.2272
   },
   {
    "n": 40,
    "t_0975": 2.0226909200368226,
-   "noninferiority_E_vs_B_margin_0_10": 0.9976,
-   "superiority_E_vs_B": 0.0004,
-   "superiority_E_vs_A": 0.515
+   "noninferiority_E_vs_B_margin_0_03": 1,
+   "noninferiority_E_vs_B_margin_0_05": 1,
+   "noninferiority_E_vs_B_margin_0_10": 1,
+   "superiority_E_vs_A": 0.957,
+   "superiority_E_vs_B": 0.4092
   },
   {
    "n": 60,
    "t_0975": 2.0009953780885077,
+   "noninferiority_E_vs_B_margin_0_03": 1,
+   "noninferiority_E_vs_B_margin_0_05": 1,
    "noninferiority_E_vs_B_margin_0_10": 1,
-   "superiority_E_vs_B": 0.0004,
-   "superiority_E_vs_A": 0.7452
+   "superiority_E_vs_A": 0.9968,
+   "superiority_E_vs_B": 0.551
   },
   {
    "n": 80,
    "t_0975": 1.9904502102302182,
+   "noninferiority_E_vs_B_margin_0_03": 1,
+   "noninferiority_E_vs_B_margin_0_05": 1,
    "noninferiority_E_vs_B_margin_0_10": 1,
-   "superiority_E_vs_B": 0,
-   "superiority_E_vs_A": 0.8798
+   "superiority_E_vs_A": 0.9998,
+   "superiority_E_vs_B": 0.6808
+  },
+  {
+   "n": 100,
+   "t_0975": 1.9842169515863413,
+   "noninferiority_E_vs_B_margin_0_03": 1,
+   "noninferiority_E_vs_B_margin_0_05": 1,
+   "noninferiority_E_vs_B_margin_0_10": 1,
+   "superiority_E_vs_A": 1,
+   "superiority_E_vs_B": 0.7636
+  },
+  {
+   "n": 150,
+   "t_0975": 1.9760131776890173,
+   "noninferiority_E_vs_B_margin_0_03": 1,
+   "noninferiority_E_vs_B_margin_0_05": 1,
+   "noninferiority_E_vs_B_margin_0_10": 1,
+   "superiority_E_vs_A": 1,
+   "superiority_E_vs_B": 0.926
   }
  ],
- "runtime_s": 95.474
+ "sensitivity_each_day_replayed_separately": {
+  "note": "Earlier design: each day replayed on its own (replay to t - 1 ms from that morning, 2-h grid), so anchors and offsets do not carry across days.",
+  "mae_mean": {
+   "A": 1.0049902422213484,
+   "B": 0.8863737036298727,
+   "E": 0.905225844014565
+  },
+  "diff_E_minus_B": {
+   "mean": 0.01885214038469324,
+   "sd": 0.10107157426988159,
+   "se": 0.0031961638139169574,
+   "dz": 0.186522674855684
+  },
+  "diff_E_minus_A": {
+   "mean": -0.09976439820678255,
+   "sd": 0.30529833619939273,
+   "se": 0.009654381082499148,
+   "dz": -0.3267767504033355
+  }
+ },
+ "runtime_s": 701.121
 }

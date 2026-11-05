@@ -22,7 +22,7 @@ Their sum is converted to the **Karolinska Sleepiness Scale** (KSS, 1 to 9; Åke
 
 ## How sleepy am I now, and how sure is the twin?
 
-The number is the twin's estimate of how sleepy you **feel**, on the KSS scale: rhythm model + time on task + your personal offset. Because your check-ins set its level, it estimates *subjective* sleepiness. After several short nights people often feel less impaired than their performance shows (Van Dongen et al., 2003). The Now card therefore also shows an **objective check**: what your last reaction test says on the population scale, not adjusted to you. If it reads well above how sleepy you feel, take that seriously.
+The number is the twin's estimate of how sleepy you **feel**, on the KSS scale: rhythm model + time on task + your personal offset. Because your check-ins set its level, it estimates *subjective* sleepiness. After several short nights people often feel less impaired than their performance shows (Van Dongen et al., 2003). The Now card therefore also shows an **objective check**: what your last reaction test says on the population scale, not adjusted to you. A single reading cannot show that you are more impaired than you feel, because people's usual reaction times differ by about 2.6 KSS points and devices add their own delay; the app flags a possible gap only when your own reaction times slow over a day or a week while your ratings do not. This check is experimental and has not been validated.
 
 The ± value is a 90% range from the Kalman filter (Kalman, 1960) that tracks your offset. It shrinks with each check-in and widens again as time passes without new information.
 

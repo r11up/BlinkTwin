@@ -38,7 +38,7 @@ A health-informatics or sleep journal will not accept a claim of better estimati
 
 1. **Now (paper 1, tool and public-data evaluation).** Target *Behavior Research Methods*; fallback *Computer Methods and Programs in Biomedicine*. Frame it as an open, on-device measurement tool for subjective sleepiness, evaluated on public data, with its limits in the abstract (the naive-baseline tie on DROZY; PERCLOS failing on near-infrared video). Before submitting, add the items in Section 4 marked "needed now". BRM uses the Springer template and APA-style references, so the IEEE manuscript would need reformatting; the content carries over.
 2. **Register the validation study** (Section VII of the paper) on OSF Registries after ethics approval. Use TRIPOD+AI as the reporting guideline for the prediction model; SPIRIT does not strictly apply to a non-interventional study but its checklist is useful.
-3. **After the field study (paper 2, main validation; 70 analysed, 80 recruited).** Target *IEEE J-BHI* (the current IEEE format), with *Journal of Sleep Research* or *JMIR mHealth and uHealth* as alternatives. This paper tests the pre-registered hypotheses on real users.
+3. **After the field study (paper 2, main validation; 120 analysed, 135 recruited, provisional).** Target *IEEE J-BHI* (the current IEEE format), with *Journal of Sleep Research* or *JMIR mHealth and uHealth* as alternatives. This paper tests the pre-registered hypotheses on real users.
 4. **Software.** Archive each release on Zenodo with a DOI and cite it in both papers.
 
 ## 4. What to add before submission
@@ -52,12 +52,12 @@ A health-informatics or sleep journal will not accept a claim of better estimati
 | Privacy check: record all network traffic while the camera runs and show that no video, image or landmark data leave the page | Supports the on-device claim | No | Recommended |
 | Compute benchmark (frames per second and CPU use on typical laptops) | Feasibility on ordinary hardware | No | Recommended |
 | Small RGB pilot (5 to 10 people) with EOG and a webcam, including reading, typing and looking-down segments | Validates blink duration, long closures and alert false-alarm rates on the real pipeline | Yes (ethics) | Before paper 2 |
-| Field study (80 recruited, 70 analysed) with a laboratory subset | Tests the main claim | Yes (ethics, registration) | Paper 2 |
+| Field study (135 recruited, 120 analysed, provisional) with a laboratory subset | Tests the main claim | Yes (ethics, registration) | Paper 2 |
 
 ## 5. Points a senior reviewer will press on, and the planned answer
 
 - **"The model does not beat a naive baseline."** Report it in the abstract. Explain that the baseline knows the protocol's average trajectory, which daily life does not provide, and that the prior's night-time level is the main error source; show the refitted-mapping result as the evidence-based fix.
-- **"The simulation is circular."** Already addressed with misspecified scenarios and an oracle bound; keep simulation claims secondary and labelled as such.
+- **"The simulation is circular."** Already addressed with misspecified scenarios, a consider-covariance comparator and a known-parameter reference; keep simulation claims secondary and labelled as such.
 - **"Is this a digital twin?"** Define the term once and use "state-space model" in the technical text (done).
 - **"Self-report as the reference is unsafe."** The objective check and the divergence indicator in the app answer this; the protocol has an objective secondary outcome.
 - **"Browser timing."** The timing benchmark answers this.
