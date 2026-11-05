@@ -1,7 +1,7 @@
 \section{Evaluation on Real Data}
 \label{sec:realdata}
 
-All analyses use public data. Results are reported as aggregates, except anonymous per-subject trajectories in Fig.~\ref{fig:mediapipe}C and Supplementary Fig.~S1. Code and result files are in the repository (Section~\ref{sec:statements}).
+All analyses use public data. DROZY results are reported as aggregates only, as its licence requires; the OpenNeuro participant table is open data. Code and result files are in the repository (Section~\ref{sec:statements}).
 
 \subsection{DROZY}
 \label{sec:drozy}
@@ -21,8 +21,8 @@ PERCLOS failed. In these near-infrared videos MediaPipe's closure score peaked a
 
 \begin{figure*}[t]
   \centering
-  \includegraphics[width=\textwidth]{fig_drozy_mediapipe.pdf}
-  \caption{The website's camera pipeline (MediaPipe \texttt{eyeBlink} blendshapes and the unchanged blink meter) run on the 36 DROZY near-infrared videos. (A)~Blink rate against EOG blink rate, for the website pipeline and for a diagnostic per-test rescaling of the raw score. (B)~Mean PERCLOS by test (SE): the website pipeline stays near zero because the raw score rarely approaches 1. (C)~Mean blink duration from the website pipeline against KSS, one line per subject.}
+  \includegraphics[trim={0 0 181pt 0},clip,width=0.66\textwidth]{fig_drozy_mediapipe.pdf}
+  \caption{The website's camera pipeline (MediaPipe \texttt{eyeBlink} blendshapes and the unchanged blink meter) run on the 36 DROZY near-infrared videos. (A)~Blink rate against EOG blink rate, for the website pipeline and for a diagnostic per-test rescaling of the raw score. (B)~Mean PERCLOS by test (SE): the website pipeline stays near zero because the raw score rarely approaches 1.}
   \label{fig:mediapipe}
 \end{figure*}
 

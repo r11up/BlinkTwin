@@ -1,5 +1,7 @@
 # Response to the round-2 referee reports
 
+*Note added for the arXiv preprint: the supplement has since been merged into the paper as appendices, so Supplementary Tables S2 and S3 and Fig. S4 below are now in Appendix E (simulation details), and the per-subject DROZY figure is replaced by an aggregate table. The title changed again for the preprint.*
+
 We thank both referees again. Their round-2 reports are precise and, in our reading, correct on every major point. The revision answers what can be answered with code, simulation and text, and states plainly what still needs the DROZY recordings (which could not be downloaded in the environment used for this revision) or new data. Section and table numbers refer to the revised manuscript.
 
 ## Main changes

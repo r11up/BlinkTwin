@@ -37,15 +37,15 @@ cd paper && latexmk -pdf main.tex
 - **OpenNeuro ds004902** (Xiang et al., 2024, Sci Data 11:427): no re-identification. Only `participants.tsv` is used.
 - Website screenshots for the paper use demo (synthetic) data or Utsav's own face only.
 
-## Status (5 Nov 2026): round-1 revision complete, round-2 review
+## Status (5 Nov 2026): arXiv release v1.0-arxiv
 
-The round-1 revision is on branch `revision-round1` (see `HANDOFF.md` for the full list of changes and how to merge). Summary:
+Everything is on `main` and tagged `v1.0-arxiv`; `HANDOFF.md` has the release steps, the merge commands and the open items. Summary:
 
 - **Model**: forward measurement models with one anchor per passive signal (`web/src/twin/twin.ts`); the published Three-Process Model with breakpoint 12.2, ultradian component and sleep debt across days (`web/src/twin/tpm.ts`). PERCLOS is ignored when blinks do not reach full closure. The app fills nights that were not entered (`fillMissingNights`); research scripts do not.
 - **Real data**: DROZY replay of the released model, leaving one subject out: MAE prior 1.73, passive 1.47, one check-in 1.51, all three 1.38; naive per-test mean 1.39 (`results/drozy_twin_summary.json`). MediaPipe pipeline on DROZY video: blink rate vs EOG rho 0.71, blink duration vs KSS within person r 0.58, PERCLOS failed (`results/drozy_mediapipe_summary.json`). ds004902: offset persistence r 0.29; sleep diary did not improve the prior; the Ingre et al. (2014) KSS mapping (9.68 - 0.46 A) lowered the prior's MAE from 1.69 to 1.46 (`results/openneuro_prior_summary.json`).
 - **Simulation** (`results/sim_summary.json`, common random numbers, 9 scenarios, sensitivity, consider-covariance comparator, known-parameter reference): matched k = 3, BlinkTwin 0.629 vs check-ins 0.659 vs consider-covariance 0.673 vs prior 0.819; passive signals alone did not beat the prior; the no-anchor variant fails by construction (about 1.7). A mean-reverting offset (24 h) lowered error (0.605). Power for the field study (`results/power_summary.json`, 10 days replayed as one log): BlinkTwin minus check-ins -0.010 (SD 0.036), -0.028 to -0.047 with a mean-reverting offset; per-day replay reverses the sign (+0.019). Superiority over check-ins: power 0.68 with 80, 0.93 with 150; plan 120 analysed, 135 recruited (provisional).
 - **App**: renamed and safer alerts, blink-meter baseline frozen during long closures, privacy check with a content security policy (library usage statistics blocked), benchmark, UI/UX overhaul, insight panels (track record, check-in suggestions, reactions vs ratings, sleep status). 105 tests pass.
-- **Paper**: IEEE two-column (`paper/main.tex`, `paper/supplement.tex`); response letter `paper/reviews/round1-response.md`; round-2 referee reports in `paper/reviews/round2-reviewer-*.md`.
+- **Paper**: IEEE two-column preprint with appendices (`paper/main.tex`); arXiv package `paper/blinktwin-arxiv.tar.gz` built and tested by `paper/make_arxiv.sh`; referee reports and responses for two rounds in `paper/reviews/`. Code under the MIT licence; `CITATION.cff` for citation.
 - **Docs**: `docs/HOW_IT_WORKS.md`, `docs/LITERATURE_COMPARISON.md`, `docs/PUBLICATION_PLAN.md`, `HANDOFF.md`.
 
 ## Next steps

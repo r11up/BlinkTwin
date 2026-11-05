@@ -1,0 +1,326 @@
+{
+ "scenario": "matched (as in scripts/simulate.ts), 300 virtual people, 24 h awake, common random numbers",
+ "methods": {
+  "checkins": "Check-ins only",
+  "pvt_only": "BlinkTwin, reaction test only",
+  "webcam_only": "BlinkTwin, webcam only (blink duration, PERCLOS)",
+  "both": "BlinkTwin, both channels"
+ },
+ "rows": [
+  {
+   "method": "pvt_only",
+   "label": "BlinkTwin, reaction test only",
+   "k": 0,
+   "mae": 0.8373975554643629,
+   "mae_lo": 0.7927169932949494,
+   "mae_hi": 0.883390221878981,
+   "coverage90": 0.9753755868544601,
+   "width90": 4.64807755761199
+  },
+  {
+   "method": "webcam_only",
+   "label": "BlinkTwin, webcam only (blink duration, PERCLOS)",
+   "k": 0,
+   "mae": 0.8636337763425246,
+   "mae_lo": 0.8144023290161919,
+   "mae_hi": 0.9145022049731106,
+   "coverage90": 0.9654460093896713,
+   "width90": 4.675954898941524
+  },
+  {
+   "method": "both",
+   "label": "BlinkTwin, both channels",
+   "k": 0,
+   "mae": 0.8609823906785999,
+   "mae_lo": 0.8130874732813422,
+   "mae_hi": 0.9074500736452173,
+   "coverage90": 0.9517136150234748,
+   "width90": 4.252760445539655
+  },
+  {
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 1,
+   "mae": 0.7440197019196705,
+   "mae_lo": 0.7084719702501465,
+   "mae_hi": 0.7812768288165486,
+   "coverage90": 0.9451408450704232,
+   "width90": 3.8179019365399913
+  },
+  {
+   "method": "pvt_only",
+   "label": "BlinkTwin, reaction test only",
+   "k": 1,
+   "mae": 0.7365145152447603,
+   "mae_lo": 0.7028888763543173,
+   "mae_hi": 0.7734961530532763,
+   "coverage90": 0.9359154929577473,
+   "width90": 3.522884157868772
+  },
+  {
+   "method": "webcam_only",
+   "label": "BlinkTwin, webcam only (blink duration, PERCLOS)",
+   "k": 1,
+   "mae": 0.7320467762260556,
+   "mae_lo": 0.6986880618541775,
+   "mae_hi": 0.7668952831292456,
+   "coverage90": 0.9398356807511734,
+   "width90": 3.6203770999081795
+  },
+  {
+   "method": "both",
+   "label": "BlinkTwin, both channels",
+   "k": 1,
+   "mae": 0.731366207958677,
+   "mae_lo": 0.6979059279449432,
+   "mae_hi": 0.7656415812767186,
+   "coverage90": 0.9290140845070431,
+   "width90": 3.361665113764395
+  },
+  {
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 3,
+   "mae": 0.6587302800726175,
+   "mae_lo": 0.6358326424843649,
+   "mae_hi": 0.6815859731641539,
+   "coverage90": 0.9059389671361517,
+   "width90": 2.840470283834715
+  },
+  {
+   "method": "pvt_only",
+   "label": "BlinkTwin, reaction test only",
+   "k": 3,
+   "mae": 0.6428757876089761,
+   "mae_lo": 0.6211569595280838,
+   "mae_hi": 0.6645961732657236,
+   "coverage90": 0.9028873239436628,
+   "width90": 2.738006415503431
+  },
+  {
+   "method": "webcam_only",
+   "label": "BlinkTwin, webcam only (blink duration, PERCLOS)",
+   "k": 3,
+   "mae": 0.6411884330223199,
+   "mae_lo": 0.6189658459647079,
+   "mae_hi": 0.6622227093006225,
+   "coverage90": 0.9042723004694845,
+   "width90": 2.7354579566366586
+  },
+  {
+   "method": "both",
+   "label": "BlinkTwin, both channels",
+   "k": 3,
+   "mae": 0.6291150596790973,
+   "mae_lo": 0.6079009908853368,
+   "mae_hi": 0.6504722187264615,
+   "coverage90": 0.9005399061032874,
+   "width90": 2.641842586358717
+  },
+  {
+   "method": "checkins",
+   "label": "Check-ins only",
+   "k": 8,
+   "mae": 0.5706937335445544,
+   "mae_lo": 0.5543850900387035,
+   "mae_hi": 0.5868472282669224,
+   "coverage90": 0.8761971830985917,
+   "width90": 2.3059622716439923
+  },
+  {
+   "method": "pvt_only",
+   "label": "BlinkTwin, reaction test only",
+   "k": 8,
+   "mae": 0.5644696463490492,
+   "mae_lo": 0.5483761734731524,
+   "mae_hi": 0.5805889011222116,
+   "coverage90": 0.870680751173709,
+   "width90": 2.237740005517527
+  },
+  {
+   "method": "webcam_only",
+   "label": "BlinkTwin, webcam only (blink duration, PERCLOS)",
+   "k": 8,
+   "mae": 0.5596666652168328,
+   "mae_lo": 0.5440453855164127,
+   "mae_hi": 0.5750894837981356,
+   "coverage90": 0.8760798122065734,
+   "width90": 2.2266222409377123
+  },
+  {
+   "method": "both",
+   "label": "BlinkTwin, both channels",
+   "k": 8,
+   "mae": 0.5571113707722928,
+   "mae_lo": 0.541476789245896,
+   "mae_hi": 0.5722665469163862,
+   "coverage90": 0.8706572769953054,
+   "width90": 2.1638733163571193
+  }
+ ],
+ "comparisons": [
+  {
+   "a": "pvt_only_k0",
+   "b": "both_k0",
+   "mean_diff": -0.02358483521423672,
+   "ci_lo": -0.06675098864461484,
+   "ci_hi": 0.01820875967460553,
+   "share_a_better": 0.5066666666666667
+  },
+  {
+   "a": "webcam_only_k0",
+   "b": "both_k0",
+   "mean_diff": 0.0026513856639245204,
+   "ci_lo": -0.029279105140114486,
+   "ci_hi": 0.035407599431611494,
+   "share_a_better": 0.5133333333333333
+  },
+  {
+   "a": "pvt_only_k1",
+   "b": "checkins_k1",
+   "mean_diff": -0.007505186674910031,
+   "ci_lo": -0.027488258696804994,
+   "ci_hi": 0.013245731104717984,
+   "share_a_better": 0.51
+  },
+  {
+   "a": "webcam_only_k1",
+   "b": "checkins_k1",
+   "mean_diff": -0.011972925693614741,
+   "ci_lo": -0.03023238726794715,
+   "ci_hi": 0.006556216846362249,
+   "share_a_better": 0.5833333333333334
+  },
+  {
+   "a": "both_k1",
+   "b": "checkins_k1",
+   "mean_diff": -0.012653493960993118,
+   "ci_lo": -0.03984395556186482,
+   "ci_hi": 0.01570798410470895,
+   "share_a_better": 0.5433333333333333
+  },
+  {
+   "a": "pvt_only_k1",
+   "b": "both_k1",
+   "mean_diff": 0.005148307286083087,
+   "ci_lo": -0.011162181754763759,
+   "ci_hi": 0.02113034629561422,
+   "share_a_better": 0.4066666666666667
+  },
+  {
+   "a": "webcam_only_k1",
+   "b": "both_k1",
+   "mean_diff": 0.0006805682673783559,
+   "ci_lo": -0.018637708436465707,
+   "ci_hi": 0.020066690873852128,
+   "share_a_better": 0.5
+  },
+  {
+   "a": "pvt_only_k3",
+   "b": "checkins_k3",
+   "mean_diff": -0.015854492463641547,
+   "ci_lo": -0.02433156673689413,
+   "ci_hi": -0.0071402469526708,
+   "share_a_better": 0.5833333333333334
+  },
+  {
+   "a": "webcam_only_k3",
+   "b": "checkins_k3",
+   "mean_diff": -0.01754184705029762,
+   "ci_lo": -0.026134299581140292,
+   "ci_hi": -0.008800272891865241,
+   "share_a_better": 0.6333333333333333
+  },
+  {
+   "a": "both_k3",
+   "b": "checkins_k3",
+   "mean_diff": -0.02961522039352013,
+   "ci_lo": -0.0422309764319015,
+   "ci_hi": -0.01609945144679279,
+   "share_a_better": 0.64
+  },
+  {
+   "a": "pvt_only_k3",
+   "b": "both_k3",
+   "mean_diff": 0.013760727929878562,
+   "ci_lo": 0.005686757156092603,
+   "ci_hi": 0.021944797483806833,
+   "share_a_better": 0.39
+  },
+  {
+   "a": "webcam_only_k3",
+   "b": "both_k3",
+   "mean_diff": 0.012073373343222504,
+   "ci_lo": 0.0037100451655434695,
+   "ci_hi": 0.020246004219308146,
+   "share_a_better": 0.4166666666666667
+  },
+  {
+   "a": "pvt_only_k8",
+   "b": "checkins_k8",
+   "mean_diff": -0.006224087195505403,
+   "ci_lo": -0.012614389143964979,
+   "ci_hi": 0.00024097420171516283,
+   "share_a_better": 0.5933333333333334
+  },
+  {
+   "a": "webcam_only_k8",
+   "b": "checkins_k8",
+   "mean_diff": -0.011027068327721552,
+   "ci_lo": -0.017447295964768246,
+   "ci_hi": -0.00488230811782358,
+   "share_a_better": 0.5866666666666667
+  },
+  {
+   "a": "both_k8",
+   "b": "checkins_k8",
+   "mean_diff": -0.01358236277226145,
+   "ci_lo": -0.023253317351790627,
+   "ci_hi": -0.004243165078089571,
+   "share_a_better": 0.5733333333333334
+  },
+  {
+   "a": "pvt_only_k8",
+   "b": "both_k8",
+   "mean_diff": 0.007358275576756042,
+   "ci_lo": 0.0015676647395816827,
+   "ci_hi": 0.013334427180051902,
+   "share_a_better": 0.44
+  },
+  {
+   "a": "webcam_only_k8",
+   "b": "both_k8",
+   "mean_diff": 0.0025552944445398893,
+   "ci_lo": -0.0041054710234283785,
+   "ci_hi": 0.008777824378145494,
+   "share_a_better": 0.4266666666666667
+  }
+ ],
+ "reproduces_sim_mae_csv": [
+  {
+   "k": 0,
+   "sim_mae_csv": 0.8609823906785999,
+   "ablation_both": 0.8609823906785999,
+   "abs_diff": 0
+  },
+  {
+   "k": 1,
+   "sim_mae_csv": 0.731366207958677,
+   "ablation_both": 0.731366207958677,
+   "abs_diff": 0
+  },
+  {
+   "k": 3,
+   "sim_mae_csv": 0.6291150596790973,
+   "ablation_both": 0.6291150596790973,
+   "abs_diff": 0
+  },
+  {
+   "k": 8,
+   "sim_mae_csv": 0.5571113707722928,
+   "ablation_both": 0.5571113707722928,
+   "abs_diff": 0
+  }
+ ],
+ "runtime_s": 32.128
+}

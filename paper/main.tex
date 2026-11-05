@@ -1,5 +1,5 @@
-% BlinkTwin manuscript, IEEE two-column journal format (IEEEtran). Build: latexmk -pdf main.tex
-% Supplementary material: supplement.tex (same build).
+% BlinkTwin preprint, IEEE two-column format (IEEEtran). Build: latexmk -pdf main.tex
+% arXiv package: bash make_arxiv.sh (writes arxiv/ and blinktwin-arxiv.tar.gz, tested to build on its own).
 \documentclass[journal]{IEEEtran}
 \usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb}
@@ -19,13 +19,13 @@
 
 \begin{document}
 
-\title{BlinkTwin: A Browser-Based State-Space Model of Subjective Sleepiness Combining the Three-Process Model, Self-Ratings and Passive Signals}
+\title{BlinkTwin: An Open, In-Browser Model of Subjective Sleepiness That Anchors Webcam and Reaction-Time Signals to Self-Ratings}
 
 \author{Utsav~Poudel%
-\thanks{U. Poudel is an independent researcher, Kathmandu, Nepal (e-mail: utsav.poudel@outlook.com.au).}%
-\thanks{Code, analysis scripts and aggregate results: \url{https://github.com/r11up/BlinkTwin}.}}
+\thanks{U. Poudel is an independent researcher, Kathmandu, Nepal (e-mail: utsav.poudel@outlook.com.au). This preprint has not been peer reviewed.}%
+\thanks{Code, analysis scripts, result files and the scripts that produce every figure and table: \url{https://github.com/r11up/BlinkTwin}. The version described here is tagged \texttt{v1.0-arxiv}.}}
 
-\markboth{Manuscript submitted for review}{Poudel: BlinkTwin}
+\markboth{Preprint, November 2026}{Poudel: BlinkTwin}
 
 \maketitle
 
@@ -38,6 +38,7 @@
 \input{sections/06-simulation}
 \input{sections/07-protocol}
 \input{sections/08-discussion}
+\input{sections/appendix}
 \input{sections/09-statements}
 
 \bibliographystyle{IEEEtran}

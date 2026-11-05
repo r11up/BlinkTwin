@@ -2,7 +2,7 @@
   "name": "blinktwin",
   "private": true,
   "version": "0.1.0",
-  "description": "BlinkTwin: a browser-based personal digital twin of sleepiness and cognitive load",
+  "description": "BlinkTwin: an in-browser model of subjective sleepiness that anchors webcam and reaction-time signals to self-ratings",
   "type": "module",
   "scripts": {
     "postinstall": "node scripts/copy-wasm.mjs",
@@ -25,5 +25,7 @@
   },
   "dependencies": {
     "@mediapipe/tasks-vision": "1.1.1"
-  }
+  },
+  "license": "MIT",
+  "author": "Utsav Poudel <utsav.poudel@outlook.com.au>"
 }

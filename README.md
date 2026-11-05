@@ -1,5 +1,7 @@
 # BlinkTwin
 
+*An open, in-browser model of subjective sleepiness that anchors webcam and reaction-time signals to self-ratings.* Preprint: [`paper/main.pdf`](paper/main.pdf) (arXiv version in preparation). Code: MIT licence.
+
 **A laptop-scale personal model (a "digital twin") of sleepiness and perceived workload.** BlinkTwin watches your blinks, eyes and head through the webcam, tests your reaction time in three minutes, and uses short validated questionnaires as calibration points. A state-space model joins these with the published Three-Process Model of alertness to estimate how sleepy you feel and how loaded you are, forecast when you will reach "sleepy" (KSS 7), and raise an alert if your eyes stay shut or your head drops. Everything runs in the browser, on your own laptop. Video never leaves the page.
 
 BlinkTwin is a research prototype. It has been tested on public datasets and in simulation, not yet in a prospective study with its own users, and it must not be used to decide whether someone is fit to drive or work.
@@ -57,7 +59,6 @@ All numbers below are in `results/`. The DROZY analyses use 14 adults and 36 tes
 
 **The signals track sleepiness within a person.** In DROZY (landmark features), slower median reaction time (r = 0.77), more lapses (r = 0.73), more eye closure (PERCLOS, r = 0.53) and longer blinks (r = 0.51) went with higher sleepiness ratings within each person. Blink rate did not (r = 0.35, not significant). Within a person, median reaction time rose 18.8 ms per KSS point; people's baselines differed by about 49 ms. These forward models are BlinkTwin's population defaults.
 
-![DROZY results](docs/img/drozy.png)
 
 **The released twin on real data (DROZY, each person left out in turn).** Error (mean absolute error, KSS points) when predicting the rating of the later, sleep-deprived tests:
 
@@ -118,7 +119,7 @@ Forecasting KSS ≥ 7 one hour ahead (matched scenario, three check-ins, 5400 fo
 | [docs/SCIENCE.md](docs/SCIENCE.md) | The science text shown in the app, with references |
 | [docs/LITERATURE_COMPARISON.md](docs/LITERATURE_COMPARISON.md) | Published systems, their datasets, metrics and accuracies, compared with BlinkTwin |
 | [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md) | Venue options and the planned order of papers |
-| [paper/](paper/) | Manuscript (IEEE two-column) and supplement; referee reports and responses in `paper/reviews/` |
+| [paper/](paper/) | Preprint (IEEE two-column, appendices included), the arXiv package `paper/blinktwin-arxiv.tar.gz` and its build script; referee reports and responses in `paper/reviews/` |
 | [HANDOFF.md](HANDOFF.md) | Current status, how to merge this revision, what to run next |
 
 ## Run it
@@ -174,8 +175,8 @@ analysis/.venv/bin/python -I analysis/sim_figures.py results
 # Privacy traffic check and compute benchmark (headless Chromium with a fake camera)
 (cd web && node scripts/privacy_check.mjs && node scripts/benchmark.mjs)
 
-# Paper and supplement
-(cd paper && latexmk -pdf main.tex && latexmk -pdf supplement.tex)
+# Paper (appendices included) and the arXiv package, tested to compile on its own
+(cd paper && latexmk -pdf main.tex && bash make_arxiv.sh)
 ```
 
 ## Repository
@@ -203,6 +204,14 @@ Research prototype, not a medical device; it does not diagnose anything and must
 
 - Xiang C, Fan X, Bai D, Lv K, Lei X. A resting-state EEG dataset for sleep deprivation. *Scientific Data* 11:427 (2024). OpenNeuro ds004902.
 - Massoz Q, Langohr T, François C, Verly JG. The ULg Multimodality Drowsiness Database (called DROZY) and examples of use. IEEE WACV 2016. Research use only; not redistributed here.
+
+## Licence and citation
+
+The code is released under the [MIT licence](LICENSE). If you use BlinkTwin, please cite the preprint and the software (see [`CITATION.cff`](CITATION.cff)):
+
+> Poudel U. BlinkTwin: An Open, In-Browser Model of Subjective Sleepiness That Anchors Webcam and Reaction-Time Signals to Self-Ratings. Preprint, 2026. Code: https://github.com/r11up/BlinkTwin (tag v1.0-arxiv).
+
+The DROZY and OpenNeuro data keep their own licences (see Data above); none of their raw files are in this repository.
 
 ## Author
 

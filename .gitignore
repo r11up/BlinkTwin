@@ -22,3 +22,5 @@ paper/*.toc
 # DROZY per-session and per-minute tables contain the dataset's ratings; regenerate them with the analysis scripts
 results/drozy_*.csv
 web/public/models/
+# arXiv build folder (the tarball paper/blinktwin-arxiv.tar.gz is kept)
+paper/arxiv/

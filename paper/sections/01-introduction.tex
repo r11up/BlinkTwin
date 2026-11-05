@@ -9,7 +9,9 @@ This paper asks whether an ordinary laptop can combine all three: keep a continu
 
 The difficulty lies in combining sources that disagree. A webcam or reaction-time signal can read a particular person consistently high or low. If such a signal is averaged with the person's ratings, it pulls the estimate away from what the person reports. BlinkTwin therefore gives each passive signal a forward measurement model with its own personal \emph{anchor}: a slowly drifting bias state, in the signal's own units, that absorbs where this person's signal sits relative to the population. Check-ins set the level of the estimate, and passive signals contribute mainly through their changes. Bias states in a Kalman filter are a standard technique~\cite{friedland1969treatment}; the contribution here is to apply them to self-rated sleepiness and to test the result.
 
-Because the KSS is the reference, BlinkTwin estimates \emph{subjective} sleepiness. Given the dissociation described above, the application also shows an unanchored, objective reading of the latest reaction test on the population scale, so that a decline beyond what the person reports is not hidden.
+Because the KSS is the reference, BlinkTwin estimates \emph{subjective} sleepiness. Given the dissociation described above, the application also shows the latest reaction test read on the population scale, and it flags a possible gap only when the person's own reaction times slow over a day or a week while their ratings do not.
+
+The short answer from public data and simulation is that check-ins and the biomathematical prior do most of the work. Passive signals add a little, and only when the model estimates each person's bias in each signal; a filter that merely allows for those biases gains nothing. The website's camera pipeline measures blinks on laboratory video but not PERCLOS, and the passive signals' benefit has yet to be shown in real use. We report these limits alongside the method because they decide what the planned study has to test.
 
 \paragraph*{Contributions}
 \begin{enumerate}

@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use BlinkTwin, please cite the preprint and this software."
+title: "BlinkTwin: An Open, In-Browser Model of Subjective Sleepiness That Anchors Webcam and Reaction-Time Signals to Self-Ratings"
+type: software
+authors:
+  - family-names: Poudel
+    given-names: Utsav
+    email: utsav.poudel@outlook.com.au
+repository-code: "https://github.com/r11up/BlinkTwin"
+license: MIT
+version: "1.0-arxiv"
+date-released: "2026-11-05"
+keywords:
+  - sleepiness
+  - Karolinska Sleepiness Scale
+  - Kalman filter
+  - Three-Process Model
+  - webcam
+  - psychomotor vigilance test
