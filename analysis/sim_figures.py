@@ -23,7 +23,7 @@ rel = pd.read_csv(res / "sim_reliability.csv")
 summary = json.loads((res / "sim_summary.json").read_text())
 plt.rcParams.update({"font.size": 8, "axes.spines.top": False, "axes.spines.right": False, "pdf.fonttype": 42, "ps.fonttype": 42})
 
-COL = {"prior": "0.55", "checkins": "0.25", "twin": "#165d8f", "oracle": "#7c3aed", "noanchor": "#c2410c"}
+COL = {"prior": "0.55", "checkins": "0.25", "twin": "#165d8f", "oracle": "#7c3aed", "noanchor": "#c2410c", "consider": "#0f8a6b"}
 SCENARIO_LABEL = {
     "matched": "Matched to the twin",
     "misreport": "Clock off, sleep misreported",
@@ -44,11 +44,12 @@ m = mae[mae.scenario == "matched"]
 prior = m[m.method == "prior"].iloc[0]
 a.axhspan(prior.mae_lo, prior.mae_hi, color=COL["prior"], alpha=0.12, lw=0)
 a.axhline(prior.mae, color=COL["prior"], lw=1, ls="--")
-a.text(8.2, prior.mae + 0.006, "rhythm model only", ha="right", va="bottom", fontsize=7, color="0.35")
+a.text(8.2, prior.mae - 0.008, "rhythm model only", ha="right", va="top", fontsize=7, color="0.35")
 series = [
     ("checkins", "Check-ins only", "o", "-"),
+    ("consider", "Consider-covariance (bias not estimated)", "s", "--"),
     ("twin", "BlinkTwin (anchored)", "D", "-"),
-    ("oracle", "Oracle (true signal parameters)", "^", ":"),
+    ("oracle", "Known-parameter filter (same noise model)", "^", ":"),
 ]
 for meth, label, marker, ls in series:
     d = m[m.method == meth].sort_values("k")
@@ -67,9 +68,9 @@ a.set_xlabel("KSS check-ins in the first 16 h")
 a.set_ylabel("MAE of latent KSS (24 h)")
 a.set_xlim(-0.3, 8.3)
 a.set_xticks([0, 1, 2, 3, 4, 6, 8])
-lo = min(m[m.method.isin(["checkins", "twin", "oracle"])].mae_lo.min(), prior.mae_lo)
-a.set_ylim(np.floor(lo * 20) / 20, max(prior.mae_hi, m[m.method == "twin"].mae_hi.max()) + 0.3)
-a.legend(frameon=False, fontsize=6.5, loc="upper right", bbox_to_anchor=(1.0, 0.86))
+lo = min(m[m.method.isin(["checkins", "consider", "twin", "oracle"])].mae_lo.min(), prior.mae_lo)
+a.set_ylim(np.floor(lo * 20) / 20, max(prior.mae_hi, m[m.method.isin(["twin", "consider"])].mae_hi.max()) + 0.25)
+a.legend(frameon=False, fontsize=6.2, loc="upper right", bbox_to_anchor=(1.0, 0.85), handlelength=2.2, labelspacing=0.3)
 a.set_title("A  Matched scenario", loc="left", fontsize=8)
 
 # B: paired difference BlinkTwin minus check-ins only, k = 3, every scenario

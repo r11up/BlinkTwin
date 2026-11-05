@@ -11,6 +11,7 @@ import { DEFAULT_CONFIG, forecast, replay, type ChannelId, type ContextId, type 
 import { fmtClock, kssChart, workloadChart, type Overlay } from './ui/charts.ts';
 import { KSS_LABELS, openCheckIn, runPvt } from './ui/dialogs.ts';
 import { openScience } from './ui/science.ts';
+import { isVisible, resolveStudyMode, STUDY_KEY, studyPromptDue } from './ui/study.ts';
 
 const params = new URLSearchParams(location.search);
 const THEME_KEY = 'blinktwin.theme';
@@ -30,6 +31,27 @@ try {
   /* storage unavailable */
 }
 applyTheme(params.get('theme') ?? savedTheme ?? 'light');
+// study mode (?study=1 / ?study=0, remembered): model outputs hidden from the participant during the field phase
+let storedStudy: string | null = null;
+try {
+  storedStudy = localStorage.getItem(STUDY_KEY);
+} catch {
+  /* storage unavailable */
+}
+const studyChoice = resolveStudyMode(location.search, storedStudy);
+const studyMode = studyChoice.study;
+if (studyChoice.remember !== null) {
+  try {
+    localStorage.setItem(STUDY_KEY, studyChoice.remember);
+  } catch {
+    /* storage unavailable */
+  }
+}
+document.body.classList.toggle('study', studyMode);
+{
+  const banner = document.querySelector<HTMLElement>('#study-banner');
+  if (banner) banner.hidden = !studyMode;
+}
 const store = new Store();
 // the app fills nights the person did not enter with habitual ones (research replays leave this off)
 const cfg = { ...DEFAULT_CONFIG, fillMissingNights: true };
@@ -218,20 +240,22 @@ function render() {
       <dt>Your eye closure</dt><dd>${anchorText('perclos', 'percentage points', ['higher', 'lower'])}</dd>
     </dl>`;
 
-  // objective check, not anchored to the person's own ratings: the last full reaction test on the population scale,
-  // and whether reactions and ratings have been drifting apart
+  // reactions vs ratings: the verdict comes only from within-person change (the reaction-time anchor's trend);
+  // the bar shows how far the last full test was from what the twin expected for THIS person; the
+  // population-scale reading is shown only as context, because people's usual reaction speeds differ a lot
   const d = ins.div;
   const obj = $('#objective');
   obj.classList.toggle('alert', d.verdict === 'slower');
   const gapBar = d.latest
     ? (() => {
-        const g = Math.max(-3, Math.min(3, d.latest.gap));
+        const pg = d.latest.personalGapKss;
+        const g = Math.max(-3, Math.min(3, pg));
         const pct = (Math.abs(g) / 3) * 50;
-        return `<div class="gap-row"><span class="small">Test vs your estimate</span><div class="why-bar diverging" role="img" aria-label="Reaction test reads ${Math.abs(d.latest.gap).toFixed(1)} KSS points ${d.latest.gap >= 0 ? 'sleepier' : 'more alert'} than your estimate"><span class="${g >= 0 ? 'up' : 'down'}" style="${g >= 0 ? 'left:50%' : `left:${50 - pct}%`};width:${pct}%"></span></div><span class="why-val small">${d.latest.gap >= 0 ? '+' : '−'}${Math.abs(d.latest.gap).toFixed(1)}</span></div>`;
+        return `<div class="gap-row"><span class="small">This test vs your usual</span><div class="why-bar diverging" role="img" aria-label="Your last test was ${Math.abs(pg).toFixed(1)} KSS points ${pg >= 0 ? 'slower' : 'quicker'} than the twin expected for you"><span class="${g >= 0 ? 'up' : 'down'}" style="${g >= 0 ? 'left:50%' : `left:${50 - pct}%`};width:${pct}%"></span></div><span class="why-val small">${pg >= 0 ? '+' : '−'}${Math.abs(pg).toFixed(1)}</span></div>`;
       })()
     : '';
   obj.innerHTML = d.latest
-    ? `<b>Objective check</b> <span class="muted">(reaction test only, not adjusted to you)</span><br>Your last full test (${fmtTime(d.latest.t)}, median ${Math.round(d.latest.medianRt)} ms) matches a typical person at <b>KSS ${d.latest.objectiveKss.toFixed(1)}</b>.${gapBar}<p class="div-msg">${d.message}</p>`
+    ? `<b>Reactions vs your ratings</b> <span class="muted">(judged against your own usual reaction speed)</span><br>Your last full test (${fmtTime(d.latest.t)}, median ${Math.round(d.latest.medianRt)} ms) was <b>${Math.abs(d.latest.personalGapKss).toFixed(1)} KSS points ${d.latest.personalGapKss >= 0 ? 'slower' : 'quicker'}</b> than the twin expected for you.${gapBar}<p class="div-msg">${d.message}</p><p class="small muted">For context, that median matches a typical person at KSS ${d.latest.objectiveKss.toFixed(1)}; people's usual speeds differ a lot, so this on its own says little about you.</p>`
     : `<b>Objective check</b> <span class="muted">(not adjusted to you)</span><br>Take a 3-minute reaction test for a reading that does not depend on how sleepy you say you feel.`;
 
   document.querySelectorAll<HTMLButtonElement>('[data-context]').forEach((b) => {
@@ -271,9 +295,17 @@ function renderSleepStatus(st: SleepStatus, now: number) {
 
 function renderNudge(r: TwinResult, sleepyAt: number | null, now: number, d: Divergence) {
   const lastCheckInAt = store.all().reduce<number | null>((m, e) => (e.type === 'kss' && (m === null || e.t > m) ? e.t : m), null);
+  if (!isVisible('suggestions', studyMode)) {
+    // study mode: only the protocol's fixed-time prompts, never a model-driven suggestion
+    const slot = studyPromptDue(now, lastCheckInAt);
+    nudge = slot === null ? null : { reason: 'first-today', priority: 1, message: `Time for your ${fmtClock(new Date(now).setHours(Math.floor(slot), Math.round((slot % 1) * 60), 0, 0))} study check-in: rate how sleepy you feel, then take the reaction test.`, shownAt: now };
+    $('#nudge').hidden = !nudge;
+    if (nudge) $('#nudge-text').textContent = nudge.message;
+    return;
+  }
   if (nudge && lastCheckInAt !== null && lastCheckInAt >= nudge.shownAt) nudge = null; // answered
   if (!nudge) {
-    const s = suggestCheckIn({ now, result: r, sleepyAt, lastCheckInAt, lastSuggestedAt: lastSuggestedAt(), objectiveGap: d.latest?.gap ?? null });
+    const s = suggestCheckIn({ now, result: r, sleepyAt, lastCheckInAt, lastSuggestedAt: lastSuggestedAt(), rtSurprise: d.latest ? { kss: d.latest.personalGapKss, t: d.latest.t } : null });
     if (s) nudge = { ...s, shownAt: now };
   }
   $('#nudge').hidden = !nudge;
@@ -337,8 +369,12 @@ function trackChart(tr: TrackRecord, width: number): string {
 }
 
 /** PERCLOS is only meaningful if ordinary blinks reach the PERCLOS closure level on this camera (see DEFAULT_CONFIG.perclosMinPeakClosure). */
+// The camera's most recent known median blink peak (a minute with fewer than 3 blinks has none). Like the
+// twin, the display judges PERCLOS per camera, not per minute.
+let lastKnownPeak: number | null = null;
 function perclosMeasurable(w: LiveSummary): boolean {
-  return w.peakClosure === null || w.peakClosure >= cfg.perclosMinPeakClosure;
+  if (w.peakClosure !== null) lastKnownPeak = w.peakClosure;
+  return lastKnownPeak !== null && lastKnownPeak >= cfg.perclosMinPeakClosure;
 }
 
 function renderLive() {
@@ -347,7 +383,7 @@ function renderLive() {
     el.innerHTML = '';
     return;
   }
-  el.innerHTML = `<span><b>${live.blinkRate.toFixed(0)}</b> blinks/min</span><span><b>${live.meanBlinkMs ? Math.round(live.meanBlinkMs) : '-'}</b> ms blink</span><span title="${perclosMeasurable(live) ? 'Share of the last minute with the eyes at least 80% closed' : 'Your full blinks do not reach the 80% closure level on this camera, so PERCLOS cannot register eye closure and the twin ignores it'}"><b>${perclosMeasurable(live) ? (live.perclos * 100).toFixed(1) + '%' : 'n/a'}</b> PERCLOS</span><span><b>${live.longClosures}</b> long closures</span><span><b>${live.nods}</b> nods/min</span><span><b>${Math.round(live.coverage * 100)}%</b> face seen</span>`;
+  el.innerHTML = `<span><b>${live.blinkRate.toFixed(0)}</b> blinks/min</span><span><b>${live.meanBlinkMs ? Math.round(live.meanBlinkMs) : '-'}</b> ms blink</span><span title="${perclosMeasurable(live) ? 'Share of the last minute with the eyes at least 80% closed' : lastKnownPeak === null ? 'Not enough blinks seen yet to tell whether PERCLOS can be measured on this camera; the twin ignores it until then' : 'Your full blinks do not reach the 80% closure level on this camera, so PERCLOS cannot register eye closure and the twin ignores it'}"><b>${perclosMeasurable(live) ? (live.perclos * 100).toFixed(1) + '%' : 'n/a'}</b> PERCLOS</span><span><b>${live.longClosures}</b> long closures</span><span><b>${live.nods}</b> nods/min</span><span><b>${Math.round(live.coverage * 100)}%</b> face seen</span>`;
 }
 
 // --- live sensing and alerts ---
@@ -374,6 +410,7 @@ function beep() {
 }
 
 function showAlert(level: string, reason: string) {
+  if (level === 'warning' && !isVisible('amber-warnings', studyMode)) return; // study mode: no sleepiness feedback
   const alarm = $('#alarm');
   const warn = $('#warn');
   alarm.hidden = level !== 'alarm';
@@ -456,7 +493,7 @@ const camera = new Camera($<HTMLVideoElement>('#video'), $<HTMLCanvasElement>('#
   },
   onWindow: (w) => {
     if (store.isDemo) return;
-    store.add({ t: Date.now(), type: 'cam', perclos: w.perclos, blinkRate: w.blinkRate, meanBlinkMs: w.meanBlinkMs, coverage: w.coverage, nods: w.nods, headMovement: w.headMovement, ...(w.peakClosure !== null ? { peakClosure: w.peakClosure } : {}) });
+    store.add({ t: Date.now(), type: 'cam', perclos: w.perclos, blinkRate: w.blinkRate, meanBlinkMs: w.meanBlinkMs, coverage: w.coverage, nods: w.nods, headMovement: w.headMovement, peakClosure: w.peakClosure });
     render();
   },
   onError: (m) => {

@@ -30,6 +30,7 @@
     </div>
     <div id="warn" class="banner warn" hidden role="alert"><b>Drowsiness warning.</b> <span id="warn-reason"></span>. Consider a break. <button id="warn-ok" class="ghost">OK</button></div>
     <div id="demo-banner" class="banner" hidden>Demo: a simulated person's day. Your own data is untouched.</div>
+    <div id="study-banner" class="banner study-banner" hidden role="status"><b>Study mode: estimates hidden.</b> The app records your check-ins, reaction tests and one-minute eye summaries and prompts the study's check-ins at 09:30, 12:00, 14:30 and 17:00. Safety alerts stay on.</div>
 
     <main class="grid">
       <section id="start" class="card wide start" hidden aria-labelledby="start-title">
@@ -44,7 +45,7 @@
 
       <section class="card now">
         <div class="card-head"><h2>Now</h2><button class="info-link" data-science="now" type="button">ⓘ How is this estimated?</button></div>
-        <div class="now-pair">
+        <div class="now-pair" data-study="estimate">
           <div class="now-block">
             <div class="label">Sleepiness (KSS 1–9)</div>
             <div class="big"><span id="now-kss">–</span><small id="now-kss-sd"></small></div>
@@ -57,20 +58,20 @@
             <div id="now-load-word" class="word"></div>
           </div>
         </div>
-        <p id="defaults-note" class="defaults-note small" hidden></p>
-        <div class="forecast-line"><p id="forecast-line"></p><p id="forecast-p" class="small"></p></div>
+        <p id="defaults-note" class="defaults-note small" data-study="estimate" hidden></p>
+        <div class="forecast-line" data-study="forecast"><p id="forecast-line"></p><p id="forecast-p" class="small"></p></div>
         <div id="nudge" class="nudge" hidden role="status" aria-live="polite"><p id="nudge-text"></p><div class="actions"><button id="nudge-checkin" class="primary" type="button">Check in</button><button id="nudge-dismiss" class="ghost" type="button">Not now</button></div></div>
-        <div class="info-row"><button class="info-link" data-science="forecast" type="button">ⓘ How is this predicted?</button><button class="info-link" data-science="workload" type="button">ⓘ How is workload estimated?</button></div>
+        <div class="info-row" data-study="forecast"><button class="info-link" data-science="forecast" type="button">ⓘ How is this predicted?</button><button class="info-link" data-science="workload" type="button">ⓘ How is workload estimated?</button></div>
         <div class="actions">
           <button id="btn-checkin" class="primary">Check in</button>
           <button id="btn-pvt">Reaction test</button>
           <label class="small muted"><input type="checkbox" id="pvt-quick" /> 1-minute version</label>
         </div>
         <p id="pvt-last" class="small muted"></p>
-        <p id="objective" class="small objective"></p>
+        <p id="objective" class="small objective" data-study="objective-check"></p>
         <button class="info-link" data-science="pvt" type="button">ⓘ What does the reaction test measure?</button>
-        <h2 class="sub">Why the twin thinks so</h2>
-        <div id="why" class="why"></div>
+        <h2 class="sub" data-study="why">Why the twin thinks so</h2>
+        <div id="why" class="why" data-study="why"></div>
       </section>
 
       <section class="card camera">
@@ -85,7 +86,7 @@
         <button class="info-link" data-science="alarms" type="button">ⓘ When does it alert?</button>
       </section>
 
-      <section class="card wide timeline">
+      <section class="card wide timeline" data-study="timeline">
         <div class="card-head">
           <h2>Today: sleepiness</h2>
           <div class="legend small">
@@ -108,7 +109,7 @@
         <button class="info-link" data-science="whatif" type="button">ⓘ How are what-ifs computed?</button>
       </section>
 
-      <section class="card wide track" aria-labelledby="track-title">
+      <section class="card wide track" aria-labelledby="track-title" data-study="track-record">
         <details id="track">
           <summary><span id="track-title" class="h2">How well does the twin know you?</span> <span id="track-hint" class="small muted"></span></summary>
           <div id="track-body"></div>
@@ -127,7 +128,7 @@
         <div id="sleep-chips" class="actions sleep-chips"></div>
       </section>
 
-      <section class="card">
+      <section class="card" data-study="personal-model">
         <div class="card-head"><h2>Your personal model</h2><button class="info-link" data-science="anchoring" type="button">ⓘ Why check-ins matter</button></div>
         <div id="calib"></div>
         <p class="small muted">Check-ins anchor the twin: they set your level, and your blinks and reaction times then track changes from it. Each signal gets its own anchor, so a camera or reaction time that reads you wrong cannot drag the estimate away.</p>

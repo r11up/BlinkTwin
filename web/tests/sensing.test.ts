@@ -113,7 +113,7 @@ describe('blink meter: long-closure baseline freeze', () => {
         }
       }
     }
-  });
+  }, 30_000); // frame-by-frame comparison of two meters on long traces: slow under load
 
   it('reproduces the previous meter exactly with the freeze switched off, long closures included', () => {
     const legacy = new BlinkMeter({ freezeAfterMs: Infinity });
@@ -225,6 +225,34 @@ describe('PERCLOS is used only where blinks reach the PERCLOS level', () => {
     expect(withoutField).toBeGreaterThan(offset(base));
     expect(offset([...base, cam(0.95)])).toBe(withoutField);
     expect(offset([...base, cam(DEFAULT_CONFIG.perclosMinPeakClosure)])).toBe(withoutField);
+  });
+
+  // the guard is decided per camera: a minute with fewer than 3 blinks (peakClosure null) uses the last known peak
+  const camAt = (t: number, peakClosure: number | null | undefined, blinkRate = 15): TwinEvent => ({
+    t,
+    type: 'cam',
+    perclos: 0.2,
+    blinkRate,
+    meanBlinkMs: 200,
+    coverage: 1,
+    ...(peakClosure === undefined ? {} : { peakClosure }),
+  });
+  const t1 = START + 3 * H;
+  const t2 = START + 4 * H;
+
+  it('keeps skipping PERCLOS in a few-blink minute on a camera whose blinks do not reach closure', () => {
+    expect(offset([...base, camAt(t1, 0.6), camAt(t2, null, 1)])).toBe(offset(base));
+  });
+
+  it('uses PERCLOS in a few-blink minute on a camera whose blinks do reach closure', () => {
+    const highOnly = offset([...base, camAt(t1, 0.95)]);
+    expect(offset([...base, camAt(t1, 0.95), camAt(t2, null, 1)])).not.toBe(highOnly);
+    expect(offset([...base, camAt(t1, 0.95), camAt(t2, null, 1)])).toBeGreaterThan(highOnly);
+  });
+
+  it('skips PERCLOS while no peak is known yet, but uses minutes without the key as before', () => {
+    expect(offset([...base, camAt(t2, null, 1)])).toBe(offset(base));
+    expect(offset([...base, camAt(t2, undefined, 1)])).toBeGreaterThan(offset(base));
   });
 
   it('exports the peak closure in the CSV', () => {

@@ -157,6 +157,8 @@ export interface TwinResult {
   contributions: Record<Source, number>;
   /** Each passive signal's anchor: how far this person's baseline sits from the population, in the signal's units. */
   anchors: Record<ChannelId, { mean: number; sd: number }>;
+  /** Copy of the final state covariance, order [offset, anchor reaction time, anchor blink duration, anchor PERCLOS]. */
+  covariance: number[][];
   sleep: SleepEpisode; // the night the prior uses at the end of the replay (an assumed one when filled)
   sleeps: SleepEpisode[]; // all recorded sleep episodes, oldest first (sleep debt carries across days)
   priorHistory: SleepEpisode[]; // the sleep history the prior uses: the recorded nights plus any filled ones
@@ -436,6 +438,7 @@ export function replay(
     now: snap(opts.until),
     contributions,
     anchors: Object.fromEntries(CH.map((c, i) => [c, { mean: x[i + 1], sd: Math.sqrt(P[i + 1][i + 1]) }])) as Record<ChannelId, { mean: number; sd: number }>,
+    covariance: P.map((row) => [...row]),
     sleep: fillEnd ? fillEnd.episode : sleep,
     sleeps,
     priorHistory: fillEnd ? fillEnd.history : sleeps,

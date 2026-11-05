@@ -130,11 +130,13 @@ describe('check-in suggestion', () => {
     const common = { now, result: r, lastCheckInAt: START + 4 * H, lastSuggestedAt: null };
     expect(suggestCheckIn({ ...common, sleepyAt: now + H })?.reason).toBe('sleepy-soon');
     expect(suggestCheckIn({ ...common, sleepyAt: now + 3 * H })).toBeNull();
-    expect(suggestCheckIn({ ...common, objectiveGap: 2 })?.reason).toBe('signals-disagree');
-    expect(suggestCheckIn({ ...common, objectiveGap: -2 })?.reason).toBe('signals-disagree');
-    expect(suggestCheckIn({ ...common, objectiveGap: 1 })).toBeNull();
+    expect(suggestCheckIn({ ...common, rtSurprise: { kss: 2, t: now - H } })?.reason).toBe('signals-disagree');
+    expect(suggestCheckIn({ ...common, rtSurprise: { kss: -2, t: now - H } })?.reason).toBe('signals-disagree');
+    expect(suggestCheckIn({ ...common, rtSurprise: { kss: 1, t: now - H } })).toBeNull();
+    // an old test is no reason to ask now
+    expect(suggestCheckIn({ ...common, rtSurprise: { kss: 2.5, t: now - 5 * H } })).toBeNull();
     // the more important reason wins
-    expect(suggestCheckIn({ ...common, sleepyAt: now + H, objectiveGap: 2 })?.reason).toBe('sleepy-soon');
+    expect(suggestCheckIn({ ...common, sleepyAt: now + H, rtSurprise: { kss: 2, t: now - H } })?.reason).toBe('sleepy-soon');
   });
 
   it('asks after a long stretch of work without a check-in, but not during a break', () => {
@@ -184,14 +186,34 @@ describe('objective versus subjective divergence', () => {
     expect(d.message).toContain('slower than your ratings suggest');
   });
 
-  it('reports a single test far from the estimate, in both directions', () => {
+  it('does not judge a single test against the population: a slow responder is not called impaired', () => {
+    // one day only: no anchor history, so no verdict, however slow the person's usual reactions are
     const slow = [...day(0), test(START + 9 * H, rtFor(3, 5 * pvt.perKss))];
     const d1 = divergence(slow, START + 10 * H, cfg);
-    expect(d1.verdict).toBe('slower');
-    expect((d1.latest as NonNullable<typeof d1.latest>).gap).toBeGreaterThan(DIVERGENCE_RULES.gapKss);
-    const fast = [...day(0, { hours: [3, 14] }), test(START + 15 * H, 230)];
-    const d2 = divergence(fast, START + 16 * H, cfg);
-    expect(d2.verdict).toBe('faster');
+    expect(d1.verdict).toBe('not-enough-data');
+    expect((d1.latest as NonNullable<typeof d1.latest>).gap).toBeGreaterThan(1.5); // context only
+    // a constitutionally slow responder over 9 days (constant 3 SD slower): the anchor absorbs it, no drift
+    const constantSlow = Array.from({ length: 9 }, (_, d) => day(d, { rtExtra: () => 3 * pvt.biasSd })).flat();
+    const d2 = divergence(constantSlow, START + 8 * DAY + 10 * H, cfg);
+    expect((d2.latest as NonNullable<typeof d2.latest>).objectiveKss).toBeGreaterThan(5);
+    expect(d2.verdict).toBe('agree');
+    expect(Math.abs((d2.latest as NonNullable<typeof d2.latest>).personalGapKss)).toBeLessThan(1);
+  });
+
+  it('flags reactions that become quicker than the ratings over days', () => {
+    const ev = Array.from({ length: 9 }, (_, d) => day(d, { rtExtra: (x) => -Math.max(0, x - 1) * 20 })).flat();
+    const d = divergence(ev, START + 8 * DAY + 10 * H, cfg);
+    expect(d.trend7d as number).toBeLessThan(-DIVERGENCE_RULES.growthKss);
+    expect(d.verdict).toBe('faster');
+  });
+
+  it("reports the latest test's personal surprise against this person's own expected reaction time", () => {
+    const ev = [...Array.from({ length: 3 }, (_, d) => day(d)).flat()];
+    const last = ev.filter((e) => e.type === 'pvt').at(-1) as Extract<TwinEvent, { type: 'pvt' }>;
+    const surprise = divergence(ev, last.t + H, cfg).latest as NonNullable<ReturnType<typeof divergence>['latest']>;
+    const shifted = ev.map((e) => (e === last ? { ...last, medianRt: last.medianRt + 3 * pvt.perKss } : e));
+    const s2 = divergence(shifted, last.t + H, cfg).latest as NonNullable<ReturnType<typeof divergence>['latest']>;
+    expect(s2.personalGapKss - surprise.personalGapKss).toBeCloseTo(3, 6);
   });
 });
 

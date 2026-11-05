@@ -9,12 +9,14 @@
 // flat while reactions slow. So this module reads the anchor's trend and the latest test on the population
 // scale, and says so in plain words, rather than leaving it buried in the filter.
 //
-// Two numbers are reported, because they answer different questions:
-// - the latest test on the population scale (objective reading) minus the twin's estimate just before the
-//   test: "today, do your reactions match your rating?" A person who is always a slow responder reads high
-//   here every time (a trait, not a state), so on its own this is weak evidence;
-// - the change in the reaction-time anchor over the last 24 h and 7 days, in KSS-equivalents (anchor /
-//   slope): "are your reactions drifting away from your ratings?" This removes the person's constant level.
+// The verdict comes ONLY from within-person change: the growth of the reaction-time anchor over the last 7 days
+// (or 24 h), in KSS-equivalents (anchor / slope): "are your reactions drifting away from your ratings?" This
+// removes the person's constant level. A single test read on the population scale is NOT used for the verdict:
+// people's reaction-time baselines differ by about 49 ms (one SD), which is 2.6 KSS-equivalents, so a one-off
+// population-scale gap mostly reflects who the person is, not how they are today, and would tell a large share
+// of well-calibrated people that they are slower than they feel. That reading is still reported, as context
+// ("a typical person at KSS x"), together with the test's personal surprise: how far it fell from what the
+// twin expected for this person just before it (forward model with the person's own anchor), in KSS units.
 
 import { clampKss } from '../twin/tpm.ts';
 import { DEFAULT_CONFIG, replay, type TwinConfig, type TwinEvent } from '../twin/twin.ts';
@@ -31,7 +33,8 @@ export interface Divergence {
     medianRt: number;
     objectiveKss: number; // the test read through the population forward model alone
     estimateBefore: number; // the twin's estimate just before the test (not yet moved by it)
-    gap: number; // objectiveKss - estimateBefore
+    gap: number; // objectiveKss - estimateBefore (between-person context; not used for the verdict)
+    personalGapKss: number; // (RT - this person's expected RT just before the test) / slope, in KSS units
   } | null;
   anchorKss: number | null; // current reaction-time anchor in KSS-equivalents (+ = slower than the population)
   trend24h: number | null; // change of anchorKss over the last 24 h (null if the anchor was not learned then)
@@ -42,8 +45,7 @@ export interface Divergence {
 export const DIVERGENCE_RULES = {
   minFullTests: 2,
   minCheckIns: 1,
-  gapKss: 1.5, // latest test vs estimate, in KSS points
-  growthKss: 1.0, // growth of the anchor, in KSS-equivalents
+  growthKss: 1.0, // growth (or fall) of the reaction-time anchor over the window, in KSS-equivalents
 };
 
 const H = 3_600_000;
@@ -78,7 +80,17 @@ export function divergence(events: TwinEvent[], now: number, cfg: TwinConfig = D
   if (last) {
     const before = replay(past, cfg, { until: last.t - 1, stepMinutes: 24 * 60 });
     const obj = objectiveKss(last.medianRt, cfg);
-    latest = { t: last.t, medianRt: last.medianRt, objectiveKss: obj, estimateBefore: before.now.kss, gap: obj - before.now.kss };
+    const ch = cfg.channels.pvt;
+    const sHat = before.now.prior + before.now.tot + before.now.offset; // unclipped, as the filter uses it
+    const expected = ch.at3 + ch.perKss * (sHat - 3) + before.anchors.pvt.mean;
+    latest = {
+      t: last.t,
+      medianRt: last.medianRt,
+      objectiveKss: obj,
+      estimateBefore: before.now.kss,
+      gap: obj - before.now.kss,
+      personalGapKss: (last.medianRt - expected) / ch.perKss,
+    };
   }
   const anchorNow = anchorAt(past, now, cfg);
   const a24 = anchorAt(past, now - 24 * H, cfg);
@@ -97,26 +109,27 @@ export function divergence(events: TwinEvent[], now: number, cfg: TwinConfig = D
   // growth over the longest window available: a drift that builds over days is the pattern to catch
   const growth = trend7d ?? trend24h;
   const window = trend7d !== null ? 'the last 7 days' : 'the last 24 hours';
-  if (growth !== null && growth >= rules.growthKss) {
+  if (growth === null) {
+    return {
+      ...base,
+      verdict: 'not-enough-data',
+      message:
+        'Not enough history yet to tell whether your reaction times are drifting away from your ratings: it needs a reaction test and a check-in at least a day ago as well as recent ones. A single test is not compared with your rating, because people differ a lot in their usual reaction times.',
+    };
+  }
+  if (growth >= rules.growthKss) {
     return {
       ...base,
       verdict: 'slower',
-      message: `Your reaction times are slower than your ratings suggest, by about ${f1(growth)} KSS points more than at the start of ${window}. People often under-rate how impaired they are after several short nights; take this seriously.`,
+      message: `Your reaction times have become slower than your ratings suggest, by about ${f1(growth)} KSS points more than at the start of ${window}. People often under-rate how impaired they are after several short nights; take this seriously.`,
     };
   }
-  if (latest && latest.gap >= rules.gapKss) {
-    return {
-      ...base,
-      verdict: 'slower',
-      message: `Your last reaction test reads about ${f1(latest.gap)} KSS points sleepier than your own estimate. If your reactions are usually this slow, this may just be how you respond; if not, you may be more impaired than you feel.`,
-    };
-  }
-  if (latest && latest.gap <= -rules.gapKss) {
+  if (growth <= -rules.growthKss) {
     return {
       ...base,
       verdict: 'faster',
-      message: `Your last reaction test reads about ${f1(-latest.gap)} KSS points more alert than your own estimate: your reactions are quicker than your ratings suggest.`,
+      message: `Your reaction times have become quicker than your ratings suggest, by about ${f1(-growth)} KSS points compared with the start of ${window}.`,
     };
   }
-  return { ...base, verdict: 'agree', message: 'Your reaction times agree with your ratings (within the usual noise).' };
+  return { ...base, verdict: 'agree', message: `Your reaction times have kept pace with your ratings over ${window} (within the usual noise).` };
 }

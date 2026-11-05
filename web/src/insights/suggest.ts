@@ -3,8 +3,10 @@
 // Check-ins carry most of the information about how sleepy a person feels (simulation and DROZY replay in
 // the paper), but every prompt costs attention, so the app should ask when a rating is worth the most. This
 // policy asks when the twin's knowledge of the person is weakest or a decision is near: at the start of the
-// day, when the uncertainty has grown, when sleepiness is forecast to reach KSS 7 soon, when the objective
-// reaction-time reading disagrees with the estimate, or after a long stretch of work without a rating.
+// day, when the uncertainty has grown, when sleepiness is forecast to reach KSS 7 soon, when the latest
+// reaction test surprised the twin for THIS person (far from what it expected given the person's own anchor;
+// a population-scale reading is not used, because it mostly reflects the person's usual reaction speed), or
+// after a long stretch of work without a rating.
 // It never asks more than once per throttle window, and not within a short time after a check-in.
 //
 // All thresholds are ad hoc defaults chosen to keep prompts to a few per day; none has been validated.
@@ -25,7 +27,8 @@ export interface SuggestInput {
   sleepyAt?: number | null; // forecast().sleepyAt, the predicted time of reaching KSS 7
   lastCheckInAt: number | null;
   lastSuggestedAt: number | null;
-  objectiveGap?: number | null; // divergence().latest.gap: objective reading minus estimate, KSS points
+  // divergence().latest: the latest full reaction test's personal surprise (personalGapKss, KSS units) and its time
+  rtSurprise?: { kss: number; t: number } | null;
 }
 
 export const SUGGEST_RULES = {
@@ -34,7 +37,8 @@ export const SUGGEST_RULES = {
   afterWakeMinutes: 30, // during the first half hour, ratings mostly measure sleep inertia
   uncertainSd: 0.9, // offset SD in KSS: the 90% range is wider than about +-1.5 points
   sleepyWithinHours: 2,
-  disagreeKss: 1.5,
+  disagreeKss: 1.5, // personal surprise of the latest full test, in KSS units
+  disagreeWithinHours: 3, // only a recent test is a reason to ask now
   longGapHours: 3,
 };
 
@@ -66,8 +70,10 @@ export function suggestCheckIn(input: SuggestInput, rules = SUGGEST_RULES): Sugg
   if (input.sleepyAt && input.sleepyAt > now && input.sleepyAt - now <= rules.sleepyWithinHours * H && result.now.kss < 7) {
     candidates.push({ reason: 'sleepy-soon', priority: 3, message: 'You are forecast to reach KSS 7 (sleepy) within two hours. A check-in now tells the twin whether that is on track.' });
   }
-  if (input.objectiveGap !== null && input.objectiveGap !== undefined && Math.abs(input.objectiveGap) >= rules.disagreeKss) {
-    candidates.push({ reason: 'signals-disagree', priority: 4, message: 'Your last reaction test disagrees with the twin’s estimate. How do you feel?' });
+  const surprise = input.rtSurprise;
+  if (surprise && now - surprise.t <= rules.disagreeWithinHours * H && Math.abs(surprise.kss) >= rules.disagreeKss) {
+    const way = surprise.kss > 0 ? 'slower' : 'quicker';
+    candidates.push({ reason: 'signals-disagree', priority: 4, message: `Your last reaction test was ${way} than usual for you at your current estimate. How do you feel?` });
   }
   if (working && input.lastCheckInAt !== null && now - input.lastCheckInAt > rules.longGapHours * H) {
     candidates.push({ reason: 'long-gap', priority: 5, message: `No check-in for more than ${rules.longGapHours} hours of work.` });

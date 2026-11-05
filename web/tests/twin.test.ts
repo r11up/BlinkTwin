@@ -234,3 +234,88 @@ describe('anchoring', () => {
     expect(anchored.anchors.blink.mean).toBeGreaterThan(30);
   });
 });
+
+describe('anchor modes: consider-covariance comparator', () => {
+  const day = Date.UTC(2026, 0, 5, 0);
+  const wake = day + 7 * H;
+  // a person whose reaction times are always 3 between-person SDs slower than the population at KSS 3
+  const slow = UTC.channels.pvt.at3 + 3 * UTC.channels.pvt.biasSd;
+  const tests = Array.from({ length: 10 }, (_, i) => ({ t: wake + (2 + i) * 0.5 * H, type: 'pvt' as const, medianRt: slow, lapses: 3, n: 45, falseStarts: 0 }));
+  const ev: TwinEvent[] = [{ t: wake, type: 'sleep', wake, hours: 8 }, ...tests];
+  const run = (mode: 'estimate' | 'consider' | 'none', events = ev) => replay(events, { ...UTC, anchorMode: mode }, { until: wake + 8 * H });
+
+  const isSymmetricPositiveDefinite = (P: number[][]) => {
+    const n = P.length;
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) if (Math.abs(P[i][j] - P[j][i]) > 1e-9) return false;
+    // Cholesky
+    const L = Array.from({ length: n }, () => new Array(n).fill(0));
+    for (let i = 0; i < n; i++)
+      for (let j = 0; j <= i; j++) {
+        let sum = P[i][j];
+        for (let k = 0; k < j; k++) sum -= L[i][k] * L[j][k];
+        if (i === j) {
+          if (sum <= 0) return false;
+          L[i][i] = Math.sqrt(sum);
+        } else L[i][j] = sum / L[j][j];
+      }
+    return true;
+  };
+
+  it('never moves the anchors and keeps the covariance symmetric positive definite', () => {
+    const r = run('consider');
+    for (const c of ['pvt', 'blink', 'perclos'] as const) expect(r.anchors[c].mean).toBe(0);
+    expect(isSymmetricPositiveDefinite(r.covariance)).toBe(true);
+    expect(r.anchors.pvt.sd).toBeGreaterThan(0);
+  });
+
+  it('moves the offset less than a filter that treats the persistent bias as fresh noise', () => {
+    const none = run('none').now.offset;
+    const consider = run('consider').now.offset;
+    expect(consider).toBeGreaterThan(0);
+    expect(consider).toBeLessThan(none);
+    // the last of ten identical readings moves the offset less under consider-covariance
+    const lastStep = (mode: 'consider' | 'none') => run(mode).now.offset - run(mode, ev.slice(0, -1)).now.offset;
+    expect(lastStep('consider')).toBeLessThan(lastStep('none'));
+  });
+
+  it("matches useAnchors: false for mode 'none' and the default for 'estimate'", () => {
+    expect(run('none').now.offset).toBe(replay(ev, { ...UTC, useAnchors: false }, { until: wake + 8 * H }).now.offset);
+    expect(run('estimate').now.offset).toBe(replay(ev, UTC, { until: wake + 8 * H }).now.offset);
+  });
+});
+
+describe('mean-reverting offset (offsetReversionHours)', () => {
+  const day = Date.UTC(2026, 0, 5, 0);
+  const wake = day + 7 * H;
+  const cfg = { ...UTC, offsetReversionHours: 24 };
+  const ev: TwinEvent[] = [
+    { t: wake, type: 'sleep', wake, hours: 8 },
+    { t: wake + 3 * H, type: 'kss', value: 9 },
+  ];
+
+  it('decays the learned offset towards zero with the given time constant', () => {
+    const at = (h: number) => replay(ev, cfg, { until: wake + 3 * H + h * H }).now.offset;
+    const d0 = at(0);
+    expect(d0).toBeGreaterThan(1);
+    expect(at(24)).toBeCloseTo(d0 * Math.exp(-1), 6);
+    expect(at(72)).toBeCloseTo(d0 * Math.exp(-3), 6);
+    // the random walk keeps it
+    expect(replay(ev, UTC, { until: wake + 75 * H }).now.offset).toBeCloseTo(replay(ev, UTC, { until: wake + 3 * H }).now.offset, 9);
+  });
+
+  it('keeps the offset variance bounded by its stationary value', () => {
+    const sdAfter = (c: TwinConfig, days: number) => replay(ev, c, { until: wake + days * 24 * H }).now.offsetSd;
+    expect(sdAfter(cfg, 30)).toBeCloseTo(cfg.offsetPriorSd, 3);
+    expect(sdAfter(cfg, 30)).toBeLessThanOrEqual(cfg.offsetPriorSd + 1e-9);
+    expect(sdAfter(UTC, 30)).toBeGreaterThan(5); // a random walk keeps growing
+  });
+
+  it('forecasts a decaying offset with bounded uncertainty', () => {
+    const r = replay(ev, cfg, { until: wake + 4 * H });
+    const f = forecast(r, cfg, { hours: 12 });
+    const last = f.points[f.points.length - 1];
+    expect(last.kssSd).toBeLessThanOrEqual(cfg.offsetPriorSd + 1e-9);
+    const rw = forecast(replay(ev, UTC, { until: wake + 4 * H }), UTC, { hours: 12 });
+    expect(last.kssSd).toBeLessThan(rw.points[rw.points.length - 1].kssSd);
+  });
+});

@@ -305,3 +305,11 @@ svg .prior-pt { stroke: var(--prior); stroke-width: 2; }
   .mae-row { grid-template-columns: 1fr 5rem 3rem; }
   .gap-row { grid-template-columns: 1fr 4.5rem 2.6rem; }
 }
+
+/* Study mode: every model output is hidden from the participant (see src/ui/study.ts) */
+body.study [data-study] {
+  display: none !important;
+}
+.study-banner {
+  border-left: 4px solid var(--accent, #165d8f);
+}
