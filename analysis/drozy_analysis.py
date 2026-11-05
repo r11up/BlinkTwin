@@ -6,10 +6,11 @@ Inputs
   results/drozy_eyes.csv        per-test eye metrics from web/scripts/drozy_eyes.ts (website BlinkMeter on landmark EAR)
   results/drozy_eog.csv         per-test EOG blink counts from analysis/drozy_eog.py (ground truth for blink rate)
 Outputs (results/)
-  drozy_sessions.csv            one row per test: KSS, PVT metrics, eye metrics, EOG blink rate
-  drozy_summary.json            all statistics and suggested priors for the twin and the simulation
-  fig_drozy.pdf                 KSS by test; KSS vs median RT; KSS vs blink duration (per-subject lines)
+  drozy_sessions.csv            one row per test: KSS, PVT metrics, eye metrics, EOG blink rate (git-ignored)
+  drozy_summary.json            aggregate statistics and suggested priors for the twin and the simulation
   fig_drozy_blink_validation.pdf  landmark vs EOG blink rate
+Local only (data/derived/, git-ignored, because it shows individual participants)
+  fig_drozy_per_subject.pdf     KSS by test; KSS vs median RT; KSS vs blink duration (per-subject lines)
 
 Usage: python -I drozy_analysis.py <DROZY dir> <results dir>
 """
@@ -195,6 +196,9 @@ S["per_subject_slopes"] = {
     "kss_per_pct_perclos": subject_slopes("perclos_pct"),
     "kss_per_100ms_blink": subject_slopes("blinkms100"),
 }
+# only the summary of the slopes is kept: values by subject are not published (DROZY's licence)
+for _v in S["per_subject_slopes"].values():
+    _v.pop("per_subject", None)
 
 # ---------- (e) leave-one-subject-out: population model vs one calibration check-in ----------
 FEATURE_SETS = {"rt": ["rt100"], "eyes": ["perclos_pct", "blinkms100"], "rt+eyes": ["rt100", "perclos_pct", "blinkms100"]}
@@ -344,7 +348,10 @@ for a, x, xl, key in [(ax[1], "median_rt", "PVT median RT (ms)", "rt100"), (ax[2
     a.set_ylabel("KSS")
     a.set_title(f"within-person r = {rc['r']:.2f} (p = {rc['p']:.2g})", fontsize=8)
 fig.tight_layout()
-fig.savefig(R / "fig_drozy.pdf")
+# shows individual participants, so it stays in the git-ignored data folder
+local_dir = R.parent / "data" / "derived"
+local_dir.mkdir(parents=True, exist_ok=True)
+fig.savefig(local_dir / "fig_drozy_per_subject.pdf")
 
 fig, a = plt.subplots(figsize=(3.2, 2.8))
 a.scatter(v.eog_blink_rate, v.blink_rate, s=12)

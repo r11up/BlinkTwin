@@ -169,7 +169,7 @@ def compare(results_dir: str):
         "pipeline": "MediaPipe Face Landmarker (face_landmarker.task, as on the website) via the Tasks Python API -> mean eyeBlink blendshape -> website BlinkMeter (unchanged)",
         "n_tests": int(len(df)),
         "n_subjects": int(df["subject"].nunique()),
-        "face_detection_rate": {"mean": float(df["face_rate"].mean()), "min": float(df["face_rate"].min()), "per_test": {f"{int(r.subject)}-{int(r.test)}": round(float(r.face_rate), 4) for r in df.itertuples()}},
+        "face_detection_rate": {"mean": float(df["face_rate"].mean()), "min": float(df["face_rate"].min())},
         "raw_score_percentiles_mean": {k: float(df[k].mean()) for k in ["score_p50", "score_p95", "score_p99", "score_max"] if k in df.columns},
     }
 
@@ -212,7 +212,8 @@ def compare(results_dir: str):
     (res / "drozy_mediapipe_summary.json").write_text(json.dumps(out, indent=2))
 
     plt.rcParams.update({"font.size": 8, "axes.spines.top": False, "axes.spines.right": False, "pdf.fonttype": 42})
-    fig, ax = plt.subplots(1, 3, figsize=(7.2, 2.5))
+    # two panels only: a third panel with each participant's blink duration against KSS is not published
+    fig, ax = plt.subplots(1, 2, figsize=(4.8, 2.5))
     a = ax[0]
     a.scatter(df["eog_blink_rate"], df["mp_blink_rate"], s=13, color="#165d8f", label="website pipeline")
     a.scatter(df["eog_blink_rate"], df["rs_blink_rate"], s=13, facecolors="none", edgecolors="0.45", label="rescaled score")
@@ -235,15 +236,6 @@ def compare(results_dir: str):
     a.set_ylabel("PERCLOS (%)")
     a.set_title("B  PERCLOS by test (mean, SE)", loc="left", fontsize=8)
     a.legend(frameon=False, fontsize=6.5, loc="lower right", bbox_to_anchor=(1.0, 0.07))
-    a = ax[2]
-    for subj, g in df.sort_values("test").groupby("subject"):
-        a.plot(g["mp_blink_ms"], g["kss"], color="0.7", lw=0.7, marker="o", ms=2.5)
-    rc = out["all_tests"]["rmcorr_mp_blink_ms_kss"]
-    a.set_title("C  Blink duration vs KSS", loc="left", fontsize=8)
-    a.text(0.03, 0.97, f"within-person r = {rc['r']:.2f}, p = {rc['p']:.3f}", transform=a.transAxes, ha="left", va="top", fontsize=7, bbox=dict(facecolor="white", edgecolor="none", alpha=0.9, pad=1))
-    a.set_ylim(1.5, 10.2)
-    a.set_xlabel("MediaPipe blink duration (ms)")
-    a.set_ylabel("KSS")
     fig.tight_layout()
     fig.savefig(res / "fig_drozy_mediapipe.pdf")
     print(json.dumps({k: out[k] for k in ["n_tests", "face_detection_rate"]}, indent=1))
