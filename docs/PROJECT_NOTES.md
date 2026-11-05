@@ -37,25 +37,29 @@ cd paper && latexmk -pdf main.tex
 - **OpenNeuro ds004902** (Xiang et al., 2024, Sci Data 11:427): no re-identification. Only `participants.tsv` is used.
 - Website screenshots for the paper use demo (synthetic) data or Utsav's own face only.
 
-## Status (5 Nov 2026): revision after peer review round 1
+## Status (5 Nov 2026): round-1 revision complete, round-2 review
 
-Two internal referee reports are in `paper/reviews/round1-reviewer-A.md` (methods, statistics) and `round1-reviewer-B.md` (sleep science). Both: major revision. Done so far in response:
+The round-1 revision is on branch `revision-round1` (see `HANDOFF.md` for the full list of changes and how to merge). Summary:
 
-- **Model rebuilt** (`web/src/twin/twin.ts`): forward measurement models per signal (feature = a + b(KSS - 3) + anchor + noise), one anchor state per signal (PVT median RT, blink duration, PERCLOS) in its own units with slow drift, noise and autocorrelation from DROZY (`analysis/drozy_forward.py` -> `results/drozy_forward.json`). No tuning on simulated people. Personal slopes and the blink-rate workload channel removed. A minute with < 3 blinks is ignored for blink duration (bug fix).
-- **Three-Process Model** now as published (`web/src/twin/tpm.ts`): breakpoint 12.2 with linear recovery below, 12-h ultradian component (dip 13:48), sleep debt carried across days. All constants checked by Reviewer B against Akerstedt et al. 2004 and Ingre et al. 2014.
-- **Real-data evaluation of the released twin on DROZY**, leaving one subject out (`web/scripts/drozy_twin.ts` -> `results/drozy_twin_summary.json`): MAE rhythm model 1.73, passive only 1.47, check-in only 1.51, BlinkTwin 1.38 (n = 20-24 predictions, 14 subjects); stable to the assumed wake time.
-- **OpenNeuro** (`web/scripts/openneuro_anchor.ts`): offset persistence normal sleep -> sleep deprivation r = 0.29 (n = 33). PVT columns: our t values equal the descriptor's but the descriptor attaches them to different measures; value ranges support the data dictionary.
-- **Simulation rebuilt** (`web/scripts/simulate.ts`, 300 people per scenario, released defaults, oracle upper bound, matched + four robustness scenarios). Matched k = 3: BlinkTwin 0.634 vs check-ins 0.660 vs rhythm model 0.811; no-anchor fusion fails (about 1.7). Robustness k = 3: misreported sleep 0.701 vs 0.745; biased self-ratings 0.855 vs 0.906; nonlinear signals 0.634 vs 0.661; autocorrelated webcam 0.652 vs 0.660.
-- **App**: alarms ignore eye closure while looking down; head drop counts only forward pitch (`PITCH_DOWN_SIGN` in `head.ts`, verify on a device: nodding down should make pitch positive); rate first then test; check-in screen hides the twin's estimate; objective (unanchored) reaction-test reading on the Now card.
-- **MediaPipe on DROZY videos** (validation of the actual webcam pipeline): `web/validation/`, `analysis/drozy_mediapipe_compare.py` (in progress).
-- **Tests**: 49 passing (`cd web && npm test`).
+- **Model**: forward measurement models with one anchor per passive signal (`web/src/twin/twin.ts`); the published Three-Process Model with breakpoint 12.2, ultradian component and sleep debt across days (`web/src/twin/tpm.ts`). PERCLOS is ignored when blinks do not reach full closure. The app fills nights that were not entered (`fillMissingNights`); research scripts do not.
+- **Real data**: DROZY replay of the released model, leaving one subject out: MAE prior 1.73, passive 1.47, one check-in 1.51, all three 1.38; naive per-test mean 1.39 (`results/drozy_twin_summary.json`). MediaPipe pipeline on DROZY video: blink rate vs EOG rho 0.71, blink duration vs KSS within person r 0.58, PERCLOS failed (`results/drozy_mediapipe_summary.json`). ds004902: offset persistence r 0.29; sleep diary did not improve the prior; the Ingre et al. (2014) KSS mapping (9.68 - 0.46 A) lowered the prior's MAE from 1.69 to 1.46 (`results/openneuro_prior_summary.json`).
+- **Simulation** (`results/sim_summary.json`, common random numbers, 9 scenarios, sensitivity, oracle): matched k = 3, BlinkTwin 0.629 vs check-ins 0.659 vs prior 0.819; passive signals alone did not beat the prior; fusion without anchors fails (about 1.7). Power for the field study (`results/power_summary.json`): BlinkTwin is not better than check-ins at predicting observed ratings (+0.019); non-inferiority is well powered; superiority over the prior needs about 70 analysed participants.
+- **App**: renamed and safer alerts, blink-meter baseline frozen during long closures, privacy check with a content security policy (library usage statistics blocked), benchmark, UI/UX overhaul, insight panels (track record, check-in suggestions, reactions vs ratings, sleep status). 105 tests pass.
+- **Paper**: IEEE two-column (`paper/main.tex`, `paper/supplement.tex`); response letter `paper/reviews/round1-response.md`; round-2 referee reports in `paper/reviews/round2-reviewer-*.md`.
+- **Docs**: `docs/HOW_IT_WORKS.md`, `docs/LITERATURE_COMPARISON.md`, `docs/PUBLICATION_PLAN.md`, `HANDOFF.md`.
 
 ## Next steps
 
-- [ ] Update `web/src/ui/science.ts` numbers to the new results, then `npm run science-doc`; update README numbers.
-- [ ] Revise the paper with the new model and results; robustness scenarios go in a supplementary appendix with a one-line summary in the main text; remove obsolete analyses (inverse-regression calibration, personal slopes, RT-SSS coupling); keep a concise limitations paragraph; write `paper/reviews/round1-response.md`.
-- [ ] Review round 2 with the same two referees, then revise.
-- [ ] Reference fixes listed in Reviewer B's report (Xiang 2024 article 427; 2B-Alert J Sleep Res 28(2):e12725; PERCLOS source is NHTSA DOT HS 808 247, not Wierwille & Ellsworth 1994; missing DOIs).
+- [ ] Address the round-2 referee reports (`paper/reviews/round2-reviewer-*.md`).
+- [ ] With DROZY available locally: re-run the replay with the Ingre mapping, a paired comparison on the same predictions, the share within 1 KSS point, the blink-meter fix (`drozy_eyes.ts --fixed-baseline`), the MediaPipe "adaptive" variant, and blink-duration inflation 2.28.
+- [ ] Browser PVT timing benchmark (photodiode, key-press robot, 3-5 devices).
+- [ ] Verify on a laptop: `PITCH_DOWN_SIGN`, the looking-down gate, alert behaviour while reading and typing.
+- [ ] Check every P/S-graded number and "to confirm" DOI in `docs/LITERATURE_COMPARISON.md`, and the journal facts in `docs/PUBLICATION_PLAN.md`.
+- [ ] Choose a licence; archive a release on Zenodo; ethics application and OSF registration for the field study.
+
+## Contributor
+
+Utsav Poudel is the sole author and contributor; commits use utsav.poudel@outlook.com.au.
 
 ## Writing rules for the paper
 

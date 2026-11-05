@@ -27,7 +27,9 @@ Files most likely to conflict with local edits (they changed a lot): `web/src/ma
 - Alerts renamed "long eye-closure alert" and "head-drop alert"; looking down is judged from the 500 ms before a closure; head drop counts only forward pitch; a face lost during a closure keeps the alert on.
 - The 1-minute reaction test is shown but not used by the model; untouched workload sliders are no longer saved; the test no longer runs after a cancelled check-in; time on task after a short break is corrected; the forecast assumes the usual 50/10 work rhythm by default.
 - A first-time user before 07:00 was shown "Sleepy" from the default night; warnings from the model now need a real sleep entry.
-- New insight modules (`web/src/insights/`): the model's personal track record (prediction before each check-in vs the rating), check-in suggestions, an objective-vs-subjective divergence check, and a sleep-history helper. See Section 6 for their integration status.
+- New insight modules (`web/src/insights/`), shown in the app: the model's personal track record (prediction before each check-in vs the rating), check-in suggestions, an objective-vs-subjective divergence check, and a sleep-history status.
+- Missing nights: the app fills nights that were not entered with habitual sleep and flags the estimate (`fillMissingNights`); "I did not sleep last night" can be entered explicitly. Research scripts keep the old behaviour so real sleep deprivation is modelled as such.
+- Privacy: an automated traffic check (`web/scripts/privacy_check.mjs`) found MediaPipe sending usage statistics to a Google logging service every minute (no images); a content security policy in `web/index.html` blocks it, and the check now records no request after load. Benchmark in `results/benchmark.json`; the app uses the CPU delegate when WebGL is software-rendered.
 - UI/UX: responsive charts, past vs forecast shading, signed explanation bars, colour-blind-safe palette, dark mode with proper contrast, accessibility (focus, labels, live regions, reduced motion), first-time "getting started" card, 44 px touch targets, footer disclaimer.
 
 ### Analyses (`web/scripts/`, `analysis/`, `results/`)
@@ -57,7 +59,9 @@ Files most likely to conflict with local edits (they changed a lot): `web/src/ma
 | ds004902 offset persistence | r 0.29 (95% CI -0.05 to 0.58), n 33 | `results/openneuro_anchor_summary.json` |
 | ds004902 prior | default mapping MAE 1.69 (36% within 1 point); Ingre mapping 1.46 (45%) | `results/openneuro_prior_summary.json` |
 | Power, primary outcome | non-inferiority vs check-ins > 0.99 with 40; superiority vs prior 0.75 with 60, 0.88 with 80; plan 70 analysed, 80 recruited | `results/power_summary.json` |
-| Simulation | see `results/sim_summary.json` and paper Section VI | |
+| Simulation, matched, 3 check-ins | BlinkTwin 0.629, check-ins 0.659, prior 0.819, oracle 0.586, no anchors 1.741; passive alone 0.861 | `results/sim_summary.json`, `results/sim_log.txt` |
+| Simulation, 8 misspecified scenarios | BlinkTwin minus check-ins -0.013 to -0.055 | same |
+| One-hour forecast, KSS >= 7 (matched) | Brier: prior 0.086, check-ins 0.066, BlinkTwin 0.063; AUROC 0.945, 0.966, 0.969; time to KSS 7 off by about 80 min for every method | same |
 
 ## 4. What to run locally with the full data
 
@@ -82,8 +86,7 @@ These need DROZY (blocked in the cloud environment used for this revision) or a 
 
 ## 6. Open items
 
-- [ ] Round-2 review of the revised paper (see `paper/reviews/`), then revise.
-- [ ] Complete and check the integration of the insight modules in the UI (track record panel, check-in nudges, divergence card, missing-night handling with `fillMissingNights`), if not finished in this revision.
+- [ ] Address the round-2 referee reports in `paper/reviews/round2-reviewer-A.md` and `round2-reviewer-B.md` (the main points already handled are listed in `paper/reviews/round2-response.md`).
 - [ ] Decide on and add a licence file before making the repository public (none is present).
 - [ ] Archive a release on Zenodo with a DOI before submission.
 - [ ] Ethics application and OSF registration for the validation study (paper Section VII).

@@ -25,8 +25,9 @@ BlinkTwin is a research prototype. It has been tested on public datasets and in 
 4. **Subjective estimate plus an objective check.** Because check-ins set the level, the main estimate is how sleepy you *feel*. The Now card also shows what your last reaction test says on the population scale, not adjusted to you, because people who are short of sleep often underrate their impairment.
 5. **Real-time alerts with live eye and head tracking.** A long eye closure (1 s or more, not while looking down) or a forward head drop with closing eyes raises an alert. These thresholds are ad hoc defaults and have not been validated. Gaze, head pitch, yaw and roll, nods, blink rate, blink duration and PERCLOS update live.
 6. **Explains itself.** The estimate is split into the rhythm model, time on task, and what each source contributed, and every number links to the science behind it ([docs/SCIENCE.md](docs/SCIENCE.md)).
-7. **Private by design.** The face model runs in the page. Only one-minute numeric summaries are stored, in your own browser, and you can export or delete them.
-8. **One codebase, tested and reproducible.** The same TypeScript runs the website, 105 unit tests, the replay of the released twin on real data, and the simulation study.
+7. **Private by design, and checked.** The face model runs in the page. Only one-minute numeric summaries are stored, in your own browser, and you can export or delete them. An automated traffic check (`web/scripts/privacy_check.mjs`) found that the face-tracking library sent small usage-statistics requests (timing data, no images) to a Google logging service every minute; a content security policy now blocks them, and the check records no request at all after the page has loaded (`results/privacy_check.json`).
+8. **Learns how well it knows you.** A "How well does the twin know you?" panel scores every past prediction against the rating you then gave; the app suggests a check-in when the estimate is uncertain, the forecast nears KSS 7 or your reaction test disagrees with your ratings; it flags when your reactions are slower than your ratings suggest; and it asks for nights you did not enter instead of assuming you stayed awake.
+9. **One codebase, tested and reproducible.** The same TypeScript runs the website, 105 unit tests, the replay of the released twin on real data, and the simulation study.
 
 ## How it works
 
@@ -72,6 +73,10 @@ The ordering matches the design, but the intervals overlap widely and BlinkTwin 
 
 **A personal offset carries over only partly.** In OpenNeuro ds004902 (33 adults with ratings after normal sleep and after a night without sleep), a person's offset from the rhythm model after normal sleep was only weakly related to their offset after sleep deprivation (r = 0.29, 95% CI −0.05 to 0.58). Adding a person's own normal-sleep offset predicted their rating after sleep deprivation no better than adding the group's average offset (MAE 1.52 with the shrunk personal offset, 1.45 with the group offset, 1.53 with the rhythm model alone). This is why the twin lets the offset drift and why the benefit of personal calibration is still an open question.
 
+**The prior can be improved on real data.** On the same dataset (28 people with a sleep diary), two changes to the rhythm model were tested, both fixed in advance. Entering the diary's actual sleep did not help (MAE 1.74 vs 1.69). The KSS mapping refitted to airline crews by Ingre et al. (2014), KSS = 9.68 − 0.46 × alertness, lowered the error from 1.69 to 1.46 (difference −0.22, 95% CI −0.33 to −0.09) and predicted the size of the sleep-deprivation effect better (2.23 vs 2.90 points against an observed 2.04). The default has not been changed yet, because that needs the DROZY replay to be re-run (`results/openneuro_prior_summary.json`).
+
+**Compared with published work.** No published KSS-prediction benchmark on DROZY or ds004902 was found; published DROZY results are drowsy-vs-awake classifications, which cannot be compared with an error in KSS points. The closest systems predict reaction-time performance rather than self-rated sleepiness. See [docs/LITERATURE_COMPARISON.md](docs/LITERATURE_COMPARISON.md) for every comparable study, its dataset and metric (peer-reviewed papers with a DOI only).
+
 **Simulation (300 virtual people per scenario, 24 h awake, released defaults, nothing tuned on simulated people).** Mean absolute error of latent KSS, matched scenario:
 
 | | k = 0 | k = 1 | k = 3 | k = 8 | 90% coverage, k = 3 | 90% width, k = 3 |
@@ -103,6 +108,17 @@ Forecasting KSS ≥ 7 one hour ahead (matched scenario, three check-ins, 5400 fo
 ![Simulation results](docs/img/simulation.png)
 
 **What the evidence does not show yet.** That personal calibration helps real people: in DROZY the twin did not beat a simple benchmark, and in ds004902 offsets carried over only weakly. Gains from the passive signals over check-ins are small in simulation (hundredths of a KSS point), and in a simulated version of the planned 10-day study, where the target is people's actual (noisy, whole-number) ratings on ordinary workdays, BlinkTwin was no better than check-ins alone (mean difference +0.019 KSS points, SD 0.10 across virtual people). The webcam pipeline has not been validated on ordinary webcams, the alert thresholds have not been validated at all, and the workload estimate has not been evaluated. A prospective study with real users is planned.
+
+## Documentation
+
+| Document | What it is for |
+|---|---|
+| [docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md) | Everything the app does, in plain language, with worked examples and a FAQ |
+| [docs/SCIENCE.md](docs/SCIENCE.md) | The science text shown in the app, with references |
+| [docs/LITERATURE_COMPARISON.md](docs/LITERATURE_COMPARISON.md) | Published systems, their datasets, metrics and accuracies, compared with BlinkTwin |
+| [docs/PUBLICATION_PLAN.md](docs/PUBLICATION_PLAN.md) | Venue options and the planned order of papers |
+| [paper/](paper/) | Manuscript (IEEE two-column) and supplement; referee reports and responses in `paper/reviews/` |
+| [HANDOFF.md](HANDOFF.md) | Current status, how to merge this revision, what to run next |
 
 ## Run it
 
@@ -145,12 +161,20 @@ data/venv-mediapipe/bin/python -I analysis/drozy_mediapipe_compare.py extract da
 (cd web && node scripts/drozy_mediapipe_blinks.ts ../data/derived/drozy_mediapipe_frames ../results/drozy_mediapipe_tests.csv ../results/drozy_mediapipe_minutes.csv)
 analysis/.venv/bin/python -I analysis/drozy_mediapipe_compare.py compare results
 
-# Simulation study and its figures (about half an hour)
+# Checks of the prior on OpenNeuro ds004902 (sleep diary, KSS mapping)
+(cd web && node scripts/openneuro_prior_check.ts ../data/raw/openneuro-ds004902/participants.tsv ../results)
+analysis/.venv/bin/python -I analysis/drozy_twin_figure.py results
+
+# Simulation study, power for the planned study, and their figures (about half an hour)
 (cd web && node scripts/simulate.ts 300 ../results > ../results/sim_log.txt)
+(cd web && node scripts/power.ts)
 analysis/.venv/bin/python -I analysis/sim_figures.py results
 
-# Paper
-(cd paper && latexmk -pdf main.tex)
+# Privacy traffic check and compute benchmark (headless Chromium with a fake camera)
+(cd web && node scripts/privacy_check.mjs && node scripts/benchmark.mjs)
+
+# Paper and supplement
+(cd paper && latexmk -pdf main.tex && latexmk -pdf supplement.tex)
 ```
 
 ## Repository
@@ -159,6 +183,7 @@ analysis/.venv/bin/python -I analysis/sim_figures.py results
 |---|---|
 | `web/src/twin/` | The twin: Three-Process Model prior, Kalman filter with forward measurement models and anchors, forecast |
 | `web/src/sensing/` | Blink meter, head pose and nods, real-time alerts, camera pipeline |
+| `web/src/insights/` | Track record of past predictions, check-in suggestions, reactions vs ratings, sleep-history status |
 | `web/src/probes/`, `web/src/ui/` | PVT-B, check-in forms, charts, science explanations |
 | `web/src/sim/`, `web/scripts/simulate.ts` | Virtual participants and the simulation study |
 | `web/scripts/` | DROZY and OpenNeuro replays of the released twin, MediaPipe validation, data tools |
