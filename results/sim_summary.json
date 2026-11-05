@@ -1,7 +1,7 @@
 {
  "n_people_per_scenario": 300,
  "protocol": "wake 07:00 reporting last night (7.5 h; 5 h in debt), 24 h awake (16 h in workday); 50-min task blocks and 10-min breaks; one webcam window per minute from 07:30 (breaks included); PVT every 2 h and 4 min after each check-in; check-ins evenly from 08:30 to 22:30 (workday 21:30), k = 1 at 10:00; MAE every 10 min from 07:30; night = 23:00 to 07:00",
- "methods": "prior = Three-Process Model + time on task (sleep and context entries, no measurements); checkins = prior + KSS check-ins; noanchor = all events without anchor states; twin = released BlinkTwin; oracle = twin given each person's true signal baselines and slopes",
+ "methods": "prior = Three-Process Model + time on task (sleep and context entries, no measurements); checkins = prior + KSS check-ins; noanchor = all events without anchor states (baselines as independent noise); consider = consider-covariance (Schmidt-Kalman) filter, anchors carried in the covariance but not estimated; twin = released BlinkTwin; oracle = known-parameter filter: the twin given each person's true signal baselines and slopes with the twin's own noise model (a reference, not an upper bound)",
  "forecast_design": "one-hour P(KSS >= 7) every hour (12:00 to 05:00; workday 09:00 to 22:00) with k = 3; time of reaching KSS 7 forecast at 17:00; every forecast projects the protocol work rhythm (50-min blocks, 10-min breaks)",
  "common_random_numbers": "person seed independent of k; truth, webcam and 2-hourly PVTs identical across k",
  "crn_check": {
@@ -62,6 +62,19 @@
   },
   {
    "scenario": "matched",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 0,
+   "mae": 1.0324755818168632,
+   "mae_lo": 0.9724631313679517,
+   "mae_hi": 1.0952636474084139,
+   "night_mae": 1.0036857124109033,
+   "coverage90": 0.9273943661971835,
+   "width90": 4.6457688096194225,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "matched",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 0,
@@ -76,7 +89,7 @@
   {
    "scenario": "matched",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 0,
    "mae": 0.7237567413169936,
    "mae_lo": 0.686218015633587,
@@ -114,6 +127,19 @@
   },
   {
    "scenario": "matched",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 1,
+   "mae": 0.790923870577975,
+   "mae_lo": 0.7530177141668049,
+   "mae_hi": 0.8290774527812865,
+   "night_mae": 0.7915548999031525,
+   "coverage90": 0.9238497652582168,
+   "width90": 3.6765054547758753,
+   "win_vs_checkins": 0.4666666666666667
+  },
+  {
+   "scenario": "matched",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 1,
@@ -128,7 +154,7 @@
   {
    "scenario": "matched",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 1,
    "mae": 0.6385050830901001,
    "mae_lo": 0.6136018308704916,
@@ -166,6 +192,19 @@
   },
   {
    "scenario": "matched",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 2,
+   "mae": 0.7328680394086304,
+   "mae_lo": 0.7020354595967349,
+   "mae_hi": 0.7637102174041503,
+   "night_mae": 0.6721270245225205,
+   "coverage90": 0.9053051643192498,
+   "width90": 3.1324271180527554,
+   "win_vs_checkins": 0.4866666666666667
+  },
+  {
+   "scenario": "matched",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 2,
@@ -180,7 +219,7 @@
   {
    "scenario": "matched",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 2,
    "mae": 0.6049880301889116,
    "mae_lo": 0.5844566597324077,
@@ -218,6 +257,19 @@
   },
   {
    "scenario": "matched",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "mae": 0.6734147733434933,
+   "mae_lo": 0.6490306679775745,
+   "mae_hi": 0.6973147414576856,
+   "night_mae": 0.6097538930867318,
+   "coverage90": 0.8955399061032866,
+   "width90": 2.780285156403265,
+   "win_vs_checkins": 0.48333333333333334
+  },
+  {
+   "scenario": "matched",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -232,7 +284,7 @@
   {
    "scenario": "matched",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "mae": 0.5861594413526482,
    "mae_lo": 0.5671154098395382,
@@ -270,6 +322,19 @@
   },
   {
    "scenario": "matched",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 4,
+   "mae": 0.6372282777374773,
+   "mae_lo": 0.6165052510419439,
+   "mae_hi": 0.6589357125434491,
+   "night_mae": 0.5885429940110654,
+   "coverage90": 0.8919718309859157,
+   "width90": 2.5999564030363813,
+   "win_vs_checkins": 0.53
+  },
+  {
+   "scenario": "matched",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 4,
@@ -284,7 +349,7 @@
   {
    "scenario": "matched",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 4,
    "mae": 0.5659427543739028,
    "mae_lo": 0.5490309229094416,
@@ -322,6 +387,19 @@
   },
   {
    "scenario": "matched",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 6,
+   "mae": 0.6036875838436371,
+   "mae_lo": 0.5865220788307582,
+   "mae_hi": 0.6225112246739819,
+   "night_mae": 0.5743140912713015,
+   "coverage90": 0.8756572769953052,
+   "width90": 2.383247911973147,
+   "win_vs_checkins": 0.51
+  },
+  {
+   "scenario": "matched",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 6,
@@ -336,7 +414,7 @@
   {
    "scenario": "matched",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 6,
    "mae": 0.5527452880769622,
    "mae_lo": 0.5371019789296503,
@@ -374,6 +452,19 @@
   },
   {
    "scenario": "matched",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 8,
+   "mae": 0.5790283620221601,
+   "mae_lo": 0.5620156381007195,
+   "mae_hi": 0.5953002404512882,
+   "night_mae": 0.5700433206158138,
+   "coverage90": 0.8685446009389675,
+   "width90": 2.2691512696955467,
+   "win_vs_checkins": 0.48333333333333334
+  },
+  {
+   "scenario": "matched",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 8,
@@ -388,7 +479,7 @@
   {
    "scenario": "matched",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 8,
    "mae": 0.536161777457468,
    "mae_lo": 0.5218606116793925,
@@ -413,6 +504,19 @@
   },
   {
    "scenario": "misreport",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 0,
+   "mae": 1.0931948481680684,
+   "mae_lo": 1.03255796423501,
+   "mae_hi": 1.1540219275025179,
+   "night_mae": 1.0798528248555157,
+   "coverage90": 0.9077934272300471,
+   "width90": 4.645816729689906,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "misreport",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 0,
@@ -427,7 +531,7 @@
   {
    "scenario": "misreport",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 0,
    "mae": 0.7833787237955283,
    "mae_lo": 0.7451857369674993,
@@ -465,6 +569,19 @@
   },
   {
    "scenario": "misreport",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 1,
+   "mae": 0.876922745712916,
+   "mae_lo": 0.8386139681610781,
+   "mae_hi": 0.9184224654160575,
+   "night_mae": 0.9012280052129091,
+   "coverage90": 0.8973708920187803,
+   "width90": 3.6764744166722,
+   "win_vs_checkins": 0.5
+  },
+  {
+   "scenario": "misreport",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 1,
@@ -479,7 +596,7 @@
   {
    "scenario": "misreport",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 1,
    "mae": 0.707762425023523,
    "mae_lo": 0.6811870010447372,
@@ -517,6 +634,19 @@
   },
   {
    "scenario": "misreport",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "mae": 0.7632691774424846,
+   "mae_lo": 0.7339011750740716,
+   "mae_hi": 0.792364966439429,
+   "night_mae": 0.7253678033215739,
+   "coverage90": 0.8483802816901407,
+   "width90": 2.7802933114687955,
+   "win_vs_checkins": 0.5466666666666666
+  },
+  {
+   "scenario": "misreport",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -531,7 +661,7 @@
   {
    "scenario": "misreport",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "mae": 0.6599209021006855,
    "mae_lo": 0.6348181753503676,
@@ -569,6 +699,19 @@
   },
   {
    "scenario": "misreport",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 8,
+   "mae": 0.6518967964311728,
+   "mae_lo": 0.6301910894223434,
+   "mae_hi": 0.6731601392422377,
+   "night_mae": 0.6994330617921336,
+   "coverage90": 0.8263849765258225,
+   "width90": 2.2691651907538586,
+   "win_vs_checkins": 0.5566666666666666
+  },
+  {
+   "scenario": "misreport",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 8,
@@ -583,7 +726,7 @@
   {
    "scenario": "misreport",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 8,
    "mae": 0.5955885139742896,
    "mae_lo": 0.5763308704855328,
@@ -608,6 +751,19 @@
   },
   {
    "scenario": "nonlinear",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 0,
+   "mae": 1.0485250462221234,
+   "mae_lo": 0.9823661348345322,
+   "mae_hi": 1.1159566147354867,
+   "night_mae": 1.0415628513975406,
+   "coverage90": 0.9219718309859165,
+   "width90": 4.6445087193468515,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "nonlinear",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 0,
@@ -622,7 +778,7 @@
   {
    "scenario": "nonlinear",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 0,
    "mae": 0.7901948701485525,
    "mae_lo": 0.7518498264325082,
@@ -660,6 +816,19 @@
   },
   {
    "scenario": "nonlinear",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 1,
+   "mae": 0.7765200372535697,
+   "mae_lo": 0.7410846037895915,
+   "mae_hi": 0.8143534229932902,
+   "night_mae": 0.7846333916477326,
+   "coverage90": 0.9287793427230053,
+   "width90": 3.6761850669087046,
+   "win_vs_checkins": 0.4866666666666667
+  },
+  {
+   "scenario": "nonlinear",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 1,
@@ -674,7 +843,7 @@
   {
    "scenario": "nonlinear",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 1,
    "mae": 0.6847241425542128,
    "mae_lo": 0.6612781207272491,
@@ -712,6 +881,19 @@
   },
   {
    "scenario": "nonlinear",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "mae": 0.6693011509696721,
+   "mae_lo": 0.6459263952782183,
+   "mae_hi": 0.6951465676537677,
+   "night_mae": 0.6244316499060977,
+   "coverage90": 0.8987558685446011,
+   "width90": 2.7801475201022234,
+   "win_vs_checkins": 0.51
+  },
+  {
+   "scenario": "nonlinear",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -726,7 +908,7 @@
   {
    "scenario": "nonlinear",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "mae": 0.6147392724899527,
    "mae_lo": 0.593746141720184,
@@ -764,6 +946,19 @@
   },
   {
    "scenario": "nonlinear",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 8,
+   "mae": 0.5770641458998241,
+   "mae_lo": 0.5614009618088919,
+   "mae_hi": 0.5933306453258413,
+   "night_mae": 0.5732825909409961,
+   "coverage90": 0.8716431924882634,
+   "width90": 2.2690541788414746,
+   "win_vs_checkins": 0.49
+  },
+  {
+   "scenario": "nonlinear",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 8,
@@ -778,7 +973,7 @@
   {
    "scenario": "nonlinear",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 8,
    "mae": 0.546849830447231,
    "mae_lo": 0.5324148736513075,
@@ -803,6 +998,19 @@
   },
   {
    "scenario": "ratingbias",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 0,
+   "mae": 1.0324755818168632,
+   "mae_lo": 0.9724631313679517,
+   "mae_hi": 1.0952636474084139,
+   "night_mae": 1.0036857124109033,
+   "coverage90": 0.9273943661971835,
+   "width90": 4.6457688096194225,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "ratingbias",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 0,
@@ -817,7 +1025,7 @@
   {
    "scenario": "ratingbias",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 0,
    "mae": 0.7237567413169936,
    "mae_lo": 0.686218015633587,
@@ -855,6 +1063,19 @@
   },
   {
    "scenario": "ratingbias",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 1,
+   "mae": 0.9060660303673153,
+   "mae_lo": 0.859397261193067,
+   "mae_hi": 0.9539880948159204,
+   "night_mae": 0.8648958442147494,
+   "coverage90": 0.8779812206572774,
+   "width90": 3.6763899662443085,
+   "win_vs_checkins": 0.53
+  },
+  {
+   "scenario": "ratingbias",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 1,
@@ -869,7 +1090,7 @@
   {
    "scenario": "ratingbias",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 1,
    "mae": 0.6667872089197828,
    "mae_lo": 0.6381691881257152,
@@ -907,6 +1128,19 @@
   },
   {
    "scenario": "ratingbias",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "mae": 0.8753564328162614,
+   "mae_lo": 0.8387073914405597,
+   "mae_hi": 0.9136789855538149,
+   "night_mae": 0.8318631614965927,
+   "coverage90": 0.7846478873239439,
+   "width90": 2.780283191449523,
+   "win_vs_checkins": 0.5966666666666667
+  },
+  {
+   "scenario": "ratingbias",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -921,7 +1155,7 @@
   {
    "scenario": "ratingbias",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "mae": 0.6914896286861569,
    "mae_lo": 0.6637305718241081,
@@ -959,6 +1193,19 @@
   },
   {
    "scenario": "ratingbias",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 8,
+   "mae": 0.8305982865495393,
+   "mae_lo": 0.7965273140263208,
+   "mae_hi": 0.8692744572740143,
+   "night_mae": 0.7893464089589431,
+   "coverage90": 0.7108685446009388,
+   "width90": 2.2691480654061422,
+   "win_vs_checkins": 0.5766666666666667
+  },
+  {
+   "scenario": "ratingbias",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 8,
@@ -973,7 +1220,7 @@
   {
    "scenario": "ratingbias",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 8,
    "mae": 0.7079626619203504,
    "mae_lo": 0.6806884053577376,
@@ -998,6 +1245,19 @@
   },
   {
    "scenario": "autocorr",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 0,
+   "mae": 1.1462647378301847,
+   "mae_lo": 1.0801693171632025,
+   "mae_hi": 1.2164770253824209,
+   "night_mae": 1.0629782418838851,
+   "coverage90": 0.8916901408450709,
+   "width90": 4.6460854580677395,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "autocorr",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 0,
@@ -1012,7 +1272,7 @@
   {
    "scenario": "autocorr",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 0,
    "mae": 0.8953533846707802,
    "mae_lo": 0.8417702747039131,
@@ -1050,6 +1310,19 @@
   },
   {
    "scenario": "autocorr",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 1,
+   "mae": 0.8291919245404551,
+   "mae_lo": 0.7903648921653658,
+   "mae_hi": 0.8696635869204685,
+   "night_mae": 0.8048796746999604,
+   "coverage90": 0.9073004694835691,
+   "width90": 3.6766184649187448,
+   "win_vs_checkins": 0.43666666666666665
+  },
+  {
+   "scenario": "autocorr",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 1,
@@ -1064,7 +1337,7 @@
   {
    "scenario": "autocorr",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 1,
    "mae": 0.7346584687378028,
    "mae_lo": 0.7044079403172491,
@@ -1102,6 +1375,19 @@
   },
   {
    "scenario": "autocorr",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "mae": 0.6933905483121156,
+   "mae_lo": 0.667926833512826,
+   "mae_hi": 0.7189049569214855,
+   "night_mae": 0.6121112437202035,
+   "coverage90": 0.8846244131455406,
+   "width90": 2.7803012762003823,
+   "win_vs_checkins": 0.44333333333333336
+  },
+  {
+   "scenario": "autocorr",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -1116,7 +1402,7 @@
   {
    "scenario": "autocorr",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "mae": 0.6566914955026547,
    "mae_lo": 0.6340933908929234,
@@ -1154,6 +1440,19 @@
   },
   {
    "scenario": "autocorr",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 8,
+   "mae": 0.5922216225506162,
+   "mae_lo": 0.5748749744613237,
+   "mae_hi": 0.6092455701224696,
+   "night_mae": 0.569873467102164,
+   "coverage90": 0.860352112676057,
+   "width90": 2.269165448910887,
+   "win_vs_checkins": 0.42333333333333334
+  },
+  {
+   "scenario": "autocorr",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 8,
@@ -1168,7 +1467,7 @@
   {
    "scenario": "autocorr",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 8,
    "mae": 0.5897183741768347,
    "mae_lo": 0.5738411242542962,
@@ -1193,6 +1492,19 @@
   },
   {
    "scenario": "trait",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 0,
+   "mae": 1.0965410898783206,
+   "mae_lo": 1.0328491836493179,
+   "mae_hi": 1.165102668121794,
+   "night_mae": 1.0590920603728664,
+   "coverage90": 0.9008450704225356,
+   "width90": 4.645983961773629,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "trait",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 0,
@@ -1207,7 +1519,7 @@
   {
    "scenario": "trait",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 0,
    "mae": 0.7614377912552288,
    "mae_lo": 0.7236518823390665,
@@ -1245,6 +1557,19 @@
   },
   {
    "scenario": "trait",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 1,
+   "mae": 0.8442641123348392,
+   "mae_lo": 0.8048289126188077,
+   "mae_hi": 0.8880712630800065,
+   "night_mae": 0.8305368189164134,
+   "coverage90": 0.9007511737089211,
+   "width90": 3.676515949211311,
+   "win_vs_checkins": 0.44333333333333336
+  },
+  {
+   "scenario": "trait",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 1,
@@ -1259,7 +1584,7 @@
   {
    "scenario": "trait",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 1,
    "mae": 0.6715475671357654,
    "mae_lo": 0.645420982218316,
@@ -1297,6 +1622,19 @@
   },
   {
    "scenario": "trait",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "mae": 0.7061683013405752,
+   "mae_lo": 0.6823454138718134,
+   "mae_hi": 0.7300284758221233,
+   "night_mae": 0.6410663854126691,
+   "coverage90": 0.8751173708920194,
+   "width90": 2.7803127901628164,
+   "win_vs_checkins": 0.5
+  },
+  {
+   "scenario": "trait",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -1311,7 +1649,7 @@
   {
    "scenario": "trait",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "mae": 0.6062616316757095,
    "mae_lo": 0.5866309359831096,
@@ -1349,6 +1687,19 @@
   },
   {
    "scenario": "trait",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 8,
+   "mae": 0.6066039414984342,
+   "mae_lo": 0.5887391351878115,
+   "mae_hi": 0.6257918346792152,
+   "night_mae": 0.6138184461117437,
+   "coverage90": 0.8496948356807512,
+   "width90": 2.2691771650059303,
+   "win_vs_checkins": 0.48333333333333334
+  },
+  {
+   "scenario": "trait",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 8,
@@ -1363,7 +1714,7 @@
   {
    "scenario": "trait",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 8,
    "mae": 0.5534209431396279,
    "mae_lo": 0.5382920534310343,
@@ -1388,6 +1739,19 @@
   },
   {
    "scenario": "debt",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 0,
+   "mae": 1.010531102352735,
+   "mae_lo": 0.9489065283411577,
+   "mae_hi": 1.0781787154128968,
+   "night_mae": 0.8243535590864333,
+   "coverage90": 0.910281690140845,
+   "width90": 4.654645935653806,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "debt",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 0,
@@ -1402,7 +1766,7 @@
   {
    "scenario": "debt",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 0,
    "mae": 0.6818653200760604,
    "mae_lo": 0.647428751564742,
@@ -1440,6 +1804,19 @@
   },
   {
    "scenario": "debt",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 1,
+   "mae": 0.7614002710984265,
+   "mae_lo": 0.7268611855843691,
+   "mae_hi": 0.8001679777569441,
+   "night_mae": 0.626013107291437,
+   "coverage90": 0.9166666666666674,
+   "width90": 3.678281543634482,
+   "win_vs_checkins": 0.47
+  },
+  {
+   "scenario": "debt",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 1,
@@ -1454,7 +1831,7 @@
   {
    "scenario": "debt",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 1,
    "mae": 0.6073372376624261,
    "mae_lo": 0.5845941926489792,
@@ -1492,6 +1869,19 @@
   },
   {
    "scenario": "debt",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "mae": 0.6422901672285876,
+   "mae_lo": 0.6180058628699935,
+   "mae_hi": 0.6655960801416029,
+   "night_mae": 0.48236366974794226,
+   "coverage90": 0.8914319248826293,
+   "width90": 2.7814957550410657,
+   "win_vs_checkins": 0.5166666666666667
+  },
+  {
+   "scenario": "debt",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -1506,7 +1896,7 @@
   {
    "scenario": "debt",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "mae": 0.557200694026423,
    "mae_lo": 0.5388477993621595,
@@ -1544,6 +1934,19 @@
   },
   {
    "scenario": "debt",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 8,
+   "mae": 0.5483718034492486,
+   "mae_lo": 0.532346790561649,
+   "mae_hi": 0.5642218593357154,
+   "night_mae": 0.44699460273924385,
+   "coverage90": 0.868004694835681,
+   "width90": 2.2701157595677612,
+   "win_vs_checkins": 0.5233333333333333
+  },
+  {
+   "scenario": "debt",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 8,
@@ -1558,7 +1961,7 @@
   {
    "scenario": "debt",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 8,
    "mae": 0.506409619350722,
    "mae_lo": 0.49263657544871864,
@@ -1583,6 +1986,19 @@
   },
   {
    "scenario": "workday",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 0,
+   "mae": 1.036024410242991,
+   "mae_lo": 0.9762020073925712,
+   "mae_hi": 1.1014331688433847,
+   "night_mae": null,
+   "coverage90": 0.9087234042553182,
+   "width90": 4.278630437807475,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "workday",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 0,
@@ -1597,7 +2013,7 @@
   {
    "scenario": "workday",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 0,
    "mae": 0.8032085242908971,
    "mae_lo": 0.7577692390209055,
@@ -1635,6 +2051,19 @@
   },
   {
    "scenario": "workday",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 1,
+   "mae": 0.8007349691958902,
+   "mae_lo": 0.7649448101320818,
+   "mae_hi": 0.8387681274346176,
+   "night_mae": null,
+   "coverage90": 0.8972340425531907,
+   "width90": 3.2679518112670705,
+   "win_vs_checkins": 0.44
+  },
+  {
+   "scenario": "workday",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 1,
@@ -1649,7 +2078,7 @@
   {
    "scenario": "workday",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 1,
    "mae": 0.7041487686697636,
    "mae_lo": 0.6728747638309707,
@@ -1687,6 +2116,19 @@
   },
   {
    "scenario": "workday",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "mae": 0.7011990460317622,
+   "mae_lo": 0.6737523438154553,
+   "mae_hi": 0.7277646390918012,
+   "night_mae": null,
+   "coverage90": 0.8714539007092185,
+   "width90": 2.6775661856783275,
+   "win_vs_checkins": 0.48
+  },
+  {
+   "scenario": "workday",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -1701,7 +2143,7 @@
   {
    "scenario": "workday",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "mae": 0.6401563592147256,
    "mae_lo": 0.6155319372558933,
@@ -1739,6 +2181,19 @@
   },
   {
    "scenario": "workday",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 8,
+   "mae": 0.570460350969646,
+   "mae_lo": 0.5549170506683371,
+   "mae_hi": 0.585468313328311,
+   "night_mae": null,
+   "coverage90": 0.8464539007092192,
+   "width90": 2.0501651621180303,
+   "win_vs_checkins": 0.43333333333333335
+  },
+  {
+   "scenario": "workday",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 8,
@@ -1753,7 +2208,7 @@
   {
    "scenario": "workday",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 8,
    "mae": 0.5409011554450204,
    "mae_lo": 0.5249889294750307,
@@ -1778,6 +2233,19 @@
   },
   {
    "scenario": "dissociation",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 0,
+   "mae": 1.0324755818168632,
+   "mae_lo": 0.9724631313679517,
+   "mae_hi": 1.0952636474084139,
+   "night_mae": 1.0036857124109033,
+   "coverage90": 0.9273943661971835,
+   "width90": 4.6457688096194225,
+   "win_vs_checkins": null
+  },
+  {
+   "scenario": "dissociation",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 0,
@@ -1792,7 +2260,7 @@
   {
    "scenario": "dissociation",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 0,
    "mae": 0.7237567413169936,
    "mae_lo": 0.686218015633587,
@@ -1830,6 +2298,19 @@
   },
   {
    "scenario": "dissociation",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 1,
+   "mae": 0.788035688387356,
+   "mae_lo": 0.7502961460885735,
+   "mae_hi": 0.8266654416706009,
+   "night_mae": 0.7906998714720052,
+   "coverage90": 0.9256103286384985,
+   "width90": 3.6765360690696807,
+   "win_vs_checkins": 0.4766666666666667
+  },
+  {
+   "scenario": "dissociation",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 1,
@@ -1844,7 +2325,7 @@
   {
    "scenario": "dissociation",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 1,
    "mae": 0.6375176909437655,
    "mae_lo": 0.6127893136441285,
@@ -1882,6 +2363,19 @@
   },
   {
    "scenario": "dissociation",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "mae": 0.6764557674676088,
+   "mae_lo": 0.6521908549931533,
+   "mae_hi": 0.7001324466420193,
+   "night_mae": 0.6163268158872175,
+   "coverage90": 0.8951877934272304,
+   "width90": 2.7802541730794386,
+   "win_vs_checkins": 0.48333333333333334
+  },
+  {
+   "scenario": "dissociation",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -1896,7 +2390,7 @@
   {
    "scenario": "dissociation",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "mae": 0.5850865487138865,
    "mae_lo": 0.5665568945352413,
@@ -1934,6 +2428,19 @@
   },
   {
    "scenario": "dissociation",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 8,
+   "mae": 0.5823775731022625,
+   "mae_lo": 0.5663065972615294,
+   "mae_hi": 0.5983227529074118,
+   "night_mae": 0.5718885859363174,
+   "coverage90": 0.8681690140845071,
+   "width90": 2.2691250111131636,
+   "win_vs_checkins": 0.47333333333333333
+  },
+  {
+   "scenario": "dissociation",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 8,
@@ -1948,7 +2455,7 @@
   {
    "scenario": "dissociation",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 8,
    "mae": 0.5386019323237939,
    "mae_lo": 0.5251153543358394,
@@ -2022,6 +2529,26 @@
   },
   {
    "scenario": "matched",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "n_forecasts": 5400,
+   "base_rate": 0.2746296296296296,
+   "brier": 0.06457127966664422,
+   "brier_climatology": 0.19920819615912208,
+   "brier_skill_vs_prior": 0.25190064404025847,
+   "auroc": 0.9676515959703978,
+   "brier_diff_vs_checkins": -0.001362633519425595,
+   "brier_diff_lo": -0.0032709321879792396,
+   "brier_diff_hi": 0.0006500362517343679,
+   "auroc_diff_vs_checkins": 0.0013940650837996893,
+   "auroc_diff_lo": -0.0002970266644453101,
+   "auroc_diff_hi": 0.0032205180044452275,
+   "crossing_mae_min": 79.29317269076306,
+   "crossing_n": 249
+  },
+  {
+   "scenario": "matched",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -2043,7 +2570,7 @@
   {
    "scenario": "matched",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "n_forecasts": 5400,
    "base_rate": 0.2746296296296296,
@@ -2122,6 +2649,26 @@
   },
   {
    "scenario": "misreport",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "n_forecasts": 5400,
+   "base_rate": 0.26611111111111113,
+   "brier": 0.08501555212219275,
+   "brier_climatology": 0.195295987654321,
+   "brier_skill_vs_prior": 0.14472051090168547,
+   "auroc": 0.9447207476393944,
+   "brier_diff_vs_checkins": -0.001569920099112509,
+   "brier_diff_lo": -0.0037149901314083387,
+   "brier_diff_hi": 0.0005137588129823179,
+   "auroc_diff_vs_checkins": 0.00289648630486139,
+   "auroc_diff_lo": 0.0005215109047788102,
+   "auroc_diff_hi": 0.0055292951257742695,
+   "crossing_mae_min": 117.15354330708661,
+   "crossing_n": 254
+  },
+  {
+   "scenario": "misreport",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -2143,7 +2690,7 @@
   {
    "scenario": "misreport",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "n_forecasts": 5400,
    "base_rate": 0.26611111111111113,
@@ -2222,6 +2769,26 @@
   },
   {
    "scenario": "nonlinear",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "n_forecasts": 5400,
+   "base_rate": 0.26981481481481484,
+   "brier": 0.0666041738735787,
+   "brier_climatology": 0.197014780521262,
+   "brier_skill_vs_prior": 0.2757219240583665,
+   "auroc": 0.9641667962006987,
+   "brier_diff_vs_checkins": -0.0012479747414696084,
+   "brier_diff_lo": -0.0031274896703043105,
+   "brier_diff_hi": 0.0006678119715655504,
+   "auroc_diff_vs_checkins": 0.0012519689027808978,
+   "auroc_diff_lo": -0.0005311895941978451,
+   "auroc_diff_hi": 0.0030271695290969847,
+   "crossing_mae_min": 86.01181102362204,
+   "crossing_n": 254
+  },
+  {
+   "scenario": "nonlinear",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -2243,7 +2810,7 @@
   {
    "scenario": "nonlinear",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "n_forecasts": 5400,
    "base_rate": 0.26981481481481484,
@@ -2322,6 +2889,26 @@
   },
   {
    "scenario": "ratingbias",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "n_forecasts": 5400,
+   "base_rate": 0.2746296296296296,
+   "brier": 0.09085727070657672,
+   "brier_climatology": 0.19920819615912208,
+   "brier_skill_vs_prior": -0.05263928561975728,
+   "auroc": 0.9400023515595264,
+   "brier_diff_vs_checkins": -0.006771848226592221,
+   "brier_diff_lo": -0.009381403672763607,
+   "brier_diff_hi": -0.004098553859791795,
+   "auroc_diff_vs_checkins": 0.0076596973167604165,
+   "auroc_diff_lo": 0.005034388354700936,
+   "auroc_diff_hi": 0.010565355967367851,
+   "crossing_mae_min": 100.11440677966101,
+   "crossing_n": 236
+  },
+  {
+   "scenario": "ratingbias",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -2343,7 +2930,7 @@
   {
    "scenario": "ratingbias",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "n_forecasts": 5400,
    "base_rate": 0.2746296296296296,
@@ -2422,6 +3009,26 @@
   },
   {
    "scenario": "autocorr",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "n_forecasts": 5400,
+   "base_rate": 0.2746296296296296,
+   "brier": 0.0649167640524729,
+   "brier_climatology": 0.19920819615912208,
+   "brier_skill_vs_prior": 0.24789798762912807,
+   "auroc": 0.967371853347383,
+   "brier_diff_vs_checkins": -0.0010171491335969577,
+   "brier_diff_lo": -0.003010439823579945,
+   "brier_diff_hi": 0.0010709833509504089,
+   "auroc_diff_vs_checkins": 0.0011143224607848001,
+   "auroc_diff_lo": -0.0006703858903344129,
+   "auroc_diff_hi": 0.0030194826844774925,
+   "crossing_mae_min": 79.72690763052209,
+   "crossing_n": 249
+  },
+  {
+   "scenario": "autocorr",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -2443,7 +3050,7 @@
   {
    "scenario": "autocorr",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "n_forecasts": 5400,
    "base_rate": 0.2746296296296296,
@@ -2522,6 +3129,26 @@
   },
   {
    "scenario": "trait",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "n_forecasts": 5400,
+   "base_rate": 0.2735185185185185,
+   "brier": 0.06577370959808375,
+   "brier_climatology": 0.19870613854595334,
+   "brier_skill_vs_prior": 0.3257324659034123,
+   "auroc": 0.9665214139966875,
+   "brier_diff_vs_checkins": -0.00200607188732708,
+   "brier_diff_lo": -0.004041188496517594,
+   "brier_diff_hi": 0.000027467447863341136,
+   "auroc_diff_vs_checkins": 0.0014710219801593594,
+   "auroc_diff_lo": -0.00035279975874036307,
+   "auroc_diff_hi": 0.003489212832412436,
+   "crossing_mae_min": 86.64102564102564,
+   "crossing_n": 234
+  },
+  {
+   "scenario": "trait",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -2543,7 +3170,7 @@
   {
    "scenario": "trait",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "n_forecasts": 5400,
    "base_rate": 0.2735185185185185,
@@ -2622,6 +3249,26 @@
   },
   {
    "scenario": "debt",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "n_forecasts": 5400,
+   "base_rate": 0.3977777777777778,
+   "brier": 0.06899300876589762,
+   "brier_climatology": 0.2395506172839506,
+   "brier_skill_vs_prior": 0.18236948401130226,
+   "auroc": 0.9684382737682126,
+   "brier_diff_vs_checkins": -0.00007233330045695652,
+   "brier_diff_lo": -0.0023899637745825736,
+   "brier_diff_hi": 0.0022906787866223337,
+   "auroc_diff_vs_checkins": 0.001685325861638498,
+   "auroc_diff_lo": -0.0003927728085868498,
+   "auroc_diff_hi": 0.003990042051643328,
+   "crossing_mae_min": 87.42033898305085,
+   "crossing_n": 295
+  },
+  {
+   "scenario": "debt",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -2643,7 +3290,7 @@
   {
    "scenario": "debt",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "n_forecasts": 5400,
    "base_rate": 0.3977777777777778,
@@ -2722,6 +3369,26 @@
   },
   {
    "scenario": "workday",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "n_forecasts": 4200,
+   "base_rate": 0.014285714285714285,
+   "brier": 0.01316542454494249,
+   "brier_climatology": 0.014081632653061225,
+   "brier_skill_vs_prior": 0.12018876239045206,
+   "auroc": 0.970841384863124,
+   "brier_diff_vs_checkins": 0.0007741539105618613,
+   "brier_diff_lo": -0.00021062430317280616,
+   "brier_diff_hi": 0.0019385751247491985,
+   "auroc_diff_vs_checkins": 0.0003683574879227436,
+   "auroc_diff_lo": -0.003752209096828163,
+   "auroc_diff_hi": 0.005050330943188186,
+   "crossing_mae_min": 35.857142857142854,
+   "crossing_n": 21
+  },
+  {
+   "scenario": "workday",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -2743,7 +3410,7 @@
   {
    "scenario": "workday",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "n_forecasts": 4200,
    "base_rate": 0.014285714285714285,
@@ -2822,6 +3489,26 @@
   },
   {
    "scenario": "dissociation",
+   "method": "consider",
+   "label": "Check-ins + passive, consider-covariance (bias not estimated)",
+   "k": 3,
+   "n_forecasts": 5400,
+   "base_rate": 0.2746296296296296,
+   "brier": 0.06586227515393543,
+   "brier_climatology": 0.19920819615912208,
+   "brier_skill_vs_prior": 0.236943639973195,
+   "auroc": 0.9665918448397642,
+   "brier_diff_vs_checkins": -0.0021020842815876223,
+   "brier_diff_lo": -0.00404470704466497,
+   "brier_diff_hi": -0.000011372669828401127,
+   "auroc_diff_vs_checkins": 0.0020810268912709873,
+   "auroc_diff_lo": 0.0002783645608469554,
+   "auroc_diff_hi": 0.00416681077776937,
+   "crossing_mae_min": 78.55421686746988,
+   "crossing_n": 249
+  },
+  {
+   "scenario": "dissociation",
    "method": "twin",
    "label": "BlinkTwin (anchored)",
    "k": 3,
@@ -2843,7 +3530,7 @@
   {
    "scenario": "dissociation",
    "method": "oracle",
-   "label": "Oracle: true personal signal parameters",
+   "label": "Known-parameter filter (true signal parameters, same noise model)",
    "k": 3,
    "n_forecasts": 5400,
    "base_rate": 0.2746296296296296,
@@ -2944,6 +3631,46 @@
   },
   {
    "scenario": "matched",
+   "a": "consider_k1",
+   "b": "checkins_k1",
+   "mean_diff": 0.04690416865830456,
+   "ci": [
+    0.0091224575556167,
+    0.08469282945251991
+   ],
+   "share_a_better": 0.4666666666666667,
+   "share_a_worse_by_0_1": 0.37333333333333335,
+   "p05": -0.45596468765119197,
+   "p50": 0.029190221183135023,
+   "p95": 0.6459208979823747,
+   "night_mean_diff": 0.05054249534687352,
+   "night_ci": [
+    -0.0006394009250830004,
+    0.10373228329592502
+   ]
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k1",
+   "b": "consider_k1",
+   "mean_diff": -0.05955766261929767,
+   "ci": [
+    -0.08475851206438201,
+    -0.034291935418645676
+   ],
+   "share_a_better": 0.5866666666666667,
+   "share_a_worse_by_0_1": 0.21,
+   "p05": -0.43200316757499213,
+   "p50": -0.04886033739111201,
+   "p95": 0.2849570042719724,
+   "night_mean_diff": -0.03993721092617801,
+   "night_ci": [
+    -0.08600111006939148,
+    0.009105673901959715
+   ]
+  },
+  {
+   "scenario": "matched",
    "a": "twin_k2",
    "b": "checkins_k2",
    "mean_diff": -0.032069846108590226,
@@ -3020,6 +3747,46 @@
    "night_ci": [
     -0.1223025536311349,
     -0.06833295621898558
+   ]
+  },
+  {
+   "scenario": "matched",
+   "a": "consider_k2",
+   "b": "checkins_k2",
+   "mean_diff": 0.03354595562506026,
+   "ci": [
+    0.007300468034301429,
+    0.0597290652374971
+   ],
+   "share_a_better": 0.4866666666666667,
+   "share_a_worse_by_0_1": 0.2966666666666667,
+   "p05": -0.2985291354922363,
+   "p50": 0.004117355767585984,
+   "p95": 0.4618864212516696,
+   "night_mean_diff": 0.0027762859140203194,
+   "night_ci": [
+    -0.018708560889284423,
+    0.024295624224378302
+   ]
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k2",
+   "b": "consider_k2",
+   "mean_diff": -0.06561580173365053,
+   "ci": [
+    -0.08275945225774746,
+    -0.048627808966744165
+   ],
+   "share_a_better": 0.67,
+   "share_a_worse_by_0_1": 0.10333333333333333,
+   "p05": -0.33509937168286696,
+   "p50": -0.056802674204938175,
+   "p95": 0.15179237328347883,
+   "night_mean_diff": -0.0325429125423265,
+   "night_ci": [
+    -0.053774949895117836,
+    -0.010618390095682042
    ]
   },
   {
@@ -3104,6 +3871,46 @@
   },
   {
    "scenario": "matched",
+   "a": "consider_k3",
+   "b": "checkins_k3",
+   "mean_diff": 0.01468449327087565,
+   "ci": [
+    -0.0031535421139322092,
+    0.032123230143567404
+   ],
+   "share_a_better": 0.48333333333333334,
+   "share_a_worse_by_0_1": 0.2,
+   "p05": -0.20144090369473744,
+   "p50": 0.0023107358685182378,
+   "p95": 0.29857841275654173,
+   "night_mean_diff": -0.006874007612482747,
+   "night_ci": [
+    -0.02339822407790916,
+    0.011141730294222064
+   ]
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k3",
+   "b": "consider_k3",
+   "mean_diff": -0.04429971366439577,
+   "ci": [
+    -0.05651078971141409,
+    -0.03158824444320747
+   ],
+   "share_a_better": 0.72,
+   "share_a_worse_by_0_1": 0.08666666666666667,
+   "p05": -0.23442440317998373,
+   "p50": -0.044107928903309446,
+   "p95": 0.1446227290396162,
+   "night_mean_diff": -0.024722502019756638,
+   "night_ci": [
+    -0.045885792342531116,
+    -0.003024294494270884
+   ]
+  },
+  {
+   "scenario": "matched",
    "a": "twin_k4",
    "b": "checkins_k4",
    "mean_diff": -0.026719605076245465,
@@ -3180,6 +3987,46 @@
    "night_ci": [
     -0.08711553518604492,
     -0.04669131982312888
+   ]
+  },
+  {
+   "scenario": "matched",
+   "a": "consider_k4",
+   "b": "checkins_k4",
+   "mean_diff": 0.00873471050545266,
+   "ci": [
+    -0.005762947748888219,
+    0.02224967422439044
+   ],
+   "share_a_better": 0.53,
+   "share_a_worse_by_0_1": 0.16,
+   "p05": -0.1516015948844062,
+   "p50": -0.008389339834797394,
+   "p95": 0.22551446142203171,
+   "night_mean_diff": -0.0073448517730345326,
+   "night_ci": [
+    -0.02297258505624988,
+    0.009644086412532936
+   ]
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k4",
+   "b": "consider_k4",
+   "mean_diff": -0.03545431558169809,
+   "ci": [
+    -0.046041304558675285,
+    -0.02482864143862561
+   ],
+   "share_a_better": 0.71,
+   "share_a_worse_by_0_1": 0.06333333333333334,
+   "p05": -0.18047508863386463,
+   "p50": -0.03246044552870772,
+   "p95": 0.11480933292825535,
+   "night_mean_diff": -0.01851182963677778,
+   "night_ci": [
+    -0.03738256185201131,
+    0.000810564447597849
    ]
   },
   {
@@ -3264,6 +4111,46 @@
   },
   {
    "scenario": "matched",
+   "a": "consider_k6",
+   "b": "checkins_k6",
+   "mean_diff": 0.006567581235221708,
+   "ci": [
+    -0.0037455778417192632,
+    0.01709431255122366
+   ],
+   "share_a_better": 0.51,
+   "share_a_worse_by_0_1": 0.12666666666666668,
+   "p05": -0.1218513987157645,
+   "p50": -0.0019760516679784845,
+   "p95": 0.16187845126234626,
+   "night_mean_diff": -0.00835594735544245,
+   "night_ci": [
+    -0.02242180281231759,
+    0.006935511017678264
+   ]
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k6",
+   "b": "consider_k6",
+   "mean_diff": -0.022972398559030258,
+   "ci": [
+    -0.03143826348108851,
+    -0.01394064138759689
+   ],
+   "share_a_better": 0.6633333333333333,
+   "share_a_worse_by_0_1": 0.05333333333333334,
+   "p05": -0.15311216866469166,
+   "p50": -0.025300517215291418,
+   "p95": 0.10388766178214644,
+   "night_mean_diff": -0.005369355985500173,
+   "night_ci": [
+    -0.025124469822027064,
+    0.014098211366567099
+   ]
+  },
+  {
+   "scenario": "matched",
    "a": "twin_k8",
    "b": "checkins_k8",
    "mean_diff": -0.01358236277226145,
@@ -3344,6 +4231,46 @@
   },
   {
    "scenario": "matched",
+   "a": "consider_k8",
+   "b": "checkins_k8",
+   "mean_diff": 0.008334628477605865,
+   "ci": [
+    -0.0007105117700784608,
+    0.017244400220920487
+   ],
+   "share_a_better": 0.48333333333333334,
+   "share_a_worse_by_0_1": 0.11666666666666667,
+   "p05": -0.11298614213352899,
+   "p50": 0.0014776758370201315,
+   "p95": 0.15547079599148853,
+   "night_mean_diff": -0.008467693951663066,
+   "night_ci": [
+    -0.021483098681430335,
+    0.005673237701383482
+   ]
+  },
+  {
+   "scenario": "matched",
+   "a": "twin_k8",
+   "b": "consider_k8",
+   "mean_diff": -0.021916991249867297,
+   "ci": [
+    -0.03035005735298265,
+    -0.013455365206688785
+   ],
+   "share_a_better": 0.6266666666666667,
+   "share_a_worse_by_0_1": 0.056666666666666664,
+   "p05": -0.1406563205361667,
+   "p50": -0.017270959017253534,
+   "p95": 0.10137539911804837,
+   "night_mean_diff": -0.009192945173568457,
+   "night_ci": [
+    -0.029007624939668013,
+    0.010421532821271041
+   ]
+  },
+  {
+   "scenario": "matched",
    "a": "twin_k0",
    "b": "prior_k0",
    "mean_diff": 0.042282313349180596,
@@ -3360,6 +4287,26 @@
    "night_ci": [
     0.012004865577074444,
     0.14380052179835
+   ]
+  },
+  {
+   "scenario": "matched",
+   "a": "consider_k0",
+   "b": "prior_k0",
+   "mean_diff": 0.21377550448744378,
+   "ci": [
+    0.14139386818003122,
+    0.28651056155922544
+   ],
+   "share_a_better": 0.37333333333333335,
+   "share_a_worse_by_0_1": 0.5633333333333334,
+   "p05": -0.8333857623211068,
+   "p50": 0.14864145848921823,
+   "p95": 1.4066301622014747,
+   "night_mean_diff": 0.20964523400552057,
+   "night_ci": [
+    0.12690660965582584,
+    0.28719772736881066
    ]
   },
   {
@@ -3484,6 +4431,46 @@
   },
   {
    "scenario": "misreport",
+   "a": "consider_k1",
+   "b": "checkins_k1",
+   "mean_diff": 0.028741703046497383,
+   "ci": [
+    -0.006559869979136878,
+    0.0644614428835047
+   ],
+   "share_a_better": 0.5,
+   "share_a_worse_by_0_1": 0.3566666666666667,
+   "p05": -0.4800538075711066,
+   "p50": 0.0002509035142143623,
+   "p95": 0.5876455198275878,
+   "night_mean_diff": 0.02837971213929024,
+   "night_ci": [
+    -0.02055949883445881,
+    0.0768019438799843
+   ]
+  },
+  {
+   "scenario": "misreport",
+   "a": "twin_k1",
+   "b": "consider_k1",
+   "mean_diff": -0.08450760122482562,
+   "ci": [
+    -0.1083104669252022,
+    -0.061092799725860514
+   ],
+   "share_a_better": 0.6766666666666666,
+   "share_a_worse_by_0_1": 0.15333333333333332,
+   "p05": -0.4270311584457985,
+   "p50": -0.07834578426936273,
+   "p95": 0.2484756206593047,
+   "night_mean_diff": -0.07724009959496617,
+   "night_ci": [
+    -0.1228649821924368,
+    -0.03121369550459374
+   ]
+  },
+  {
+   "scenario": "misreport",
    "a": "twin_k3",
    "b": "checkins_k3",
    "mean_diff": -0.05188497188589521,
@@ -3560,6 +4547,46 @@
    "night_ci": [
     -0.0906443317506183,
     -0.046480045887867034
+   ]
+  },
+  {
+   "scenario": "misreport",
+   "a": "consider_k3",
+   "b": "checkins_k3",
+   "mean_diff": 0.00032441571852177126,
+   "ci": [
+    -0.016373267415136516,
+    0.01632927667306575
+   ],
+   "share_a_better": 0.5466666666666666,
+   "share_a_worse_by_0_1": 0.16,
+   "p05": -0.21631452675216076,
+   "p50": -0.012025048175488717,
+   "p95": 0.28528022327291214,
+   "night_mean_diff": -0.012181993565069707,
+   "night_ci": [
+    -0.028533969289075298,
+    0.005785660576583331
+   ]
+  },
+  {
+   "scenario": "misreport",
+   "a": "twin_k3",
+   "b": "consider_k3",
+   "mean_diff": -0.05220938760441699,
+   "ci": [
+    -0.06374428707179297,
+    -0.0402339240427557
+   ],
+   "share_a_better": 0.7533333333333333,
+   "share_a_worse_by_0_1": 0.07,
+   "p05": -0.2344025380700562,
+   "p50": -0.04872569633074783,
+   "p95": 0.12046889123935973,
+   "night_mean_diff": -0.03127058743107367,
+   "night_ci": [
+    -0.05280374615637333,
+    -0.008784639690061411
    ]
   },
   {
@@ -3644,6 +4671,46 @@
   },
   {
    "scenario": "misreport",
+   "a": "consider_k8",
+   "b": "checkins_k8",
+   "mean_diff": -0.0004513958890152405,
+   "ci": [
+    -0.009403806632578348,
+    0.008307475418781799
+   ],
+   "share_a_better": 0.5566666666666666,
+   "share_a_worse_by_0_1": 0.09333333333333334,
+   "p05": -0.10918448443145155,
+   "p50": -0.00766009195081202,
+   "p95": 0.14981570080437823,
+   "night_mean_diff": -0.011793511735007397,
+   "night_ci": [
+    -0.024575677405645084,
+    0.0015756072044111626
+   ]
+  },
+  {
+   "scenario": "misreport",
+   "a": "twin_k8",
+   "b": "consider_k8",
+   "mean_diff": -0.03151748821849658,
+   "ci": [
+    -0.04030318698902525,
+    -0.022669657774358438
+   ],
+   "share_a_better": 0.66,
+   "share_a_worse_by_0_1": 0.03666666666666667,
+   "p05": -0.15599174159389384,
+   "p50": -0.02707829981175086,
+   "p95": 0.08319302843959053,
+   "night_mean_diff": -0.030188903122398324,
+   "night_ci": [
+    -0.05083241165027042,
+    -0.011615570142705622
+   ]
+  },
+  {
+   "scenario": "misreport",
    "a": "twin_k0",
    "b": "prior_k0",
    "mean_diff": -0.007548474991776413,
@@ -3660,6 +4727,26 @@
    "night_ci": [
     -0.03747338996971273,
     0.09800330604677952
+   ]
+  },
+  {
+   "scenario": "misreport",
+   "a": "consider_k0",
+   "b": "prior_k0",
+   "mean_diff": 0.16908922066536217,
+   "ci": [
+    0.09824581834642411,
+    0.2410339057676819
+   ],
+   "share_a_better": 0.38333333333333336,
+   "share_a_worse_by_0_1": 0.5,
+   "p05": -0.7911656483620673,
+   "p50": 0.09921452748204074,
+   "p95": 1.3818975210117475,
+   "night_mean_diff": 0.18036877319198402,
+   "night_ci": [
+    0.09757708300393973,
+    0.2579702405806712
    ]
   },
   {
@@ -3784,6 +4871,46 @@
   },
   {
    "scenario": "nonlinear",
+   "a": "consider_k1",
+   "b": "checkins_k1",
+   "mean_diff": 0.05400077039121578,
+   "ci": [
+    0.01569413007806812,
+    0.09060606182312664
+   ],
+   "share_a_better": 0.4866666666666667,
+   "share_a_worse_by_0_1": 0.39,
+   "p05": -0.4520427878648726,
+   "p50": 0.008373857625314507,
+   "p95": 0.6456854227132356,
+   "night_mean_diff": 0.07875044755598876,
+   "night_ci": [
+    0.027269169807190713,
+    0.1310701439199245
+   ]
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "twin_k1",
+   "b": "consider_k1",
+   "mean_diff": -0.06693029329191265,
+   "ci": [
+    -0.09105058709090304,
+    -0.04423861926743556
+   ],
+   "share_a_better": 0.6133333333333333,
+   "share_a_worse_by_0_1": 0.18,
+   "p05": -0.4235612303817055,
+   "p50": -0.04554693514722061,
+   "p95": 0.22568378071705852,
+   "night_mean_diff": -0.10295429867549506,
+   "night_ci": [
+    -0.1443583988248087,
+    -0.0658035594534994
+   ]
+  },
+  {
+   "scenario": "nonlinear",
    "a": "twin_k3",
    "b": "checkins_k3",
    "mean_diff": -0.0371473024027009,
@@ -3860,6 +4987,46 @@
    "night_ci": [
     -0.0818802750863356,
     -0.027912451280543534
+   ]
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "consider_k3",
+   "b": "checkins_k3",
+   "mean_diff": -0.0013022113919922047,
+   "ci": [
+    -0.01872170168219942,
+    0.016375238565781856
+   ],
+   "share_a_better": 0.51,
+   "share_a_worse_by_0_1": 0.16666666666666666,
+   "p05": -0.23810956679216908,
+   "p50": -0.003245400136632437,
+   "p95": 0.25406042127424955,
+   "night_mean_diff": -0.002013601282613328,
+   "night_ci": [
+    -0.021150527571663923,
+    0.01684810411529485
+   ]
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "twin_k3",
+   "b": "consider_k3",
+   "mean_diff": -0.03584509101070867,
+   "ci": [
+    -0.047579553887561625,
+    -0.02479703706690533
+   ],
+   "share_a_better": 0.66,
+   "share_a_worse_by_0_1": 0.06333333333333334,
+   "p05": -0.20597438617222194,
+   "p50": -0.03140796169071158,
+   "p95": 0.11251315094852546,
+   "night_mean_diff": -0.047223273182542394,
+   "night_ci": [
+    -0.06589002935515156,
+    -0.027150050978240435
    ]
   },
   {
@@ -3944,6 +5111,46 @@
   },
   {
    "scenario": "nonlinear",
+   "a": "consider_k8",
+   "b": "checkins_k8",
+   "mean_diff": 0.00397265793942414,
+   "ci": [
+    -0.0042003288057283344,
+    0.013015082063707691
+   ],
+   "share_a_better": 0.49,
+   "share_a_worse_by_0_1": 0.09333333333333334,
+   "p05": -0.10842089945600436,
+   "p50": 0.0014377480670957066,
+   "p95": 0.15749929586031763,
+   "night_mean_diff": -0.0027217816168312366,
+   "night_ci": [
+    -0.016707620461224232,
+    0.010715695673805275
+   ]
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "twin_k8",
+   "b": "consider_k8",
+   "mean_diff": -0.02681107072553438,
+   "ci": [
+    -0.03519098504032824,
+    -0.018926115979499003
+   ],
+   "share_a_better": 0.67,
+   "share_a_worse_by_0_1": 0.03666666666666667,
+   "p05": -0.1517467789414621,
+   "p50": -0.021469096745503513,
+   "p95": 0.07526807550428743,
+   "night_mean_diff": -0.04867186031313636,
+   "night_ci": [
+    -0.0674610341586237,
+    -0.03075842262395972
+   ]
+  },
+  {
+   "scenario": "nonlinear",
    "a": "twin_k0",
    "b": "prior_k0",
    "mean_diff": 0.04473519646525837,
@@ -3960,6 +5167,26 @@
    "night_ci": [
     -0.05614146398616138,
     0.08101658684378771
+   ]
+  },
+  {
+   "scenario": "nonlinear",
+   "a": "consider_k0",
+   "b": "prior_k0",
+   "mean_diff": 0.211311007538967,
+   "ci": [
+    0.13013807169487535,
+    0.28889252570165413
+   ],
+   "share_a_better": 0.36666666666666664,
+   "share_a_worse_by_0_1": 0.55,
+   "p05": -0.9094104201977311,
+   "p50": 0.14789378556194024,
+   "p95": 1.4697023464583145,
+   "night_mean_diff": 0.2256689095662435,
+   "night_ci": [
+    0.1313870207695688,
+    0.3151905166309706
    ]
   },
   {
@@ -4084,6 +5311,46 @@
   },
   {
    "scenario": "ratingbias",
+   "a": "consider_k1",
+   "b": "checkins_k1",
+   "mean_diff": -0.026151221070057715,
+   "ci": [
+    -0.07261946241772226,
+    0.021616878862116648
+   ],
+   "share_a_better": 0.53,
+   "share_a_worse_by_0_1": 0.3566666666666667,
+   "p05": -0.7608868211564637,
+   "p50": -0.021381274141266476,
+   "p95": 0.6520579309615602,
+   "night_mean_diff": -0.04770997908301091,
+   "night_ci": [
+    -0.10923764863044058,
+    0.01235350435280011
+   ]
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "twin_k1",
+   "b": "consider_k1",
+   "mean_diff": -0.030361488132082257,
+   "ci": [
+    -0.0593930233140149,
+    -0.00045866765167351073
+   ],
+   "share_a_better": 0.59,
+   "share_a_worse_by_0_1": 0.27666666666666667,
+   "p05": -0.46234220332723497,
+   "p50": -0.04086418737099812,
+   "p95": 0.4174388828414107,
+   "night_mean_diff": -0.0008492556579972033,
+   "night_ci": [
+    -0.050847665059837795,
+    0.051023004292233755
+   ]
+  },
+  {
+   "scenario": "ratingbias",
    "a": "twin_k3",
    "b": "checkins_k3",
    "mean_diff": -0.05537161617185729,
@@ -4160,6 +5427,46 @@
    "night_ci": [
     -0.21663783568080258,
     -0.14968808455900537
+   ]
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "consider_k3",
+   "b": "checkins_k3",
+   "mean_diff": -0.043072674218906926,
+   "ci": [
+    -0.06698439804029235,
+    -0.019483373480361797
+   ],
+   "share_a_better": 0.5966666666666667,
+   "share_a_worse_by_0_1": 0.18,
+   "p05": -0.4145554018550929,
+   "p50": -0.03941157696251141,
+   "p95": 0.30218095813956275,
+   "night_mean_diff": -0.04695964988744031,
+   "night_ci": [
+    -0.06819882055715472,
+    -0.025246615260400795
+   ]
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "twin_k3",
+   "b": "consider_k3",
+   "mean_diff": -0.012298941952950353,
+   "ci": [
+    -0.02745758945853451,
+    0.003405676764846724
+   ],
+   "share_a_better": 0.6033333333333334,
+   "share_a_worse_by_0_1": 0.17,
+   "p05": -0.22664978684638856,
+   "p50": -0.024053147085504767,
+   "p95": 0.251500151720944,
+   "night_mean_diff": 0.011848777043994395,
+   "night_ci": [
+    -0.012880546840017014,
+    0.03714735897287694
    ]
   },
   {
@@ -4244,6 +5551,46 @@
   },
   {
    "scenario": "ratingbias",
+   "a": "consider_k8",
+   "b": "checkins_k8",
+   "mean_diff": -0.025819252648356068,
+   "ci": [
+    -0.04006433720850891,
+    -0.012221659315629586
+   ],
+   "share_a_better": 0.5766666666666667,
+   "share_a_worse_by_0_1": 0.09333333333333334,
+   "p05": -0.23434059861070172,
+   "p50": -0.017056874470000483,
+   "p95": 0.17404573364341536,
+   "night_mean_diff": -0.03668733536770902,
+   "night_ci": [
+    -0.05346488688036493,
+    -0.020968262606334078
+   ]
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "twin_k8",
+   "b": "consider_k8",
+   "mean_diff": -0.001084114830753847,
+   "ci": [
+    -0.011939445606149759,
+    0.010998018322362682
+   ],
+   "share_a_better": 0.5766666666666667,
+   "share_a_worse_by_0_1": 0.15333333333333332,
+   "p05": -0.156340637952411,
+   "p50": -0.01448551581058366,
+   "p95": 0.2013521721721465,
+   "night_mean_diff": 0.015115305387642284,
+   "night_ci": [
+    -0.008572501548017334,
+    0.03873576383133224
+   ]
+  },
+  {
+   "scenario": "ratingbias",
    "a": "twin_k0",
    "b": "prior_k0",
    "mean_diff": 0.042282313349180596,
@@ -4260,6 +5607,26 @@
    "night_ci": [
     0.012004865577074444,
     0.14380052179835
+   ]
+  },
+  {
+   "scenario": "ratingbias",
+   "a": "consider_k0",
+   "b": "prior_k0",
+   "mean_diff": 0.21377550448744378,
+   "ci": [
+    0.14139386818003122,
+    0.28651056155922544
+   ],
+   "share_a_better": 0.37333333333333335,
+   "share_a_worse_by_0_1": 0.5633333333333334,
+   "p05": -0.8333857623211068,
+   "p50": 0.14864145848921823,
+   "p95": 1.4066301622014747,
+   "night_mean_diff": 0.20964523400552057,
+   "night_ci": [
+    0.12690660965582584,
+    0.28719772736881066
    ]
   },
   {
@@ -4384,6 +5751,46 @@
   },
   {
    "scenario": "autocorr",
+   "a": "consider_k1",
+   "b": "checkins_k1",
+   "mean_diff": 0.08517222262078467,
+   "ci": [
+    0.04355725307470478,
+    0.12657581940970242
+   ],
+   "share_a_better": 0.43666666666666665,
+   "share_a_worse_by_0_1": 0.44,
+   "p05": -0.4310883731189203,
+   "p50": 0.03746905393870148,
+   "p95": 0.6861241070060622,
+   "night_mean_diff": 0.06386727014368188,
+   "night_ci": [
+    0.011684972446269985,
+    0.11824518079719276
+   ]
+  },
+  {
+   "scenario": "autocorr",
+   "a": "twin_k1",
+   "b": "consider_k1",
+   "mean_diff": -0.06891943777203631,
+   "ci": [
+    -0.09649776736115244,
+    -0.04050150940057652
+   ],
+   "share_a_better": 0.6133333333333333,
+   "share_a_worse_by_0_1": 0.22666666666666666,
+   "p05": -0.49269201054198064,
+   "p50": -0.04921024382041128,
+   "p95": 0.3086338200281354,
+   "night_mean_diff": -0.038437641670935,
+   "night_ci": [
+    -0.08778820780033524,
+    0.0142512185374326
+   ]
+  },
+  {
+   "scenario": "autocorr",
    "a": "twin_k3",
    "b": "checkins_k3",
    "mean_diff": -0.0132244953146797,
@@ -4460,6 +5867,46 @@
    "night_ci": [
     -0.06857550575758288,
     -0.026551658852383895
+   ]
+  },
+  {
+   "scenario": "autocorr",
+   "a": "consider_k3",
+   "b": "checkins_k3",
+   "mean_diff": 0.03466026823949759,
+   "ci": [
+    0.01480442283072478,
+    0.05362040089255443
+   ],
+   "share_a_better": 0.44333333333333336,
+   "share_a_worse_by_0_1": 0.2733333333333333,
+   "p05": -0.1910425151124258,
+   "p50": 0.015485111831305742,
+   "p95": 0.3559115089871988,
+   "night_mean_diff": -0.004516656979011131,
+   "night_ci": [
+    -0.02156498326314103,
+    0.013863354163776985
+   ]
+  },
+  {
+   "scenario": "autocorr",
+   "a": "twin_k3",
+   "b": "consider_k3",
+   "mean_diff": -0.047884763554177284,
+   "ci": [
+    -0.062437397665458964,
+    -0.03312107878133873
+   ],
+   "share_a_better": 0.6766666666666666,
+   "share_a_worse_by_0_1": 0.10666666666666667,
+   "p05": -0.2641421552569944,
+   "p50": -0.04385959567761619,
+   "p95": 0.16001121894999812,
+   "night_mean_diff": -0.0166135048942333,
+   "night_ci": [
+    -0.04057231200913667,
+    0.006755088573330638
    ]
   },
   {
@@ -4544,6 +5991,46 @@
   },
   {
    "scenario": "autocorr",
+   "a": "consider_k8",
+   "b": "checkins_k8",
+   "mean_diff": 0.02152788900606223,
+   "ci": [
+    0.011340553728256247,
+    0.03178868858258762
+   ],
+   "share_a_better": 0.42333333333333334,
+   "share_a_worse_by_0_1": 0.16666666666666666,
+   "p05": -0.11344792466787168,
+   "p50": 0.01338400122356842,
+   "p95": 0.18926891990948602,
+   "night_mean_diff": -0.008637547465313518,
+   "night_ci": [
+    -0.0217768307518729,
+    0.005921549079208927
+   ]
+  },
+  {
+   "scenario": "autocorr",
+   "a": "twin_k8",
+   "b": "consider_k8",
+   "mean_diff": -0.019256481006561982,
+   "ci": [
+    -0.02891013325976942,
+    -0.009403792326355926
+   ],
+   "share_a_better": 0.5766666666666667,
+   "share_a_worse_by_0_1": 0.08,
+   "p05": -0.16393044139481858,
+   "p50": -0.01445311889649592,
+   "p95": 0.12171270498273264,
+   "night_mean_diff": 0.00275815780883854,
+   "night_ci": [
+    -0.01944748489472512,
+    0.02539587861266699
+   ]
+  },
+  {
+   "scenario": "autocorr",
    "a": "twin_k0",
    "b": "prior_k0",
    "mean_diff": 0.11102237636893612,
@@ -4560,6 +6047,26 @@
    "night_ci": [
     0.052543979258728946,
     0.19227182594011683
+   ]
+  },
+  {
+   "scenario": "autocorr",
+   "a": "consider_k0",
+   "b": "prior_k0",
+   "mean_diff": 0.3275646605007654,
+   "ci": [
+    0.24740216202053114,
+    0.40678263096521156
+   ],
+   "share_a_better": 0.3233333333333333,
+   "share_a_worse_by_0_1": 0.58,
+   "p05": -0.7343258482433708,
+   "p50": 0.2280691106995218,
+   "p95": 1.584047813008285,
+   "night_mean_diff": 0.26893776347850085,
+   "night_ci": [
+    0.18742498364530205,
+    0.35080313500551225
    ]
   },
   {
@@ -4684,6 +6191,46 @@
   },
   {
    "scenario": "trait",
+   "a": "consider_k1",
+   "b": "checkins_k1",
+   "mean_diff": 0.028697480940735383,
+   "ci": [
+    -0.010884505915788526,
+    0.06710801807660628
+   ],
+   "share_a_better": 0.44333333333333336,
+   "share_a_worse_by_0_1": 0.3933333333333333,
+   "p05": -0.5046501667802684,
+   "p50": 0.04346643002349604,
+   "p95": 0.6525053197675242,
+   "night_mean_diff": 0.03371003367103622,
+   "night_ci": [
+    -0.022965684740151017,
+    0.08979293331788904
+   ]
+  },
+  {
+   "scenario": "trait",
+   "a": "twin_k1",
+   "b": "consider_k1",
+   "mean_diff": -0.08285739166190335,
+   "ci": [
+    -0.10796093586869271,
+    -0.056846065250334366
+   ],
+   "share_a_better": 0.6433333333333333,
+   "share_a_worse_by_0_1": 0.15333333333333332,
+   "p05": -0.45073065205176865,
+   "p50": -0.07558584126567813,
+   "p95": 0.27139390354990206,
+   "night_mean_diff": -0.08586968263134684,
+   "night_ci": [
+    -0.13333402334545544,
+    -0.035907541136473424
+   ]
+  },
+  {
+   "scenario": "trait",
    "a": "twin_k3",
    "b": "checkins_k3",
    "mean_diff": -0.04164096361341406,
@@ -4760,6 +6307,46 @@
    "night_ci": [
     -0.09179463583407967,
     -0.04785531655527619
+   ]
+  },
+  {
+   "scenario": "trait",
+   "a": "consider_k3",
+   "b": "checkins_k3",
+   "mean_diff": 0.008991397370544649,
+   "ci": [
+    -0.008592040436686836,
+    0.02650429966551875
+   ],
+   "share_a_better": 0.5,
+   "share_a_worse_by_0_1": 0.22333333333333333,
+   "p05": -0.2162303428885391,
+   "p50": -0.0026395457029825264,
+   "p95": 0.2862315637700626,
+   "night_mean_diff": -0.00433991484225545,
+   "night_ci": [
+    -0.02322289204027407,
+    0.014942250140251512
+   ]
+  },
+  {
+   "scenario": "trait",
+   "a": "twin_k3",
+   "b": "consider_k3",
+   "mean_diff": -0.05063236098395865,
+   "ci": [
+    -0.06304405797640068,
+    -0.03770353823088159
+   ],
+   "share_a_better": 0.6966666666666667,
+   "share_a_worse_by_0_1": 0.07,
+   "p05": -0.21964872220386622,
+   "p50": -0.052548549889235574,
+   "p95": 0.1275754463798276,
+   "night_mean_diff": -0.039070069049306794,
+   "night_ci": [
+    -0.060906535457680516,
+    -0.017054704506799093
    ]
   },
   {
@@ -4844,6 +6431,46 @@
   },
   {
    "scenario": "trait",
+   "a": "consider_k8",
+   "b": "checkins_k8",
+   "mean_diff": 0.006191079554313811,
+   "ci": [
+    -0.0032763096326654515,
+    0.015580131045590256
+   ],
+   "share_a_better": 0.48333333333333334,
+   "share_a_worse_by_0_1": 0.12333333333333334,
+   "p05": -0.11521951360877308,
+   "p50": 0.003427774088123725,
+   "p95": 0.14766950837838477,
+   "night_mean_diff": -0.007986597785717675,
+   "night_ci": [
+    -0.02272765487465933,
+    0.006544472101179736
+   ]
+  },
+  {
+   "scenario": "trait",
+   "a": "twin_k8",
+   "b": "consider_k8",
+   "mean_diff": -0.02924477557133109,
+   "ci": [
+    -0.03802205771652695,
+    -0.02040028982299244
+   ],
+   "share_a_better": 0.6633333333333333,
+   "share_a_worse_by_0_1": 0.04,
+   "p05": -0.15566372783402158,
+   "p50": -0.027189276178117172,
+   "p95": 0.0910949468557299,
+   "night_mean_diff": -0.031440041484397545,
+   "night_ci": [
+    -0.05262963633629586,
+    -0.01095361992363137
+   ]
+  },
+  {
+   "scenario": "trait",
    "a": "twin_k0",
    "b": "prior_k0",
    "mean_diff": -0.03373264099865813,
@@ -4860,6 +6487,26 @@
    "night_ci": [
     -0.09927612282405514,
     0.045309783959572275
+   ]
+  },
+  {
+   "scenario": "trait",
+   "a": "consider_k0",
+   "b": "prior_k0",
+   "mean_diff": 0.12738207177620217,
+   "ci": [
+    0.04846494298344747,
+    0.20737728907493513
+   ],
+   "share_a_better": 0.4,
+   "share_a_worse_by_0_1": 0.5233333333333333,
+   "p05": -1.0797841582378906,
+   "p50": 0.13147391929863148,
+   "p95": 1.3264426451221494,
+   "night_mean_diff": 0.09886978677051111,
+   "night_ci": [
+    0.002599934432946689,
+    0.1897212071183742
    ]
   },
   {
@@ -4984,6 +6631,46 @@
   },
   {
    "scenario": "debt",
+   "a": "consider_k1",
+   "b": "checkins_k1",
+   "mean_diff": 0.06140588146320553,
+   "ci": [
+    0.028405557336219106,
+    0.09669531656022148
+   ],
+   "share_a_better": 0.47,
+   "share_a_worse_by_0_1": 0.37333333333333335,
+   "p05": -0.3935989728948174,
+   "p50": 0.01757087388119638,
+   "p95": 0.6605839495484676,
+   "night_mean_diff": 0.05765589823247437,
+   "night_ci": [
+    0.015881823892700975,
+    0.0980103600937212
+   ]
+  },
+  {
+   "scenario": "debt",
+   "a": "twin_k1",
+   "b": "consider_k1",
+   "mean_diff": -0.08615973526104433,
+   "ci": [
+    -0.10717446160946432,
+    -0.06476188456106859
+   ],
+   "share_a_better": 0.6766666666666666,
+   "share_a_worse_by_0_1": 0.13666666666666666,
+   "p05": -0.37955429824336395,
+   "p50": -0.06969232395838121,
+   "p95": 0.22267529726058052,
+   "night_mean_diff": -0.06303425711441399,
+   "night_ci": [
+    -0.09568184436160972,
+    -0.028381864784455868
+   ]
+  },
+  {
+   "scenario": "debt",
    "a": "twin_k3",
    "b": "checkins_k3",
    "mean_diff": -0.03493566127332652,
@@ -5060,6 +6747,46 @@
    "night_ci": [
     -0.058221458919614714,
     -0.021075798616704264
+   ]
+  },
+  {
+   "scenario": "debt",
+   "a": "consider_k3",
+   "b": "checkins_k3",
+   "mean_diff": 0.009441150288523662,
+   "ci": [
+    -0.008170517941363012,
+    0.02643664410058736
+   ],
+   "share_a_better": 0.5166666666666667,
+   "share_a_worse_by_0_1": 0.19666666666666666,
+   "p05": -0.2119054120600773,
+   "p50": -0.008039323054933767,
+   "p95": 0.2617113310110893,
+   "night_mean_diff": -0.013105639612363308,
+   "night_ci": [
+    -0.026628619997232237,
+    0.0010080110203741575
+   ]
+  },
+  {
+   "scenario": "debt",
+   "a": "twin_k3",
+   "b": "consider_k3",
+   "mean_diff": -0.044376811561850166,
+   "ci": [
+    -0.055410728709536027,
+    -0.03293781749139136
+   ],
+   "share_a_better": 0.6766666666666666,
+   "share_a_worse_by_0_1": 0.04666666666666667,
+   "p05": -0.23738901910308494,
+   "p50": -0.03646079686735218,
+   "p95": 0.08906407556260494,
+   "night_mean_diff": -0.013406436729355722,
+   "night_ci": [
+    -0.029074499574871585,
+    0.002031132014564362
    ]
   },
   {
@@ -5144,6 +6871,46 @@
   },
   {
    "scenario": "debt",
+   "a": "consider_k8",
+   "b": "checkins_k8",
+   "mean_diff": 0.0012869985291593996,
+   "ci": [
+    -0.007950238004191442,
+    0.010682521930879797
+   ],
+   "share_a_better": 0.5233333333333333,
+   "share_a_worse_by_0_1": 0.08666666666666667,
+   "p05": -0.10660041955331556,
+   "p50": -0.004007214858036928,
+   "p95": 0.13957528092233382,
+   "night_mean_diff": -0.012668956598805625,
+   "night_ci": [
+    -0.023484269553470993,
+    -0.0011601118596739355
+   ]
+  },
+  {
+   "scenario": "debt",
+   "a": "twin_k8",
+   "b": "consider_k8",
+   "mean_diff": -0.02038162843002165,
+   "ci": [
+    -0.027631580075913553,
+    -0.013212423489072854
+   ],
+   "share_a_better": 0.63,
+   "share_a_worse_by_0_1": 0.03,
+   "p05": -0.12114334896050864,
+   "p50": -0.013688811345268725,
+   "p95": 0.08105154849770295,
+   "night_mean_diff": -0.0037233721413129483,
+   "night_ci": [
+    -0.017932299934067798,
+    0.01004371637621656
+   ]
+  },
+  {
+   "scenario": "debt",
    "a": "twin_k0",
    "b": "prior_k0",
    "mean_diff": -0.00797769118614949,
@@ -5160,6 +6927,26 @@
    "night_ci": [
     -0.005117674115713721,
     0.12323388461711117
+   ]
+  },
+  {
+   "scenario": "debt",
+   "a": "consider_k0",
+   "b": "prior_k0",
+   "mean_diff": 0.15210070459651226,
+   "ci": [
+    0.07598951794857162,
+    0.23069442691798103
+   ],
+   "share_a_better": 0.4166666666666667,
+   "share_a_worse_by_0_1": 0.5066666666666667,
+   "p05": -0.9551611941174015,
+   "p50": 0.10157594887819305,
+   "p95": 1.3969613543704176,
+   "night_mean_diff": 0.1339460058837817,
+   "night_ci": [
+    0.057694331246768996,
+    0.20604839832644206
    ]
   },
   {
@@ -5272,6 +7059,40 @@
   },
   {
    "scenario": "workday",
+   "a": "consider_k1",
+   "b": "checkins_k1",
+   "mean_diff": 0.05926434142320157,
+   "ci": [
+    0.022431173664012698,
+    0.09687643184597991
+   ],
+   "share_a_better": 0.44,
+   "share_a_worse_by_0_1": 0.39666666666666667,
+   "p05": -0.4072998795142983,
+   "p50": 0.040393763506726604,
+   "p95": 0.6236689472775842,
+   "night_mean_diff": null,
+   "night_ci": null
+  },
+  {
+   "scenario": "workday",
+   "a": "twin_k1",
+   "b": "consider_k1",
+   "mean_diff": -0.07646348969669513,
+   "ci": [
+    -0.09686884911849607,
+    -0.05665509891568135
+   ],
+   "share_a_better": 0.6966666666666667,
+   "share_a_worse_by_0_1": 0.14333333333333334,
+   "p05": -0.38029853321140533,
+   "p50": -0.060681833318531664,
+   "p95": 0.226870512087962,
+   "night_mean_diff": null,
+   "night_ci": null
+  },
+  {
+   "scenario": "workday",
    "a": "twin_k3",
    "b": "checkins_k3",
    "mean_diff": -0.021402338391085386,
@@ -5335,6 +7156,40 @@
    "p05": -0.39189971830173964,
    "p50": -0.01612875750055781,
    "p95": 0.33343779831329484,
+   "night_mean_diff": null,
+   "night_ci": null
+  },
+  {
+   "scenario": "workday",
+   "a": "consider_k3",
+   "b": "checkins_k3",
+   "mean_diff": 0.018745785468371436,
+   "ci": [
+    -0.0029658993187822,
+    0.04081424661201007
+   ],
+   "share_a_better": 0.48,
+   "share_a_worse_by_0_1": 0.27666666666666667,
+   "p05": -0.26193467788737934,
+   "p50": 0.0032313648794229377,
+   "p95": 0.3563439907541463,
+   "night_mean_diff": null,
+   "night_ci": null
+  },
+  {
+   "scenario": "workday",
+   "a": "twin_k3",
+   "b": "consider_k3",
+   "mean_diff": -0.04014812385945684,
+   "ci": [
+    -0.05324920435237679,
+    -0.026916750384531653
+   ],
+   "share_a_better": 0.6333333333333333,
+   "share_a_worse_by_0_1": 0.10666666666666667,
+   "p05": -0.25776746340381956,
+   "p50": -0.03230471509597249,
+   "p95": 0.14193548592574046,
    "night_mean_diff": null,
    "night_ci": null
   },
@@ -5408,6 +7263,40 @@
   },
   {
    "scenario": "workday",
+   "a": "consider_k8",
+   "b": "checkins_k8",
+   "mean_diff": 0.014273954265872225,
+   "ci": [
+    0.0051058660564016894,
+    0.023499488232764997
+   ],
+   "share_a_better": 0.43333333333333335,
+   "share_a_worse_by_0_1": 0.12333333333333334,
+   "p05": -0.1251834326407862,
+   "p50": 0.012258921644604598,
+   "p95": 0.15988990659660526,
+   "night_mean_diff": null,
+   "night_ci": null
+  },
+  {
+   "scenario": "workday",
+   "a": "twin_k8",
+   "b": "consider_k8",
+   "mean_diff": -0.02808187907949584,
+   "ci": [
+    -0.034276280324515844,
+    -0.021894425933405764
+   ],
+   "share_a_better": 0.6866666666666666,
+   "share_a_worse_by_0_1": 0.01,
+   "p05": -0.11852585715836338,
+   "p50": -0.027960181615619584,
+   "p95": 0.060491520512854446,
+   "night_mean_diff": null,
+   "night_ci": null
+  },
+  {
+   "scenario": "workday",
    "a": "twin_k0",
    "b": "prior_k0",
    "mean_diff": 0.024915372408505776,
@@ -5420,6 +7309,23 @@
    "p05": -0.8972840907016707,
    "p50": 0.01373832581019635,
    "p95": 0.8502271039819014,
+   "night_mean_diff": null,
+   "night_ci": null
+  },
+  {
+   "scenario": "workday",
+   "a": "consider_k0",
+   "b": "prior_k0",
+   "mean_diff": 0.2039826908365322,
+   "ci": [
+    0.12730985789979576,
+    0.27844012172288524
+   ],
+   "share_a_better": 0.38,
+   "share_a_worse_by_0_1": 0.53,
+   "p05": -0.7830514959791792,
+   "p50": 0.14753578151067123,
+   "p95": 1.399201470126642,
    "night_mean_diff": null,
    "night_ci": null
   },
@@ -5539,6 +7445,46 @@
   },
   {
    "scenario": "dissociation",
+   "a": "consider_k1",
+   "b": "checkins_k1",
+   "mean_diff": 0.04081473598383796,
+   "ci": [
+    0.0015106525922582382,
+    0.07934845667404257
+   ],
+   "share_a_better": 0.4766666666666667,
+   "share_a_worse_by_0_1": 0.37,
+   "p05": -0.4579228694514863,
+   "p50": 0.024111976138968594,
+   "p95": 0.6459208979823747,
+   "night_mean_diff": 0.048608069166776305,
+   "night_ci": [
+    -0.0030681813214961783,
+    0.10183579600829773
+   ]
+  },
+  {
+   "scenario": "dissociation",
+   "a": "twin_k1",
+   "b": "consider_k1",
+   "mean_diff": -0.05568616604354669,
+   "ci": [
+    -0.08114674696257987,
+    -0.030544805960942233
+   ],
+   "share_a_better": 0.58,
+   "share_a_worse_by_0_1": 0.22333333333333333,
+   "p05": -0.43200316757499213,
+   "p50": -0.043024444444403565,
+   "p95": 0.2849570042719724,
+   "night_mean_diff": -0.03709781874701846,
+   "night_ci": [
+    -0.08421082343998625,
+    0.011322354367989446
+   ]
+  },
+  {
+   "scenario": "dissociation",
    "a": "twin_k3",
    "b": "checkins_k3",
    "mean_diff": -0.02907923010509983,
@@ -5615,6 +7561,46 @@
    "night_ci": [
     -0.0927180826595822,
     -0.04717612257459365
+   ]
+  },
+  {
+   "scenario": "dissociation",
+   "a": "consider_k3",
+   "b": "checkins_k3",
+   "mean_diff": 0.011779785614621386,
+   "ci": [
+    -0.0067985041383126325,
+    0.029528465047180017
+   ],
+   "share_a_better": 0.48333333333333334,
+   "share_a_worse_by_0_1": 0.20666666666666667,
+   "p05": -0.21416052434373323,
+   "p50": 0.0023107358685182378,
+   "p95": 0.3048458169335934,
+   "night_mean_diff": -0.007246947693351626,
+   "night_ci": [
+    -0.025462346405127973,
+    0.01148064129591253
+   ]
+  },
+  {
+   "scenario": "dissociation",
+   "a": "twin_k3",
+   "b": "consider_k3",
+   "mean_diff": -0.040859015719721184,
+   "ci": [
+    -0.053479395360816126,
+    -0.027475527810692176
+   ],
+   "share_a_better": 0.6833333333333333,
+   "share_a_worse_by_0_1": 0.1,
+   "p05": -0.22550918086938207,
+   "p50": -0.04276382854622007,
+   "p95": 0.1522172404038889,
+   "night_mean_diff": -0.020432524385764775,
+   "night_ci": [
+    -0.043292952395216626,
+    0.001966326951127108
    ]
   },
   {
@@ -5699,6 +7685,46 @@
   },
   {
    "scenario": "dissociation",
+   "a": "consider_k8",
+   "b": "checkins_k8",
+   "mean_diff": 0.0065973096041936005,
+   "ci": [
+    -0.003113669799140768,
+    0.016130373754009598
+   ],
+   "share_a_better": 0.47333333333333333,
+   "share_a_worse_by_0_1": 0.12666666666666668,
+   "p05": -0.1181817923949312,
+   "p50": 0.004584974707250999,
+   "p95": 0.15106160233469232,
+   "night_mean_diff": -0.008978425390473568,
+   "night_ci": [
+    -0.02220271942346554,
+    0.005727538245646384
+   ]
+  },
+  {
+   "scenario": "dissociation",
+   "a": "twin_k8",
+   "b": "consider_k8",
+   "mean_diff": -0.02040260356727047,
+   "ci": [
+    -0.029483575593781914,
+    -0.011531813685945233
+   ],
+   "share_a_better": 0.6166666666666667,
+   "share_a_worse_by_0_1": 0.06666666666666667,
+   "p05": -0.1465281125372023,
+   "p50": -0.016039956527380883,
+   "p95": 0.1045214729815879,
+   "night_mean_diff": -0.0070362289336717955,
+   "night_ci": [
+    -0.027627772228333042,
+    0.013460407997294208
+   ]
+  },
+  {
+   "scenario": "dissociation",
    "a": "twin_k0",
    "b": "prior_k0",
    "mean_diff": 0.042282313349180596,
@@ -5715,6 +7741,26 @@
    "night_ci": [
     0.012004865577074444,
     0.14380052179835
+   ]
+  },
+  {
+   "scenario": "dissociation",
+   "a": "consider_k0",
+   "b": "prior_k0",
+   "mean_diff": 0.21377550448744378,
+   "ci": [
+    0.14139386818003122,
+    0.28651056155922544
+   ],
+   "share_a_better": 0.37333333333333335,
+   "share_a_worse_by_0_1": 0.5633333333333334,
+   "p05": -0.8333857623211068,
+   "p50": 0.14864145848921823,
+   "p95": 1.4066301622014747,
+   "night_mean_diff": 0.20964523400552057,
+   "night_ci": [
+    0.12690660965582584,
+    0.28719772736881066
    ]
   },
   {
@@ -6158,7 +8204,47 @@
    "mae_hi": 0.649450412927253,
    "coverage90": 0.9037793427230053,
    "width90": 2.666375922530016
+  },
+  {
+   "param": "offsetReversionHours",
+   "value": 24,
+   "method": "checkins",
+   "mae": 0.6305378645864537,
+   "mae_lo": 0.609272444630025,
+   "mae_hi": 0.6515989946981071,
+   "coverage90": 0.9033333333333338,
+   "width90": 2.6856839090417846
+  },
+  {
+   "param": "offsetReversionHours",
+   "value": 24,
+   "method": "twin",
+   "mae": 0.6045492247119122,
+   "mae_lo": 0.5849469397153348,
+   "mae_hi": 0.6242146233981192,
+   "coverage90": 0.9007746478873241,
+   "width90": 2.514563642390829
+  },
+  {
+   "param": "offsetReversionHours",
+   "value": 72,
+   "method": "checkins",
+   "mae": 0.6224021020414423,
+   "mae_lo": 0.6011499138562709,
+   "mae_hi": 0.6437936117978766,
+   "coverage90": 0.8376525821596247,
+   "width90": 2.230255020383391
+  },
+  {
+   "param": "offsetReversionHours",
+   "value": 72,
+   "method": "twin",
+   "mae": 0.6056279188465928,
+   "mae_lo": 0.5852920801645266,
+   "mae_hi": 0.6260872012292573,
+   "coverage90": 0.8335446009389678,
+   "width90": 2.1245849548526494
   }
  ],
- "runtime_s": 1431.75
+ "runtime_s": 3162.079
 }

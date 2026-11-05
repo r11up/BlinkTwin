@@ -17,7 +17,7 @@
 \renewcommand{\theequation}{S\arabic{equation}}
 
 \begin{document}
-\title{Supplementary Material for ``BlinkTwin: Questionnaire-Anchored Estimation and Forecasting of Subjective Sleepiness From Webcam and Reaction-Time Signals in a Web Browser''}
+\title{Supplementary Material for ``BlinkTwin: A Browser-Based State-Space Model of Subjective Sleepiness Combining the Three-Process Model, Self-Ratings and Passive Signals''}
 \author{Utsav~Poudel}
 \markboth{Supplementary material}{Poudel: BlinkTwin}
 \maketitle
@@ -32,7 +32,7 @@ The demand of each context starts from a default $D_c$ (break 15, reading 40, fo
 
 \section{Three-Process Model constants}
 \label{sec:tpm}
-Table~\ref{tab:tpm} lists every constant of the prior with its source. All were checked by an independent reviewer against \cite{akerstedt2004predictions} and \cite{ingre2014validating}. The linear recovery rate below the breakpoint is the exponential's slope at the breakpoint, $\delta_s(H - B) = 0.80$ units~h$^{-1}$, following the construction in \cite{akerstedt2004predictions}. Sleep inertia uses the values of \cite{ingre2014validating}; the 2004 paper lists $W_{\mathrm{Decay}} = 0.65692$, which equals 1.51 divided by $\ln 10$ and is therefore probably a base-10 rate. Ingre et al.\ found that adding $W$ worsened the fit to airline data and refitted the KSS mapping to $a_K = 9.68$, $b_K = 0.46$~\cite{ingre2014validating}; the main paper tests that mapping on OpenNeuro ds004902.
+Table~\ref{tab:tpm} lists every constant of the prior with its source. Each value was checked against \cite{akerstedt2004predictions} and \cite{ingre2014validating}. The linear recovery rate below the breakpoint is the exponential's slope at the breakpoint, $\delta_s(H - B) = 0.80$ units~h$^{-1}$, following the construction in \cite{akerstedt2004predictions}. Sleep inertia uses the values of \cite{ingre2014validating}; the 2004 paper lists $W_{\mathrm{Decay}} = 0.65692$, which equals 1.51 divided by $\ln 10$ and is therefore probably a base-10 rate. Ingre et al.\ found that adding $W$ worsened the fit to airline data and refitted the KSS mapping to $a_K = 9.68$, $b_K = 0.46$~\cite{ingre2014validating}; the main paper tests that mapping on OpenNeuro ds004902.
 
 \begin{table}[h]
   \centering
@@ -89,29 +89,30 @@ Fig.~\ref{fig:openneuro} shows the KSS and PVT median reaction time in the two s
 
 \section{Simulation details}
 \label{sec:simdetails}
-\paragraph*{Virtual people} Person-level parameters: offset $o \sim \mathcal{N}(0, 0.84)$; circadian phase shift $\mathcal{N}(0, 1)$~h; time-on-task effect $\mathcal{N}(0.4, 0.2)$ KSS~h$^{-1}$, truncated at 0; slow fluctuation of sleepiness (Ornstein--Uhlenbeck, SD 0.5, time constant 1.5~h); rating noise SD 0.7, rounded and clipped to 1--9. Each passive feature follows $a_i + b_i (s^* - 3)$ with $a_i \sim \mathcal{N}(a, \sigma_\alpha)$ and $b_i \sim \mathcal{N}(b, \cdot)$ truncated at 0, using the DROZY values of Table~II of the main paper (reaction-time slope SD 8~ms, blink-duration slope SD 7~ms, PERCLOS slope SD 0.3\%). Webcam baselines drift (Ornstein--Uhlenbeck, SD 30~ms for blink duration and 1.8\% for PERCLOS, time constant 4~h) and per-minute noise is AR(1) with $\rho = 0.02$ (blink duration) and 0.32 (PERCLOS). Truncations: median reaction time $\geq 180$~ms; blink duration $\geq 60$~ms; PERCLOS in 0--60\%; blink rate $\mathcal{N}(18, 6)$ per minute, rounded, with blink duration missing below 3 blinks; face coverage fixed at 0.9.
+\paragraph*{Virtual people} Person-level parameters: offset $o \sim \mathcal{N}(0, 0.84)$; circadian phase shift $\mathcal{N}(0, 1)$~h; time-on-task effect $\mathcal{N}(0.4, 0.2)$ KSS~h$^{-1}$, truncated at 0; slow fluctuation of sleepiness (Ornstein--Uhlenbeck, SD 0.5, time constant 1.5~h); rating noise SD 0.7, rounded and clipped to 1--9. Each passive feature follows $a_i + b_i (s^* - 3)$ with $a_i \sim \mathcal{N}(a, \sigma_\alpha)$ and $b_i \sim \mathcal{N}(b, \cdot)$ truncated at 0, using the DROZY means of Table~II of the main paper but smaller slope spreads (SD 8~ms, 7~ms and 0.3\% for reaction time, blink duration and PERCLOS) than the filter assumes (7.9~ms, 14.3~ms and 0.47\%). The filter's values are the raw spread of per-person slopes from the 8 subjects with three usable sessions, an upper bound that includes estimation noise; the simulator's values are a judgement of the true spread. The matched scenario therefore does not test a filter that underestimates slope heterogeneity. Webcam baselines drift (Ornstein--Uhlenbeck, SD 30~ms for blink duration and 1.8\% for PERCLOS, time constant 4~h) and per-minute noise is AR(1) with $\rho = 0.02$ (blink duration) and 0.32 (PERCLOS). Truncations: median reaction time $\geq 180$~ms; blink duration $\geq 60$~ms; PERCLOS in 0--60\%; blink rate $\mathcal{N}(18, 6)$ per minute, rounded, with blink duration missing below 3 blinks; face coverage fixed at 0.9.
 
 \paragraph*{Scenarios} \emph{Misreport}: circadian phase SD 2~h and actual sleep differing from the reported 7.5~h with SD 1.5~h. \emph{Nonlinear}: signals respond with 0.6 of the slope up to KSS~6 and an added quadratic term above it; Student-$t_3$ noise. \emph{Rating bias}: a personal bias SD 0.8 added to every rating and rating noise SD 1.0. \emph{Autocorrelated webcam}: per-minute noise AR(1) with $\rho = 0.7$ and larger baseline drift. \emph{Trait}: homeostatic decay multiplied by $e^{\mathcal{N}(0, 0.3)}$ and circadian amplitude by $e^{\mathcal{N}(0, 0.2)}$ per person. \emph{Debt}: five previous nights of 5~h, of which the model is told only the last. \emph{Workday}: 16~h awake (07:30--23:00), check-ins 08:30--21:30, forecasts 09:00--22:00. \emph{Dissociation}: ratings equal the truth up to KSS~5 and include only half of any further rise.
 
 \begin{table*}[t]
   \centering
-  \caption{MAE of latent KSS at three check-ins by scenario, and the paired difference BlinkTwin minus check-ins only (95\% CI; share of people for whom BlinkTwin was better)}
+  \caption{MAE of latent KSS at three check-ins by scenario, and paired differences of BlinkTwin against check-ins only (with the share of people for whom BlinkTwin was better) and against the consider-covariance comparator (95\% CI)}
   \label{tab:scenarios}
   \footnotesize
-  \setlength{\tabcolsep}{5pt}
-  \begin{tabular}{@{}lccccccc@{}}
+  \setlength{\tabcolsep}{3pt}
+  \scriptsize
+  \begin{tabular}{@{}lccccccccc@{}}
     \toprule
-    Scenario & Prior & Check-ins & No anchors & BlinkTwin & Oracle & Difference (95\% CI) & Better \\
+    Scenario & Prior & Check-ins & No anchors & Consider & BlinkTwin & Known & BlinkTwin $-$ check-ins (95\% CI) & Better & BlinkTwin $-$ consider (95\% CI) \\
     \midrule
-    Matched & 0.819 & 0.659 & 1.741 & 0.629 & 0.586 & $-0.030$ ($-0.042$, $-0.016$) & 64\% \\
-    Misreport & 0.924 & 0.763 & 1.735 & 0.711 & 0.660 & $-0.052$ ($-0.065$, $-0.039$) & 66\% \\
-    Nonlinear & 0.837 & 0.671 & 1.754 & 0.633 & 0.615 & $-0.037$ ($-0.051$, $-0.024$) & 63\% \\
-    Rating bias & 0.819 & 0.918 & 1.742 & 0.863 & 0.691 & $-0.055$ ($-0.071$, $-0.039$) & 68\% \\
-    Autocorrelated & 0.819 & 0.659 & 2.026 & 0.646 & 0.657 & $-0.013$ ($-0.027$, $+0.001$) & 53\% \\
-    Trait & 0.969 & 0.697 & 1.728 & 0.656 & 0.606 & $-0.042$ ($-0.055$, $-0.029$) & 66\% \\
-    Debt & 0.858 & 0.633 & 1.768 & 0.598 & 0.557 & $-0.035$ ($-0.047$, $-0.023$) & 65\% \\
-    Workday & 0.832 & 0.682 & 1.732 & 0.661 & 0.640 & $-0.021$ ($-0.036$, $-0.007$) & 56\% \\
-    Dissociation & 0.819 & 0.665 & 1.742 & 0.636 & 0.585 & $-0.029$ ($-0.042$, $-0.015$) & 62\% \\
+    Matched & 0.819 & 0.659 & 1.741 & 0.673 & 0.629 & 0.586 & $-0.030$ ($-0.042$, $-0.016$) & 64\% & $-0.044$ ($-0.057$, $-0.032$) \\
+    Misreport & 0.924 & 0.763 & 1.735 & 0.763 & 0.711 & 0.660 & $-0.052$ ($-0.065$, $-0.039$) & 66\% & $-0.052$ ($-0.064$, $-0.040$) \\
+    Nonlinear & 0.837 & 0.671 & 1.754 & 0.669 & 0.633 & 0.615 & $-0.037$ ($-0.051$, $-0.024$) & 63\% & $-0.036$ ($-0.048$, $-0.025$) \\
+    Rating bias & 0.819 & 0.918 & 1.742 & 0.875 & 0.863 & 0.691 & $-0.055$ ($-0.071$, $-0.039$) & 68\% & $-0.012$ ($-0.027$, $+0.003$) \\
+    Autocorrelated & 0.819 & 0.659 & 2.026 & 0.693 & 0.646 & 0.657 & $-0.013$ ($-0.027$, $+0.001$) & 53\% & $-0.048$ ($-0.062$, $-0.033$) \\
+    Trait & 0.969 & 0.697 & 1.728 & 0.706 & 0.656 & 0.606 & $-0.042$ ($-0.055$, $-0.029$) & 66\% & $-0.051$ ($-0.063$, $-0.038$) \\
+    Debt & 0.858 & 0.633 & 1.768 & 0.642 & 0.598 & 0.557 & $-0.035$ ($-0.047$, $-0.023$) & 65\% & $-0.044$ ($-0.055$, $-0.033$) \\
+    Workday & 0.832 & 0.682 & 1.732 & 0.701 & 0.661 & 0.640 & $-0.021$ ($-0.036$, $-0.007$) & 56\% & $-0.040$ ($-0.053$, $-0.027$) \\
+    Dissociation & 0.819 & 0.665 & 1.742 & 0.676 & 0.636 & 0.585 & $-0.029$ ($-0.042$, $-0.015$) & 62\% & $-0.041$ ($-0.053$, $-0.027$) \\
     \bottomrule
   \end{tabular}
 \end{table*}
@@ -121,7 +122,7 @@ Fig.~\ref{fig:openneuro} shows the KSS and PVT median reaction time in the two s
   \caption{Sensitivity of the matched scenario at three check-ins to the assumed filter settings (default in bold)}
   \label{tab:sensitivity}
   \footnotesize
-  \setlength{\tabcolsep}{3pt}
+  \setlength{\tabcolsep}{2pt}
   \begin{tabular}{@{}llcccc@{}}
     \toprule
     Setting & Value & \multicolumn{2}{c}{MAE} & \multicolumn{2}{c}{Coverage} \\
@@ -146,6 +147,8 @@ Fig.~\ref{fig:openneuro} shows the KSS and PVT median reaction time in the two s
     Slope spread ($\times$) & 0 & 0.659 & 0.633 & 0.91 & 0.90 \\
      & \textbf{1} & 0.659 & 0.629 & 0.91 & 0.90 \\
      & 2 & 0.659 & 0.628 & 0.91 & 0.90 \\
+    Mean-reverting $\tau_d$ & 24 h & 0.631 & 0.605 & 0.90 & 0.90 \\
+     & 72 h & 0.622 & 0.606 & 0.84 & 0.83 \\
     \bottomrule
   \end{tabular}
 \end{table}
